@@ -108,3 +108,10 @@ Die Formeln sind in [`scoring.ts`](frontend/src/features/quiz-engine/scoring.ts)
 - [ ] Phase 6: Polish (8-Bit-Sounds, Haptics, Code-Splitting)
 
 Aktueller Stand inkl. Testprotokollen: [STATUS.md](STATUS.md)
+
+## Weiterführende Doku
+
+- 🛠️ **[Developer-Doku](docs/DEVELOPMENT.md)** — der komplette Stack erklärt: Architekturprinzipien, Quiz-Engine, Delta-Sync, Supabase-Schema & Sicherheitsmodell, Design-System, Erweiterungs-Kochbuch
+- 📋 [Architekturplan](docs/PLAN.md) — die ursprüngliche Planung (Tech-Entscheidungen, Datenmodell, Phasen)
+- ☁️ [Backend-Setup](supabase/README.md) — Migrations anwenden, Dashboard-Einstellungen
+
