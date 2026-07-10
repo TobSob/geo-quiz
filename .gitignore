@@ -1,0 +1,10 @@
+# IDE
+.idea/
+
+# local env / secrets (frontend/.gitignore covers *.local too — belt and braces)
+*.local
+.env
+
+# OS
+Thumbs.db
+.DS_Store

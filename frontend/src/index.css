@@ -1,0 +1,449 @@
+/* ============================================================
+   geo-quiz — 8-bit retro theme
+   Fonts: Press Start 2P (display) + VT323 (body)
+   Palette: PICO-8-inspired arcade colors on deep space navy
+   ============================================================ */
+
+:root {
+  --bg: #0d0b1e;
+  --bg-deep: #070613;
+  --panel: #1b1935;
+  --panel-light: #262347;
+  --ink: #e8e6f0;
+  --ink-dim: #8f8bb0;
+  --green: #00e756;
+  --cyan: #29adff;
+  --yellow: #ffec27;
+  --pink: #ff77a8;
+  --red: #ff004d;
+  --orange: #ffa300;
+  --purple: #83769c;
+  --shadow: #000000;
+
+  --font-display: 'Press Start 2P', monospace;
+  --font-body: 'VT323', monospace;
+
+  --px: 4px; /* base pixel unit for chunky borders */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, #1c1745 0%, transparent 60%),
+    radial-gradient(ellipse 100% 60% at 80% 110%, #14103a 0%, transparent 55%);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 22px;
+  line-height: 1.35;
+  min-height: 100vh;
+  image-rendering: pixelated;
+  overflow-x: hidden;
+}
+
+/* --- starfield --- */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 40% 70%, #9ad 50%, transparent 51%),
+    radial-gradient(2px 2px at 60% 15%, #fff8 50%, transparent 51%),
+    radial-gradient(1px 1px at 75% 50%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 90% 80%, #adf 50%, transparent 51%),
+    radial-gradient(2px 2px at 10% 85%, #fff6 50%, transparent 51%),
+    radial-gradient(1px 1px at 33% 8%, #fff9 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 92%, #fff7 50%, transparent 51%),
+    radial-gradient(1px 1px at 85% 25%, #fea 50%, transparent 51%);
+  background-size: 550px 550px;
+  animation: star-drift 120s linear infinite;
+}
+
+@keyframes star-drift {
+  from { background-position: 0 0; }
+  to { background-position: -550px 550px; }
+}
+
+/* --- CRT scanlines + vignette overlay --- */
+.crt::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgba(0, 0, 0, 0.13) 3px,
+    rgba(0, 0, 0, 0.13) 4px
+  );
+}
+
+.crt::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1001;
+  background: radial-gradient(
+    ellipse 130% 130% at 50% 50%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+}
+
+/* --- typography --- */
+h1, h2, h3, .display {
+  font-family: var(--font-display);
+  line-height: 1.5;
+  margin: 0;
+}
+
+h1 { font-size: 24px; }
+h2 { font-size: 16px; }
+h3 { font-size: 12px; }
+
+a { color: var(--cyan); }
+
+/* --- pixel panel: hard offset shadow --- */
+.pixel-panel {
+  background: var(--panel);
+  border: var(--px) solid var(--shadow);
+  box-shadow: var(--px) var(--px) 0 0 var(--shadow);
+  position: relative;
+}
+
+/* --- pixel button --- */
+.pixel-btn {
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--panel-light);
+  border: var(--px) solid var(--shadow);
+  padding: 14px 18px;
+  cursor: pointer;
+  position: relative;
+  box-shadow: var(--px) var(--px) 0 0 var(--shadow);
+  transition: none;
+  text-transform: uppercase;
+  user-select: none;
+  image-rendering: pixelated;
+}
+
+.pixel-btn:hover:not(:disabled) {
+  background: var(--panel);
+  color: var(--yellow);
+  outline: none;
+}
+
+.pixel-btn:active:not(:disabled) {
+  transform: translate(var(--px), var(--px));
+  box-shadow: 0 0 0 0 var(--shadow);
+}
+
+.pixel-btn:focus-visible {
+  outline: var(--px) dashed var(--yellow);
+  outline-offset: 2px;
+}
+
+.pixel-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.pixel-btn--primary {
+  background: var(--green);
+  color: var(--bg-deep);
+}
+
+.pixel-btn--primary:hover:not(:disabled) {
+  background: #2bff7a;
+  color: var(--bg-deep);
+}
+
+.pixel-btn--danger { background: var(--red); color: #fff; }
+.pixel-btn--cyan { background: var(--cyan); color: var(--bg-deep); }
+.pixel-btn--cyan:hover:not(:disabled) { background: #55c2ff; color: var(--bg-deep); }
+
+/* answer option states */
+.pixel-btn--correct {
+  background: var(--green) !important;
+  color: var(--bg-deep) !important;
+  animation: pop 0.25s steps(3);
+}
+
+.pixel-btn--wrong {
+  background: var(--red) !important;
+  color: #fff !important;
+  animation: shake 0.3s steps(6);
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* --- blink cursor / press start --- */
+.blink {
+  animation: blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to { visibility: hidden; }
+}
+
+/* --- neon glow text --- */
+.glow-green { color: var(--green); text-shadow: 0 0 8px #00e75688, 0 0 24px #00e75633; }
+.glow-cyan { color: var(--cyan); text-shadow: 0 0 8px #29adff88, 0 0 24px #29adff33; }
+.glow-yellow { color: var(--yellow); text-shadow: 0 0 8px #ffec2788, 0 0 24px #ffec2733; }
+.glow-pink { color: var(--pink); text-shadow: 0 0 8px #ff77a888, 0 0 24px #ff77a833; }
+
+/* --- layout --- */
+#root {
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- timer bar --- */
+.timer-track {
+  height: 14px;
+  background: var(--bg-deep);
+  border: 3px solid var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.timer-fill {
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--green) 0,
+    var(--green) 8px,
+    #00c94b 8px,
+    #00c94b 16px
+  );
+}
+
+.timer-fill--warn {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--orange) 0,
+    var(--orange) 8px,
+    #e08c00 8px,
+    #e08c00 16px
+  );
+}
+
+.timer-fill--danger {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--red) 0,
+    var(--red) 8px,
+    #d10040 8px,
+    #d10040 16px
+  );
+}
+
+/* --- flag display --- */
+.flag-frame {
+  display: inline-block;
+  border: var(--px) solid var(--shadow);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--shadow);
+  line-height: 0;
+  background: var(--panel-light);
+}
+
+.flag-frame .fi {
+  width: 240px;
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+}
+
+/* --- streak badge --- */
+.streak-badge {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--bg-deep);
+  background: var(--yellow);
+  border: 3px solid var(--shadow);
+  box-shadow: 3px 3px 0 0 var(--shadow);
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.streak-badge--hot {
+  background: var(--orange);
+  animation: hot-pulse 0.6s steps(2) infinite alternate;
+}
+
+@keyframes hot-pulse {
+  from { background: var(--orange); }
+  to { background: var(--red); color: #fff; }
+}
+
+/* --- score popup --- */
+.score-pop {
+  font-family: var(--font-display);
+  font-size: 18px;
+  animation: score-float 0.9s steps(8) forwards;
+  pointer-events: none;
+}
+
+@keyframes score-float {
+  0% { opacity: 0; transform: translateY(8px); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-28px); }
+}
+
+/* --- mode select cards --- */
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 22px;
+}
+
+.mode-card {
+  background: var(--panel);
+  border: var(--px) solid var(--shadow);
+  box-shadow: var(--px) var(--px) 0 0 var(--shadow);
+  padding: 18px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 150px;
+  font-family: var(--font-body);
+}
+
+.mode-card:hover {
+  background: var(--panel-light);
+  transform: translate(-2px, -2px);
+  box-shadow: calc(var(--px) + 2px) calc(var(--px) + 2px) 0 0 var(--shadow);
+}
+
+.mode-card:active {
+  transform: translate(var(--px), var(--px));
+  box-shadow: 0 0 0 0 var(--shadow);
+}
+
+.mode-card .mode-icon {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.mode-card .mode-name {
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--yellow);
+}
+
+.mode-card .mode-desc {
+  color: var(--ink-dim);
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.mode-card--wide {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  min-height: 0;
+}
+
+/* --- HUD --- */
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hud-stat {
+  font-family: var(--font-display);
+  font-size: 12px;
+}
+
+.hud-stat .label {
+  color: var(--ink-dim);
+  font-size: 9px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* --- summary table --- */
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 21px;
+}
+
+.summary-table th {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--ink-dim);
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 3px solid var(--shadow);
+}
+
+.summary-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #ffffff14;
+}
+
+/* --- leaflet dark tweaks --- */
+.leaflet-container {
+  background: var(--bg-deep);
+  font-family: var(--font-body);
+  image-rendering: auto;
+}
+
+.map-frame {
+  border: var(--px) solid var(--shadow);
+  box-shadow: var(--px) var(--px) 0 0 var(--shadow);
+  overflow: hidden;
+}
+
+/* --- utility --- */
+.stack { display: flex; flex-direction: column; gap: 18px; }
+.row { display: flex; align-items: center; gap: 12px; }
+.center { text-align: center; }
+.spacer { flex: 1; }
+.dim { color: var(--ink-dim); }
+
+@media (max-width: 640px) {
+  body { font-size: 20px; }
+  h1 { font-size: 18px; }
+  .flag-frame .fi { width: 180px; height: 135px; }
+}
