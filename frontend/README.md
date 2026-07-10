@@ -1,32 +1,21 @@
-# React + TypeScript + Vite
+# GeoQuiz Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 18 + TypeScript + Vite. Siehe die [Haupt-README](../README.md) für Setup, Spielmodi und Architektur.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev       # http://localhost:5173
+npm run test      # Vitest — Quiz-Engine & Scoring
+npm run build     # Typecheck + Production-Build
+npm run lint      # oxlint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Nützliche Einstiegspunkte:
+
+- [`src/features/quiz-engine/`](src/features/quiz-engine/) — Spiellogik als pures TS, komplett ohne React-Abhängigkeit, unit-getestet
+- [`src/components/QuizView.tsx`](src/components/QuizView.tsx) — der von allen Modi geteilte Quiz-Screen (Frage → Feedback → Weiter)
+- [`src/hooks/useQuizSession.ts`](src/hooks/useQuizSession.ts) — Session-State-Machine (Score, Streak, Timer-Übergänge)
+- [`src/index.css`](src/index.css) — das komplette 8-Bit-Design-System (CSS-Variablen, Pixel-Borders, CRT-Effekte)
+- [`scripts/transform-countries.mjs`](scripts/transform-countries.mjs) — regeneriert `src/data/countries.json` aus dem Rohdatensatz
+
+Env-Konfiguration: `.env.example` → `.env.local` kopieren und den Supabase-Anon-Key eintragen (optional — ohne läuft das Spiel offline).
