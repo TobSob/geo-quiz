@@ -104,10 +104,11 @@ Die Formeln sind in [`scoring.ts`](frontend/src/features/quiz-engine/scoring.ts)
 
 - [x] Phase 1–3: Alle Spielmodi, 8-Bit-Design, lokale Persistenz
 - [x] Phase 4: Supabase (anonyme Auth, Account-Upgrade, Progress-Sync, gegatete Leaderboards)
-- [ ] Phase 5: Android-Packaging mit Capacitor
-- [ ] Phase 6: Polish (8-Bit-Sounds, Haptics, Code-Splitting)
+- [ ] Phase A: Web-Deployment (öffentliche URL)
+- [ ] Phase B: Android-App mit Capacitor
+- [ ] Phase C: Polish (8-Bit-Sounds, Code-Splitting, PWA)
 
-Aktueller Stand inkl. Testprotokollen: [STATUS.md](STATUS.md)
+Detaillierter Plan zum Abhaken: **[ROADMAP.md](ROADMAP.md)** · Stand & Testprotokolle: [STATUS.md](STATUS.md)
 
 ## Weiterführende Doku
 

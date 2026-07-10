@@ -110,9 +110,9 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 - ✅ Alle Testdaten (Test-User + Vorab-Scores) entfernt — Leaderboard startet leer
 
 ## Nächste Schritte
-1. **Phase 5 (Android):** `npx cap init` + `npx cap add android`, Capacitor-Storage-Adapter für die Auth-Session, On-Device-Test der Karten
-2. **Polish-Ideen:** Sound-Effekte (8-Bit-Bleeps), Haptics, Code-Splitting (Bundle aktuell ~700 KB JS)
-3. **Hygiene:** Supabase-Access-Token nach Abschluss löschen (account/tokens); `npm audit` (5 high, transitiv) gelegentlich prüfen
+→ Als abhakbarer Plan mit Verlaufs-Historie in **[ROADMAP.md](ROADMAP.md)** (Phase A: Web-Deployment, Phase B: Android/Capacitor, Phase C: Polish).
+
+Hygiene-Merker: Supabase-Access-Token nach Abschluss löschen (account/tokens).
 
 ## Entscheidungs-Log
 - **React 18 gepinnt** (statt 19) → `react-simple-maps@3` läuft ohne Fork/Overrides.
