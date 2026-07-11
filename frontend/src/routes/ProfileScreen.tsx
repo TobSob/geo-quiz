@@ -176,7 +176,7 @@ function UpgradePanel() {
           disabled={busy || !email.includes('@') || password.length < 6}
           onClick={submit}
         >
-          {busy ? '…' : 'Upgrade'}
+          {busy ? '…' : 'Account erstellen'}
         </button>
       </div>
       {message && <p className="glow-yellow" style={{ margin: 0 }}>{message}</p>}
@@ -238,7 +238,7 @@ function LoginPanel() {
           disabled={busy || !email.includes('@') || password.length < 6}
           onClick={submit}
         >
-          {busy ? '…' : 'Login'}
+          {busy ? '…' : 'Anmelden'}
         </button>
         <button type="button" className="pixel-btn" onClick={() => setOpen(false)}>
           X

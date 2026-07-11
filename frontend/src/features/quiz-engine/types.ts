@@ -14,6 +14,8 @@ export interface Country {
   nameOfficial: string
   nameDe: string
   capital: string | null
+  /** German exonym for `capital`, e.g. "Wien" for Vienna — falls back to `capital` when identical. */
+  capitalDe: string | null
   capitals: string[]
   region: string
   subregion: string | null
@@ -42,8 +44,10 @@ export interface Landmark {
   countryIso2: string
   lat: number
   lng: number
-  category: 'building' | 'monument' | 'nature'
+  category: 'building' | 'monument' | 'nature' | 'place'
   difficulty: 1 | 2 | 3
+  /** Public path to a representative photo, e.g. `/landmarks/lm_eiffel_tower.jpg`. */
+  image: string
 }
 
 /** Multiple-choice question (flags, countries, capitals, outline). */
@@ -72,6 +76,8 @@ export interface PinQuestion {
   /** Distance falloff constant R in km (see scoring). */
   falloffKm: number
   timeLimitMs: number
+  /** Public path to a representative photo (landmark-pin only). */
+  image?: string
 }
 
 export type Question = ChoiceQuestion | PinQuestion

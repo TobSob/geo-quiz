@@ -7,7 +7,7 @@ import {
   quizPool,
 } from '../features/quiz-engine/questionGenerator'
 import type { Question, QuestionProgress } from '../features/quiz-engine/types'
-import { cities, countries, dataBundle, landmarks } from '../data'
+import { cities, countries, dataBundle, landmarks, outlineRenderableIso2 } from '../data'
 import { QuizView } from '../components/QuizView'
 import { useProgressStore } from '../state/progressStore'
 
@@ -20,7 +20,7 @@ function questionUniverse(): string[] {
     ids.push(deterministicId('flags', c.iso2))
     ids.push(deterministicId('capitals', c.iso2))
     ids.push(deterministicId('countries', c.iso2))
-    ids.push(deterministicId('outline', c.iso2))
+    if (outlineRenderableIso2.has(c.iso2)) ids.push(deterministicId('outline', c.iso2))
   }
   for (const city of cities) ids.push(deterministicId('city-pin', city.id))
   for (const lm of landmarks) ids.push(deterministicId('landmark-pin', lm.id))

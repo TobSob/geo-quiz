@@ -251,6 +251,16 @@ function PinQuestionView({
         {question.prompt}
       </h2>
 
+      {question.image && (
+        <div className="center">
+          <img
+            src={question.image}
+            alt={question.targetName}
+            className="landmark-photo"
+          />
+        </div>
+      )}
+
       <MapPicker
         resetKey={resetKey}
         guess={pendingPin}

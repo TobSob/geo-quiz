@@ -207,13 +207,35 @@ mledoze/countries (Rohdatensatz, ODbL)
         │  frontend/scripts/transform-countries.mjs   ← node scripts/transform-countries.mjs
         ▼
 src/data/countries.json   245 Länder, 84 KB (iso2/iso3/ccn3, Namen de/en, Hauptstadt,
-                          Region, Zentroid, Grenzen, Fläche, unMember/independent)
+                          Region, Zentroid, Grenzen, Fläche, unMember/independent).
+                          `capital` ist mledoze's Rohwert (Englisch/lokal, z. B. "Vienna");
+                          `capitalDe` ist der deutsche Name fürs UI (z. B. "Wien") — übernimmt
+                          zuerst den kuratierten Namen aus cities.json (sofern dieselbe Stadt,
+                          Bolivien/Südafrika mit mehreren Hauptstädten ausgenommen), sonst
+                          `CAPITAL_DE_EXTRA` in transform-countries.mjs, sonst Fallback auf
+                          `capital`. Bei neuen mledoze-Importen `capitalDe` gegenprüfen.
 src/data/cities.json      141 Städte, handkuratiert (Population für Schwierigkeits-Tiers)
-src/data/landmarks.json   64 Landmarks, handkuratiert (Kategorie, Difficulty 1–3)
-src/data/world-atlas-110m.json   Topojson für den Umriss-Modus
+src/data/world-atlas-110m.json   Topojson für den Umriss-Modus (110m-Auflösung, ~100 KB —
+                          deckt nur 177 Länder ab; 29 Mikrostaaten fehlen und werden im
+                          Umriss-Pool über `outlineRenderableIso2`/`outlineDataBundle`
+                          (src/data/index.ts) ausgeschlossen, bleiben aber bei
+                          Flaggen/Hauptstädte/Länder normal spielbar)
 ```
 
 Flaggen kommen **nicht** aus mledoze (dessen SVGs sind von der ODbL-Lizenz ausgenommen!), sondern aus dem MIT-lizenzierten `flag-icons`-Paket (CSS-Klassen `fi fi-de`).
+
+```
+scripts/landmarks-manifest.mjs   Quellliste: Wikipedia-Artikeltitel je Landmark/Ort
+        │  frontend/scripts/fetch-landmark-images.mjs   ← node scripts/fetch-landmark-images.mjs
+        ▼
+src/data/landmarks.json   129 Einträge (Bauwerke, Monumente, Naturwunder, bekannte
+                          Plätze/Straßen), Koordinaten + Bild automatisch per
+                          Wikipedia-API verifiziert (nicht handgetippt)
+public/landmarks/*.jpg    Bilder, lokal gebündelt (~8 MB gesamt), aus Wikipedia-
+                          „Page Images" bzw. manuell kuratiertem Commons-Foto, wo der
+                          Artikel nur eine Karte/Flagge als Titelbild hat
+docs/IMAGE_CREDITS.md     Quellnachweis pro Bild (Artikel-Link, Lizenz siehe Artikel)
+```
 
 ---
 
@@ -253,8 +275,19 @@ Konvention aus dem Plan: **Eine Phase gilt erst als fertig, wenn sie end-to-end 
 4. `mode`-CHECK-Constraint in einer neuen Migration erweitern (`score_entries`)
 5. Tests: Options-Eindeutigkeit + ID-Roundtrip ergänzen
 
-### Städte/Landmarks ergänzen
-Eintrag in `cities.json`/`landmarks.json` mit stabiler, sprechender ID (`city_<name>_<iso2>`). IDs **niemals ändern** — sie sind Fortschritts-Schlüssel in localStorage und `user_progress`.
+### Städte ergänzen
+Eintrag in `cities.json` mit stabiler, sprechender ID (`city_<name>_<iso2>`). IDs **niemals ändern** — sie sind Fortschritts-Schlüssel in localStorage und `user_progress`.
+
+### Landmarks/Orte ergänzen
+`landmarks.json` wird generiert, nicht von Hand editiert. Eintrag in
+`scripts/landmarks-manifest.mjs` ergänzen (id, Name, Land, Kategorie,
+Difficulty, deutscher Wikipedia-Artikeltitel), dann
+`node scripts/fetch-landmark-images.mjs` laufen lassen — holt Koordinaten +
+Bild automatisch per Wikipedia-API und schreibt `landmarks.json` +
+`public/landmarks/<id>.jpg` + `docs/IMAGE_CREDITS.md` neu. Schlägt der Titel
+fehl (keine Koordinate/kein Bild, z. B. wenn das Artikelbild nur eine Karte
+ist), meldet das Script das am Ende — Titel korrigieren oder Bild-URL in
+`MANUAL_OVERRIDES` im Script eintragen. IDs **niemals ändern** — Fortschritts-Schlüssel.
 
 ### Schema ändern
 Neue nummerierte Datei unter `supabase/migrations/`, anwenden (SQL-Editor oder CLI), dann `apply_all.sql` regenerieren:

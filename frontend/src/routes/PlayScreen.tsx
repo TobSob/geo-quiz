@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { GameMode, SessionSummary } from '../features/quiz-engine/types'
 import { generateSession } from '../features/quiz-engine/questionGenerator'
-import { dataBundle } from '../data'
+import { dataBundle, outlineDataBundle } from '../data'
 import { QuizView } from '../components/QuizView'
 import { useProgressStore } from '../state/progressStore'
 import { submitScore } from '../api/scoreApi'
@@ -30,7 +30,14 @@ export function PlayScreen() {
   const mode = (VALID_MODES.has(modeParam ?? '') ? modeParam : null) as GameMode | null
 
   const questions = useMemo(
-    () => (mode ? generateSession(mode, dataBundle, QUESTIONS_PER_SESSION) : []),
+    () =>
+      mode
+        ? generateSession(
+            mode,
+            mode === 'outline' ? outlineDataBundle : dataBundle,
+            QUESTIONS_PER_SESSION,
+          )
+        : [],
     // runKey re-rolls the questions on replay
     [mode, runKey],
   )

@@ -285,6 +285,19 @@ a { color: var(--cyan); }
   background-position: center;
 }
 
+/* --- landmark photo (landmark-pin mode) --- */
+.landmark-photo {
+  display: block;
+  width: 280px;
+  max-width: 80vw;
+  height: 200px;
+  object-fit: cover;
+  border: var(--px) solid var(--shadow);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--shadow);
+  background: var(--panel-light);
+  image-rendering: auto;
+}
+
 /* --- streak badge --- */
 .streak-badge {
   font-family: var(--font-display);

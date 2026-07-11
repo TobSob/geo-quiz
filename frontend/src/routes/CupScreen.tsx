@@ -12,7 +12,7 @@ import {
   type CupState,
 } from '../features/quiz-engine/cupSession'
 import { generateSession } from '../features/quiz-engine/questionGenerator'
-import { dataBundle } from '../data'
+import { dataBundle, outlineDataBundle } from '../data'
 import { QuizView } from '../components/QuizView'
 import { MODE_TITLES } from './PlayScreen'
 import { useProgressStore } from '../state/progressStore'
@@ -31,7 +31,14 @@ export function CupScreen() {
   const mode = currentCupMode(cup)
 
   const questions = useMemo(
-    () => (mode ? generateSession(mode, dataBundle, CUP_QUESTIONS_PER_LEG) : []),
+    () =>
+      mode
+        ? generateSession(
+            mode,
+            mode === 'outline' ? outlineDataBundle : dataBundle,
+            CUP_QUESTIONS_PER_LEG,
+          )
+        : [],
     [mode, legKey],
   )
 

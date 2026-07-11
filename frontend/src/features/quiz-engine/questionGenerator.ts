@@ -86,12 +86,12 @@ function buildChoice(
       optionOf = (c) => c.nameDe
       break
     case 'countries':
-      prompt = `${correct.capital} ist die Hauptstadt von …?`
+      prompt = `${correct.capitalDe} ist die Hauptstadt von …?`
       optionOf = (c) => c.nameDe
       break
     case 'capitals':
       prompt = `Was ist die Hauptstadt von ${correct.nameDe}?`
-      optionOf = (c) => c.capital ?? '?'
+      optionOf = (c) => c.capitalDe ?? '?'
       break
     case 'outline':
       prompt = 'Welches Land ist markiert?'
@@ -170,6 +170,7 @@ export function generateLandmarkPinQuestion(
     countryIso2: lm.countryIso2,
     falloffKm: LANDMARK_FALLOFF_KM,
     timeLimitMs: PIN_TIME_LIMIT_MS,
+    image: lm.image,
   }
 }
 

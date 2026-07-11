@@ -27,7 +27,7 @@
 | `data/world-atlas-110m.json` | ✅ | Topojson für Outline-Modus |
 | `data/countries.json` (schlank) | ✅ | 245 Länder (194 UN), 84 KB, via `scripts/transform-countries.mjs` |
 | `data/cities.json` | ✅ | 141 Städte, alle Kontinente, Population + isCapital |
-| `data/landmarks.json` | ✅ | 64 Landmarks, Kategorie + Difficulty 1–3 |
+| `data/landmarks.json` | ✅ | 129 Einträge (Bauwerke, Monumente, Naturwunder, bekannte Plätze), Kategorie + Difficulty 1–3 + Foto je Eintrag, generiert via `scripts/fetch-landmark-images.mjs` |
 
 ### 🧠 Quiz-Engine (`src/features/quiz-engine/`, pure TS)
 | Modul | Status | Notiz |
@@ -57,7 +57,7 @@
 | Capitals (Land→Hauptstadt) | ✅ | |
 | Outline (markiertes Land erkennen) | ✅ | react-simple-maps @ React 18, MC-Antworten |
 | City-Pin | ✅ | Leaflet + Haversine, Feedback mit Ziel-Marker + Distanzlinie |
-| Landmark-Pin | ✅ | steilerer Falloff (R=90) |
+| Landmark-Pin | ✅ | steilerer Falloff (R=90), zeigt Foto der Sehenswürdigkeit/des Ortes |
 | Cup (alle 6 Modi rotierend) | ✅ | 5 Fragen/Leg, Interstitials, End-Breakdown-Tabelle |
 | Training (adaptiv) | ✅ | Sampler über ~980 Fragen-IDs aller Modi, zählt nicht in Bestenliste |
 | Bestenliste (lokal) | ✅ | Top 25 nach %, Reset mit Bestätigung |

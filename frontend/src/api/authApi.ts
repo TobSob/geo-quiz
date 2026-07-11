@@ -76,6 +76,27 @@ export interface AuthActionResult {
 }
 
 /**
+ * Supabase/GoTrue error messages come back in English regardless of app
+ * locale. Map the common ones to German; unknown ones get a generic
+ * German fallback instead of leaking English text into the UI.
+ */
+function translateAuthError(message: string): string {
+  const known: [RegExp, string][] = [
+    [/invalid login credentials/i, 'E-Mail oder Passwort ist falsch.'],
+    [/user already registered|already been registered/i, 'Für diese E-Mail existiert bereits ein Account.'],
+    [/password should be at least/i, 'Das Passwort muss mindestens 6 Zeichen haben.'],
+    [/email rate limit exceeded/i, 'Zu viele Versuche — bitte kurz warten und erneut probieren.'],
+    [/unable to validate email address/i, 'Das ist keine gültige E-Mail-Adresse.'],
+    [/email not confirmed/i, 'E-Mail noch nicht bestätigt — bitte den Link in deinem Postfach anklicken.'],
+    [/network/i, 'Keine Verbindung zum Server — bitte Internetverbindung prüfen.'],
+  ]
+  for (const [pattern, german] of known) {
+    if (pattern.test(message)) return german
+  }
+  return 'Etwas ist schiefgelaufen — bitte versuche es erneut.'
+}
+
+/**
  * Converts the current anonymous user into a permanent account
  * (Supabase native: updateUser with email+password keeps the same user id,
  * so all progress and scores stay attached). With email confirmations
@@ -87,7 +108,7 @@ export async function upgradeToAccount(
 ): Promise<AuthActionResult> {
   if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
   const { data, error } = await supabase.auth.updateUser({ email, password })
-  if (error) return { ok: false, message: error.message }
+  if (error) return { ok: false, message: translateAuthError(error.message) }
   const pendingConfirmation = !data.user.email_confirmed_at
   return {
     ok: true,
@@ -104,7 +125,7 @@ export async function signInWithEmail(
 ): Promise<AuthActionResult> {
   if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
   const { error } = await supabase.auth.signInWithPassword({ email, password })
-  if (error) return { ok: false, message: error.message }
+  if (error) return { ok: false, message: translateAuthError(error.message) }
   return { ok: true, message: 'Angemeldet!' }
 }
 
