@@ -46,13 +46,3 @@ export function scorePin(
   const timeBonus = Math.min(10, Math.max(0, 10 * (1 - elapsedMs / timeLimitMs)))
   return Math.min(MAX_PIN_SCORE, Math.round(dScore * 0.9 + timeBonus))
 }
-
-/** Cup total: percentage of perfect play across legs, 0-100. */
-export function cupTotalScore(
-  legs: Array<{ score: number; maxPossible: number }>,
-): number {
-  const max = legs.reduce((s, l) => s + l.maxPossible, 0)
-  if (max === 0) return 0
-  const scored = legs.reduce((s, l) => s + l.score, 0)
-  return Math.round((100 * scored) / max)
-}

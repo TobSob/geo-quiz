@@ -4,11 +4,15 @@ import { MODE_TITLES } from './PlayScreen'
 import {
   fetchLeaderboardCups,
   fetchLeaderboardScores,
+  PERIOD_LABELS,
   type LeaderboardCup,
+  type LeaderboardPeriod,
   type LeaderboardScore,
 } from '../api/leaderboardApi'
 import { isOnlineEnabled } from '../api/supabaseClient'
+import { listMyGroups, type FriendGroup } from '../api/groupApi'
 import { useUserStore } from '../state/userStore'
+import type { GameMode } from '../features/quiz-engine/types'
 import { Link } from 'react-router-dom'
 
 const MODE_LABEL: Record<string, string> = {
@@ -16,6 +20,9 @@ const MODE_LABEL: Record<string, string> = {
   cup: '🏆 Geo Cup',
   training: '🎯 Training',
 }
+
+const GAME_MODES = Object.keys(MODE_TITLES) as GameMode[]
+const PERIODS: LeaderboardPeriod[] = ['week', 'month', 'year', 'all']
 
 type Tab = 'local' | 'global' | 'cups'
 
@@ -99,16 +106,80 @@ function RequireAccount({ render }: { render: () => ReactNode }) {
   )
 }
 
+/** Eigene Gruppen für den Global/Gruppe-Umschalter (nur registriert gerendert). */
+function useMyGroups(): FriendGroup[] {
+  const [groups, setGroups] = useState<FriendGroup[]>([])
+  useEffect(() => {
+    listMyGroups().then((g) => setGroups(g ?? []))
+  }, [])
+  return groups
+}
+
+/** Umschalter „🌍 Global / 👥 Gruppe" — erscheint erst, wenn Gruppen existieren. */
+function ScopePicker({
+  groups,
+  groupId,
+  onChange,
+}: {
+  groups: FriendGroup[]
+  groupId: number | null
+  onChange: (id: number | null) => void
+}) {
+  if (groups.length === 0) return null
+  return (
+    <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+      <button
+        type="button"
+        className={`pixel-btn pixel-btn--small${groupId === null ? ' pixel-btn--cyan' : ''}`}
+        onClick={() => onChange(null)}
+      >
+        🌍 Global
+      </button>
+      {groups.map((g) => (
+        <button
+          key={g.group_id}
+          type="button"
+          className={`pixel-btn pixel-btn--small${groupId === g.group_id ? ' pixel-btn--cyan' : ''}`}
+          onClick={() => onChange(g.group_id)}
+        >
+          👥 {g.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Zeitraum-Auswahl: rollierende Fenster (7/30/365 Tage) oder alles. */
+function PeriodPicker({
+  period,
+  onChange,
+}: {
+  period: LeaderboardPeriod
+  onChange: (p: LeaderboardPeriod) => void
+}) {
+  return (
+    <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+      {PERIODS.map((p) => (
+        <button
+          key={p}
+          type="button"
+          className={`pixel-btn pixel-btn--small${period === p ? ' pixel-btn--cyan' : ''}`}
+          onClick={() => onChange(p)}
+        >
+          {PERIOD_LABELS[p]}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function LocalScores() {
   const scores = useProgressStore((s) => s.scores)
   const resetProgress = useProgressStore((s) => s.resetProgress)
   const [confirmReset, setConfirmReset] = useState(false)
 
-  const sorted = [...scores].sort((a, b) => {
-    const pctA = a.maxPossible ? a.score / a.maxPossible : 0
-    const pctB = b.maxPossible ? b.score / b.maxPossible : 0
-    return pctB - pctA
-  })
+  // Arcade-Scores sind Rohpunkte — sortiert wird schlicht nach Punktzahl.
+  const sorted = [...scores].sort((a, b) => b.score - a.score)
 
   return (
     <>
@@ -123,7 +194,7 @@ function LocalScores() {
               <th>#</th>
               <th>Modus</th>
               <th>Punkte</th>
-              <th>%</th>
+              <th>Fragen</th>
               <th>Datum</th>
             </tr>
           </thead>
@@ -132,13 +203,8 @@ function LocalScores() {
               <tr key={`${s.playedAt}-${i}`}>
                 <td className="dim">{i + 1}</td>
                 <td>{MODE_LABEL[s.mode] ?? s.mode}</td>
-                <td className="glow-yellow">
-                  {s.score}
-                  <span className="dim">/{s.maxPossible}</span>
-                </td>
-                <td>
-                  {s.maxPossible ? Math.round((100 * s.score) / s.maxPossible) : 0}%
-                </td>
+                <td className="glow-yellow">{s.score}</td>
+                <td className="dim">{s.questionCount}</td>
                 <td className="dim">{formatDate(s.playedAt)}</td>
               </tr>
             ))}
@@ -183,80 +249,128 @@ function LocalScores() {
 }
 
 function GlobalScores() {
+  const [mode, setMode] = useState<GameMode>('flags')
+  const [period, setPeriod] = useState<LeaderboardPeriod>('all')
+  const [groupId, setGroupId] = useState<number | null>(null)
+  const groups = useMyGroups()
   const [rows, setRows] = useState<LeaderboardScore[] | null | 'loading'>('loading')
 
   useEffect(() => {
-    fetchLeaderboardScores().then(setRows)
-  }, [])
-
-  if (rows === 'loading') return <p className="dim center blink">LADE…</p>
-  if (rows === null)
-    return <p className="dim center">Leaderboard nicht erreichbar.</p>
-  if (rows.length === 0)
-    return <p className="dim center">Noch keine globalen Einträge — sei die/der Erste!</p>
+    let stale = false
+    setRows('loading')
+    fetchLeaderboardScores(mode, period, 25, groupId).then((r) => {
+      if (!stale) setRows(r)
+    })
+    return () => {
+      stale = true
+    }
+  }, [mode, period, groupId])
 
   return (
-    <table className="summary-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Spieler</th>
-          <th>Modus</th>
-          <th>Punkte</th>
-          <th>%</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r, i) => (
-          <tr key={`${r.display_name}-${r.played_at}-${i}`}>
-            <td className="dim">{i + 1}</td>
-            <td className="glow-cyan">{r.display_name}</td>
-            <td>{MODE_LABEL[r.mode] ?? r.mode}</td>
-            <td className="glow-yellow">
-              {r.score}
-              <span className="dim">/{r.max_possible}</span>
-            </td>
-            <td>{r.percent}%</td>
-          </tr>
+    <div className="stack" style={{ gap: 16 }}>
+      <ScopePicker groups={groups} groupId={groupId} onChange={setGroupId} />
+      <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+        {GAME_MODES.map((m) => (
+          <button
+            key={m}
+            type="button"
+            className={`pixel-btn pixel-btn--small${mode === m ? ' pixel-btn--cyan' : ''}`}
+            onClick={() => setMode(m)}
+          >
+            {MODE_TITLES[m]}
+          </button>
         ))}
-      </tbody>
-    </table>
+      </div>
+      <PeriodPicker period={period} onChange={setPeriod} />
+
+      {rows === 'loading' ? (
+        <p className="dim center blink">LADE…</p>
+      ) : rows === null ? (
+        <p className="dim center">Leaderboard nicht erreichbar.</p>
+      ) : rows.length === 0 ? (
+        <p className="dim center">
+          Noch keine Einträge in diesem Zeitraum — sei die/der Erste!
+        </p>
+      ) : (
+        <table className="summary-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Spieler</th>
+              <th>Punkte</th>
+              <th>Fragen</th>
+              <th>Datum</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={`${r.display_name}-${r.played_at}-${i}`}>
+                <td className="dim">{i + 1}</td>
+                <td className="glow-cyan">{r.display_name}</td>
+                <td className="glow-yellow">{r.score}</td>
+                <td className="dim">{r.question_count}</td>
+                <td className="dim">{formatDate(r.played_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   )
 }
 
 function CupScores() {
+  const [period, setPeriod] = useState<LeaderboardPeriod>('all')
+  const [groupId, setGroupId] = useState<number | null>(null)
+  const groups = useMyGroups()
   const [rows, setRows] = useState<LeaderboardCup[] | null | 'loading'>('loading')
 
   useEffect(() => {
-    fetchLeaderboardCups().then(setRows)
-  }, [])
-
-  if (rows === 'loading') return <p className="dim center blink">LADE…</p>
-  if (rows === null)
-    return <p className="dim center">Leaderboard nicht erreichbar.</p>
-  if (rows.length === 0)
-    return <p className="dim center">Noch keine Cup-Läufe — spiel den ersten!</p>
+    let stale = false
+    setRows('loading')
+    fetchLeaderboardCups(period, 25, groupId).then((r) => {
+      if (!stale) setRows(r)
+    })
+    return () => {
+      stale = true
+    }
+  }, [period, groupId])
 
   return (
-    <table className="summary-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Spieler</th>
-          <th>Cup-Score</th>
-          <th>Datum</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r, i) => (
-          <tr key={`${r.display_name}-${r.played_at}-${i}`}>
-            <td className="dim">{i + 1}</td>
-            <td className="glow-cyan">{r.display_name}</td>
-            <td className="glow-yellow">{r.total_score}/100</td>
-            <td className="dim">{formatDate(r.played_at)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="stack" style={{ gap: 16 }}>
+      <ScopePicker groups={groups} groupId={groupId} onChange={setGroupId} />
+      <PeriodPicker period={period} onChange={setPeriod} />
+
+      {rows === 'loading' ? (
+        <p className="dim center blink">LADE…</p>
+      ) : rows === null ? (
+        <p className="dim center">Leaderboard nicht erreichbar.</p>
+      ) : rows.length === 0 ? (
+        <p className="dim center">
+          Noch keine Cup-Läufe in diesem Zeitraum — spiel den ersten!
+        </p>
+      ) : (
+        <table className="summary-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Spieler</th>
+              <th>Cup-Score</th>
+              <th>Datum</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={`${r.display_name}-${r.played_at}-${i}`}>
+                <td className="dim">{i + 1}</td>
+                <td className="glow-cyan">{r.display_name}</td>
+                <td className="glow-yellow">{r.total_score}</td>
+                <td className="dim">{formatDate(r.played_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   )
 }

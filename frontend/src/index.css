@@ -163,6 +163,12 @@ a { color: var(--cyan); }
   cursor: default;
 }
 
+/* kompakte Variante für Filter-Leisten (Bestenliste: Modus/Zeitraum) */
+.pixel-btn--small {
+  font-size: 9px;
+  padding: 8px 10px;
+}
+
 .pixel-btn--primary {
   background: var(--green);
   color: var(--bg-deep);
@@ -336,6 +342,27 @@ a { color: var(--cyan); }
   100% { opacity: 0; transform: translateY(-28px); }
 }
 
+/* --- arcade countdown + time reclaim (Phase E) --- */
+.arcade-clock {
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.time-pop {
+  font-size: 20px;
+  text-align: center;
+  animation: time-pop 1.6s steps(10) forwards;
+  pointer-events: none;
+}
+
+@keyframes time-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  15% { opacity: 1; transform: scale(1.25); }
+  35% { transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1); }
+}
+
 /* --- mode select cards --- */
 .mode-grid {
   display: grid;
@@ -446,6 +473,154 @@ a { color: var(--cyan); }
   border: var(--px) solid var(--shadow);
   box-shadow: var(--px) var(--px) 0 0 var(--shadow);
   overflow: hidden;
+}
+
+/* Leaflet needs an explicit container height (the outline mode's SVG map
+   sizes itself and must NOT get one). */
+.map-frame--pin {
+  height: 448px;
+}
+
+/* --- pin question layout --- */
+
+/* Desktop: chrome is a transparent pass-through — its children (HUD, timer,
+   prompt, photo) flow into the surrounding .stack exactly as siblings. */
+.quiz-chrome,
+.quiz-chrome-main {
+  display: contents;
+}
+
+.quiz-chrome > .landmark-photo {
+  align-self: center;
+}
+
+.pin-actions {
+  flex-wrap: wrap;
+}
+
+/* Fullscreen pin mode: on touch devices the page-scroll and map-pan
+   gestures fight each other and the map can be scrolled out of view.
+   The map takes the ENTIRE viewport; HUD/timer/prompt become a translucent
+   top bar and the action buttons float at the bottom — maximum map in both
+   orientations, and nothing scrolls. */
+@media (max-width: 900px), (pointer: coarse) {
+  .quiz-screen--pin {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: var(--bg);
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* Map fills everything. */
+  .quiz-screen--pin .pin-question {
+    position: absolute;
+    inset: 0;
+    gap: 0;
+  }
+
+  .quiz-screen--pin .pin-map-area {
+    position: absolute;
+    inset: 0;
+    display: flex;
+  }
+
+  .quiz-screen--pin .map-frame--pin {
+    height: auto;
+    flex: 1;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Top bar over the map. */
+  .quiz-screen--pin .quiz-chrome {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 950;
+    background: rgba(7, 6, 19, 0.86);
+    border-bottom: 3px solid var(--shadow);
+    padding: 8px 10px calc(8px + 2px);
+  }
+
+  .quiz-screen--pin .quiz-chrome-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .quiz-screen--pin .hud {
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+
+  .quiz-screen--pin .hud-stat { font-size: 10px; }
+  .quiz-screen--pin .hud-stat .label { font-size: 7px; margin-bottom: 2px; }
+
+  .quiz-screen--pin .pin-prompt {
+    font-size: 11px;
+    margin: 0;
+    text-align: left;
+  }
+
+  .quiz-screen--pin .quiz-chrome > .landmark-photo {
+    width: 118px;
+    height: 84px;
+    align-self: flex-start;
+  }
+
+  /* Floating action bar over the map bottom; empty middle lets map
+     gestures through. */
+  .quiz-screen--pin .pin-actions {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 950;
+    flex-wrap: nowrap;
+    pointer-events: none;
+  }
+
+  .quiz-screen--pin .pin-actions > * {
+    pointer-events: auto;
+  }
+
+  .quiz-screen--pin .pin-actions .spacer { pointer-events: none; }
+
+  .quiz-screen--pin .pin-actions .pixel-btn {
+    font-size: 9px;
+    padding: 10px 12px;
+  }
+
+  .quiz-screen--pin .pin-actions [aria-live] {
+    background: rgba(7, 6, 19, 0.86);
+    border: 3px solid var(--shadow);
+    padding: 6px 10px;
+  }
+
+  /* Lift Leaflet's bottom corner controls (attribution, zoom) clear of the
+     floating action bar. */
+  .quiz-screen--pin .leaflet-bottom {
+    bottom: 58px;
+  }
+}
+
+/* Landscape phones: every vertical pixel counts in the top bar. */
+@media (max-height: 480px) {
+  .quiz-screen--pin .quiz-chrome > .landmark-photo {
+    width: 92px;
+    height: 64px;
+  }
+
+  .quiz-screen--pin .hud-stat .label { display: none; }
 }
 
 /* --- utility --- */

@@ -1,9 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { GameMode, SessionSummary } from '../features/quiz-engine/types'
-import { generateSession } from '../features/quiz-engine/questionGenerator'
-import { dataBundle, outlineDataBundle } from '../data'
-import { QuizView } from '../components/QuizView'
+import { ArcadeQuizView } from '../components/ArcadeQuizView'
 import { useProgressStore } from '../state/progressStore'
 import { submitScore } from '../api/scoreApi'
 import { flushProgress } from '../features/progress/progressSync'
@@ -17,10 +15,9 @@ export const MODE_TITLES: Record<GameMode, string> = {
   'landmark-pin': 'Landmark-Pin',
 }
 
-const QUESTIONS_PER_SESSION = 10
-
 const VALID_MODES = new Set(Object.keys(MODE_TITLES))
 
+/** Einzelmodi laufen seit Phase E zeitbasiert (60 s, DESIGN-ARCADE.md). */
 export function PlayScreen() {
   const { mode: modeParam } = useParams()
   const navigate = useNavigate()
@@ -29,21 +26,10 @@ export function PlayScreen() {
 
   const mode = (VALID_MODES.has(modeParam ?? '') ? modeParam : null) as GameMode | null
 
-  const questions = useMemo(
-    () =>
-      mode
-        ? generateSession(
-            mode,
-            mode === 'outline' ? outlineDataBundle : dataBundle,
-            QUESTIONS_PER_SESSION,
-          )
-        : [],
-    // runKey re-rolls the questions on replay
-    [mode, runKey],
-  )
-
   const onDone = useCallback(
     (summary: SessionSummary) => {
+      // Abgebrochene Runden ohne eine einzige Antwort nicht verewigen.
+      if (summary.questionCount === 0) return
       recordSession(summary)
       // fire-and-forget: offline failures leave the local record intact
       void submitScore(summary)
@@ -58,10 +44,10 @@ export function PlayScreen() {
   }
 
   return (
-    <QuizView
-      key={runKey}
+    <ArcadeQuizView
+      // Mode-Wechsel & Replay erzwingen eine frische Session (neuer Timer!)
+      key={`${mode}:${runKey}`}
       mode={mode}
-      questions={questions}
       title={MODE_TITLES[mode]}
       onDone={onDone}
       onExit={() => navigate('/')}

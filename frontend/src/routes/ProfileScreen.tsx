@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import {
   ensureSession,
   signInWithEmail,
@@ -6,6 +6,14 @@ import {
   updateDisplayName,
   upgradeToAccount,
 } from '../api/authApi'
+import {
+  createGroup,
+  deleteGroup,
+  joinGroup,
+  leaveGroup,
+  listMyGroups,
+  type FriendGroup,
+} from '../api/groupApi'
 import { isOnlineEnabled } from '../api/supabaseClient'
 import { flushProgress } from '../features/progress/progressSync'
 import { useUserStore } from '../state/userStore'
@@ -56,6 +64,7 @@ export function ProfileScreen() {
         </div>
       </div>
 
+      {!isAnonymous && <GroupsPanel />}
       {isAnonymous ? <UpgradePanel /> : <LogoutPanel />}
       {isAnonymous && <LoginPanel />}
 
@@ -126,6 +135,177 @@ function NameEditor() {
           </button>
         </>
       )}
+    </div>
+  )
+}
+
+/**
+ * Freundesgruppen (Phase F): erstellen (Code teilen), per Code beitreten,
+ * verlassen; Ersteller können löschen. Nur für registrierte Accounts.
+ */
+function GroupsPanel() {
+  const [groups, setGroups] = useState<FriendGroup[]>([])
+  const [message, setMessage] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [createName, setCreateName] = useState('')
+  const [joinCode, setJoinCode] = useState('')
+  const [confirmRemove, setConfirmRemove] = useState<number | null>(null)
+
+  const reload = () => listMyGroups().then((g) => setGroups(g ?? []))
+  useEffect(() => {
+    void reload()
+  }, [])
+
+  const shareCode = async (g: FriendGroup) => {
+    const text = `Tritt meiner GeoQuiz-Gruppe „${g.name}" bei! Code: ${g.code}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ text })
+        return
+      } catch {
+        // Nutzer hat das Share-Sheet abgebrochen — kein Fehler
+        return
+      }
+    }
+    await navigator.clipboard.writeText(g.code)
+    setMessage(`Code ${g.code} kopiert!`)
+  }
+
+  const submitCreate = async () => {
+    setBusy(true)
+    setMessage(null)
+    const result = await createGroup(createName)
+    setBusy(false)
+    setMessage(result.message)
+    if (result.ok) {
+      setCreateName('')
+      void reload()
+    }
+  }
+
+  const submitJoin = async () => {
+    setBusy(true)
+    setMessage(null)
+    const result = await joinGroup(joinCode)
+    setBusy(false)
+    setMessage(result.message)
+    if (result.ok) {
+      setJoinCode('')
+      void reload()
+    }
+  }
+
+  const remove = async (g: FriendGroup) => {
+    setBusy(true)
+    const ok = g.is_owner ? await deleteGroup(g.group_id) : await leaveGroup(g.group_id)
+    setBusy(false)
+    setConfirmRemove(null)
+    setMessage(
+      ok
+        ? g.is_owner
+          ? `Gruppe „${g.name}" gelöscht.`
+          : `Du hast „${g.name}" verlassen.`
+        : 'Etwas ist schiefgelaufen — bitte versuche es erneut.',
+    )
+    void reload()
+  }
+
+  return (
+    <div className="pixel-panel stack" style={{ padding: 20 }}>
+      <h3 className="glow-yellow">👥 Freundesgruppen</h3>
+      <p className="dim" style={{ margin: 0, fontSize: 19 }}>
+        Erstelle eine Gruppe und teile den Code — in der Bestenliste könnt ihr
+        dann eure Bestleistungen vergleichen.
+      </p>
+
+      {groups.length > 0 && (
+        <div className="stack" style={{ gap: 10 }}>
+          {groups.map((g) => (
+            <div key={g.group_id} className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
+              <span className="display glow-cyan" style={{ fontSize: 11 }}>
+                {g.name}
+              </span>
+              <span className="dim" style={{ fontSize: 18 }}>
+                {g.code} · {g.member_count}{' '}
+                {g.member_count === 1 ? 'Mitglied' : 'Mitglieder'}
+              </span>
+              <div className="spacer" />
+              <button
+                type="button"
+                className="pixel-btn pixel-btn--small"
+                onClick={() => shareCode(g)}
+              >
+                Code teilen
+              </button>
+              {confirmRemove === g.group_id ? (
+                <>
+                  <button
+                    type="button"
+                    className="pixel-btn pixel-btn--small pixel-btn--danger"
+                    disabled={busy}
+                    onClick={() => remove(g)}
+                  >
+                    {g.is_owner ? 'Wirklich löschen?' : 'Wirklich verlassen?'}
+                  </button>
+                  <button
+                    type="button"
+                    className="pixel-btn pixel-btn--small"
+                    onClick={() => setConfirmRemove(null)}
+                  >
+                    X
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="pixel-btn pixel-btn--small"
+                  onClick={() => setConfirmRemove(g.group_id)}
+                >
+                  {g.is_owner ? 'Löschen' : 'Verlassen'}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="row" style={{ flexWrap: 'wrap' }}>
+        <input
+          placeholder="Neue Gruppe (Name)"
+          value={createName}
+          maxLength={24}
+          onChange={(e) => setCreateName(e.target.value)}
+          style={{ ...inputStyle, maxWidth: 220 }}
+        />
+        <button
+          type="button"
+          className="pixel-btn pixel-btn--primary"
+          disabled={busy || createName.trim().length < 2}
+          onClick={submitCreate}
+        >
+          Erstellen
+        </button>
+      </div>
+
+      <div className="row" style={{ flexWrap: 'wrap' }}>
+        <input
+          placeholder="Beitritts-Code"
+          value={joinCode}
+          maxLength={32}
+          onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+          style={{ ...inputStyle, maxWidth: 220, fontFamily: 'var(--font-display)', fontSize: 12 }}
+        />
+        <button
+          type="button"
+          className="pixel-btn pixel-btn--cyan"
+          disabled={busy || joinCode.trim().length < 4}
+          onClick={submitJoin}
+        >
+          Beitreten
+        </button>
+      </div>
+
+      {message && <p className="glow-yellow" style={{ margin: 0 }}>{message}</p>}
     </div>
   )
 }

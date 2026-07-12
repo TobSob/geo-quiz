@@ -15,7 +15,7 @@
 | 2 | Karten-Modi: Outline, City-Pin, Landmark-Pin | ✅ Fertig (Distanz-Score gegen Plan-Tabelle verifiziert) |
 | 3 | Cup-Modus + Training-Modus + lokale Persistenz | ✅ Fertig (localStorage via zustand/persist) |
 | 4 | Supabase: Leaderboard + Sync + Account-Upgrade | ✅ Fertig (E2E verifiziert 2026-07-10) |
-| 5 | Capacitor Android-Packaging | ⬜ Offen |
+| 5 | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Projekt-Setup fertig, Emulator/Geräte-Test offen) |
 | 6 | Polish + Deployment | ⬜ Offen |
 
 ## Bereichs-Status
@@ -82,8 +82,10 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 ### 🤖 Android (Capacitor) — Phase 5
 | Baustein | Status | Notiz |
 |---|---|---|
-| `npx cap add android` | ⬜ | |
-| Storage-Adapter für Auth-Session | ⬜ | |
+| Toolchain (JDK 21 + SDK CLI-only, `C:\Android\sdk`) | ✅ | Ohne Android Studio; `JAVA_HOME`/`ANDROID_HOME` persistent |
+| `npx cap add android` | ✅ | App-ID `de.tobsob.geoquiz`; Debug-APK baut (`gradlew assembleDebug`) |
+| Storage-Adapter für Auth-Session | ✅ | `@capacitor/preferences`; E2E: anonyme Identität überlebt force-stop |
+| Emulator-Test (AVD `geoquiz_pixel7`) | 🔄 | Flaggen + Profil + Online-Login OK; Karten-Modi (Pin-Präzision) offen |
 | On-Device-Test (Touch auf SVG-Karten) | ⬜ | |
 
 ## Verifikation (Stand 2026-07-10)

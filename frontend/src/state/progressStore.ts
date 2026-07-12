@@ -93,7 +93,8 @@ export const useProgressStore = create<ProgressState>()(
             {
               mode: 'cup' as const,
               score: totalScore,
-              maxPossible: 100,
+              // Interim bis E5: Rohsumme hat kein Maximum (wie toSessionSummary)
+              maxPossible: Math.max(totalScore, 1),
               questionCount: legs.reduce((s, l) => s + l.questionCount, 0),
               durationMs: legs.reduce((s, l) => s + l.durationMs, 0),
               playedAt: Date.now(),

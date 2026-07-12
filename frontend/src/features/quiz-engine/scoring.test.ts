@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  cupTotalScore,
-  distanceScore,
-  scoreChoice,
-  scorePin,
-} from './scoring'
+import { distanceScore, scoreChoice, scorePin } from './scoring'
 
 describe('scoreChoice', () => {
   it('matches the worked example from the plan: 2000ms/8000ms, streak 6 → 179', () => {
@@ -62,20 +57,5 @@ describe('scorePin', () => {
   it('precision dominates: 200km miss answered instantly stays low', () => {
     // dScore 37 → 33.3 + 10 → 43
     expect(scorePin(200, 200, 0, 15000)).toBe(43)
-  })
-})
-
-describe('cupTotalScore', () => {
-  it('normalizes uneven leg sizes to percent of perfect play', () => {
-    const legs = [
-      { score: 1125, maxPossible: 1125 }, // perfect choice leg
-      { score: 250, maxPossible: 500 }, // half-perfect pin leg
-    ]
-    // (1125 + 250) / (1125 + 500) = 0.8461 → 85
-    expect(cupTotalScore(legs)).toBe(85)
-  })
-
-  it('returns 0 for an empty cup', () => {
-    expect(cupTotalScore([])).toBe(0)
   })
 })

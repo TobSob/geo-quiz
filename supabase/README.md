@@ -28,6 +28,11 @@ npx supabase db push
 | `0001_init.sql` | Tabellen `profiles`, `user_progress`, `score_entries`, `cup_runs` + RLS-Policies + Plausibilitäts-Trigger (min. 400 ms/Frage, Score-Obergrenzen) |
 | `0002_increment_progress.sql` | `increment_progress()`-RPC (atomarer Delta-Merge, `SECURITY DEFINER`) + Batch-Variante `sync_progress(jsonb)` |
 | `0003_leaderboard_views.sql` | Öffentliche Views `leaderboard_scores` / `leaderboard_cups` (nur `display_name` + Score, nie `user_id`) |
+| `0004_gate_leaderboards.sql` | Leaderboards nur für registrierte Accounts (`is_registered_user()`-Gate in Views + Insert-Policies) |
+| `0005_arcade_scoring.sql` | **Arcade-Umbau (Phase E):** Rohpunkte statt Prozent (Checks/Trigger neu), Views ersetzt durch RPCs `get_leaderboard_scores(mode, since, limit)` / `get_leaderboard_cups(since, limit)` — Bestleistung pro Spieler + Zeitfilter. Löscht Alt-Einträge |
+| `0006_friend_groups.sql` | **Freundesgruppen (Phase F):** `friend_groups` + `friend_group_members` + Join-Rate-Limit, RPCs `create_group`/`join_group`/`leave_group`/`delete_group`/`list_my_groups`, Leaderboard-RPCs um `p_group`-Filter erweitert (neue Signatur) |
+
+> Live-DB-Stand: 0001–0006 vollständig eingespielt (verifiziert 2026-07-12). `apply_all.sql` dient der Vollinstallation frischer Projekte — auf der bestehenden Live-DB nichts erneut ausführen (0005 löscht Scores!).
 
 ## Sicherheitsmodell
 

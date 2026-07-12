@@ -1,19 +1,17 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { GameMode, SessionSummary } from '../features/quiz-engine/types'
 import {
   completeLeg,
   CUP_MODES,
-  CUP_QUESTIONS_PER_LEG,
   cupScore,
   currentCupMode,
   isCupFinished,
   newCup,
   type CupState,
 } from '../features/quiz-engine/cupSession'
-import { generateSession } from '../features/quiz-engine/questionGenerator'
-import { dataBundle, outlineDataBundle } from '../data'
-import { QuizView } from '../components/QuizView'
+import { CUP_LEG_SECONDS } from '../features/quiz-engine/arcadeScoring'
+import { ArcadeQuizView } from '../components/ArcadeQuizView'
 import { MODE_TITLES } from './PlayScreen'
 import { useProgressStore } from '../state/progressStore'
 import { submitCupRun } from '../api/scoreApi'
@@ -21,6 +19,7 @@ import { flushProgress } from '../features/progress/progressSync'
 
 type CupPhase = 'intro' | 'leg' | 'interstitial' | 'finished'
 
+/** Seit Phase E: jede Disziplin ist ein 30-Sekunden-Arcade-Leg (DESIGN-ARCADE). */
 export function CupScreen() {
   const navigate = useNavigate()
   const recordCup = useProgressStore((s) => s.recordCup)
@@ -29,18 +28,6 @@ export function CupScreen() {
   const [legKey, setLegKey] = useState(0)
 
   const mode = currentCupMode(cup)
-
-  const questions = useMemo(
-    () =>
-      mode
-        ? generateSession(
-            mode,
-            mode === 'outline' ? outlineDataBundle : dataBundle,
-            CUP_QUESTIONS_PER_LEG,
-          )
-        : [],
-    [mode, legKey],
-  )
 
   const onLegDone = useCallback(
     (summary: SessionSummary) => {
@@ -77,9 +64,10 @@ export function CupScreen() {
         <div style={{ fontSize: 64 }}>🏆</div>
         <h1 className="glow-yellow">GEO CUP</h1>
         <p className="dim" style={{ maxWidth: 560, margin: '0 auto' }}>
-          {CUP_MODES.length} Disziplinen, je {CUP_QUESTIONS_PER_LEG} Fragen:{' '}
-          {CUP_MODES.map((m) => MODE_TITLES[m]).join(' → ')}. Am Ende zählt die
-          Gesamtwertung — 100 bedeutet perfekt.
+          {CUP_MODES.length} Disziplinen, je {CUP_LEG_SECONDS} Sekunden:{' '}
+          {CUP_MODES.map((m) => MODE_TITLES[m]).join(' → ')}. Beantworte so
+          viele Fragen, wie du schaffst — Serien geben Multiplikator und
+          Extra-Zeit. Am Ende zählt die Punktsumme aller Disziplinen.
         </p>
         <div>
           <button
@@ -106,7 +94,7 @@ export function CupScreen() {
           +{lastLeg.score} Punkte
         </div>
         <p className="dim">
-          Zwischenstand: {cupScore(cup)}/100 · Als Nächstes:{' '}
+          Zwischenstand: {cupScore(cup)} Punkte · Als Nächstes:{' '}
           {nextMode ? MODE_TITLES[nextMode] : ''}
         </p>
         <div>
@@ -129,7 +117,7 @@ export function CupScreen() {
         <div style={{ fontSize: 64 }}>🏆</div>
         <h1 className="glow-yellow">CUP BEENDET!</h1>
         <div className="display glow-green" style={{ fontSize: 48 }}>
-          {total}/100
+          {total} Punkte
         </div>
         <table
           className="summary-table"
@@ -146,9 +134,7 @@ export function CupScreen() {
             {cup.legs.map((leg) => (
               <tr key={leg.mode}>
                 <td>{MODE_TITLES[leg.mode as GameMode]}</td>
-                <td className="glow-yellow">
-                  {leg.score}/{leg.maxPossible}
-                </td>
+                <td className="glow-yellow">{leg.score}</td>
                 <td>
                   {leg.correctCount}/{leg.questionCount}
                 </td>
@@ -175,10 +161,10 @@ export function CupScreen() {
   if (!mode) return null
 
   return (
-    <QuizView
+    <ArcadeQuizView
       key={`${cup.legIndex}-${legKey}`}
       mode={mode}
-      questions={questions}
+      budgetMs={CUP_LEG_SECONDS * 1000}
       title={`Cup ${cup.legIndex + 1}/${CUP_MODES.length}: ${MODE_TITLES[mode]}`}
       onDone={onLegDone}
       showSummary={false}

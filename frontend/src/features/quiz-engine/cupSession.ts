@@ -1,5 +1,4 @@
 import type { GameMode, SessionSummary } from './types'
-import { cupTotalScore } from './scoring'
 
 /** Cup rotation: every mode once, fixed order easy → hard. */
 export const CUP_MODES: GameMode[] = [
@@ -10,8 +9,6 @@ export const CUP_MODES: GameMode[] = [
   'city-pin',
   'landmark-pin',
 ]
-
-export const CUP_QUESTIONS_PER_LEG = 5
 
 export interface CupState {
   legIndex: number
@@ -34,7 +31,11 @@ export function isCupFinished(cup: CupState): boolean {
   return cup.legIndex >= CUP_MODES.length
 }
 
-/** Normalized 0-100 "percentage of perfect play" across all completed legs. */
+/**
+ * Cup-Gesamtwertung seit dem Arcade-Umbau (Phase E): Rohsumme aller
+ * Leg-Scores. Der alte 0–100-„Prozent von perfekt"-Wert ist ohne feste
+ * Fragenzahl nicht mehr definierbar.
+ */
 export function cupScore(cup: CupState): number {
-  return cupTotalScore(cup.legs)
+  return cup.legs.reduce((sum, leg) => sum + leg.score, 0)
 }

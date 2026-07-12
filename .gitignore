@@ -8,3 +8,7 @@
 # OS
 Thumbs.db
 .DS_Store
+
+# Claude Code runtime state (lokal, nicht versionieren)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
