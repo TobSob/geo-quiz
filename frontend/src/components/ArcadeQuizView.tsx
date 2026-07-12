@@ -97,7 +97,12 @@ export function ArcadeQuizView({
     )
   }
 
-  if (phase === 'idle' || !question) {
+  if (phase === 'idle') {
+    if (!s.ready) return <p className="dim center blink">LADE…</p>
+    return <StartCountdown title={title} onDone={s.begin} />
+  }
+
+  if (!question) {
     return <p className="dim center blink">LADE…</p>
   }
 
@@ -200,6 +205,43 @@ export function ArcadeQuizView({
           onExit={onExit}
         />
       )}
+    </div>
+  )
+}
+
+const COUNTDOWN_STEPS = [
+  { label: '3', glow: 'glow-pink' },
+  { label: '2', glow: 'glow-yellow' },
+  { label: '1', glow: 'glow-cyan' },
+  { label: 'GO!', glow: 'glow-green' },
+] as const
+
+/** 8-Bit-Countdown vor dem Uhr-Start — die erste Frage bleibt bis GO! verdeckt. */
+function StartCountdown({ title, onDone }: { title: string; onDone: () => void }) {
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    const isLast = step === COUNTDOWN_STEPS.length - 1
+    const t = setTimeout(
+      () => {
+        if (isLast) onDone()
+        else setStep((n) => n + 1)
+      },
+      isLast ? 500 : 800,
+    )
+    return () => clearTimeout(t)
+  }, [step, onDone])
+
+  const current = COUNTDOWN_STEPS[step]
+  return (
+    <div className="stack center" style={{ gap: 20, padding: '48px 0' }}>
+      <p className="dim" style={{ margin: 0 }}>{title}</p>
+      <div key={step} className={`display countdown-num ${current.glow}`}>
+        {current.label}
+      </div>
+      <p className="display dim" style={{ fontSize: 10, margin: 0 }}>
+        MACH DICH BEREIT…
+      </p>
     </div>
   )
 }

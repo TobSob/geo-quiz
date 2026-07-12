@@ -66,19 +66,26 @@ export function useArcadeSession(
   // Entwertet laufende Preloads, wenn die Session weitergesprungen ist.
   const stageToken = useRef(0)
 
-  // Erste Frage: vorziehen, Foto laden, dann Uhr starten (atomar).
+  // Erste Frage vorziehen und Foto laden — gestartet wird erst per begin()
+  // (die View zeigt vorher den 3-2-1-Countdown; Frage bleibt bis dahin verdeckt).
+  const [ready, setReady] = useState(false)
   useEffect(() => {
     let cancelled = false
     const staged = session.prepareNext()
     void preloadQuestion(staged).then(() => {
-      if (cancelled) return
-      session.start()
-      setQuestionKey((k) => k + 1)
-      rerender()
+      if (!cancelled) setReady(true)
     })
     return () => {
       cancelled = true
     }
+  }, [session])
+
+  /** Deckt die erste Frage auf und startet die Uhr (atomar). */
+  const begin = useCallback(() => {
+    if (session.phase !== 'idle') return
+    session.start()
+    setQuestionKey((k) => k + 1)
+    rerender()
   }, [session, rerender])
 
   /** Nach jeder Antwort: nächste Frage unsichtbar vorbereiten. */
@@ -146,6 +153,8 @@ export function useArcadeSession(
 
   return {
     phase,
+    ready,
+    begin,
     question: session.question,
     score: session.score,
     streak: session.streak,

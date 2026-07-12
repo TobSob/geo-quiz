@@ -173,19 +173,48 @@ function PeriodPicker({
   )
 }
 
+/** Lokal gespeicherte Modi inkl. Cup & Training — Reihenfolge der Filter-Chips. */
+const LOCAL_FILTERS = [...(Object.keys(MODE_TITLES) as GameMode[]), 'cup', 'training'] as const
+type LocalFilter = (typeof LOCAL_FILTERS)[number] | 'all'
+
 function LocalScores() {
   const scores = useProgressStore((s) => s.scores)
   const resetProgress = useProgressStore((s) => s.resetProgress)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [filter, setFilter] = useState<LocalFilter>('all')
 
   // Arcade-Scores sind Rohpunkte — sortiert wird schlicht nach Punktzahl.
-  const sorted = [...scores].sort((a, b) => b.score - a.score)
+  const sorted = [...scores]
+    .filter((s) => filter === 'all' || s.mode === filter)
+    .sort((a, b) => b.score - a.score)
 
   return (
     <>
+      <div className="row" style={{ justifyContent: 'center', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          className={`pixel-btn pixel-btn--small${filter === 'all' ? ' pixel-btn--cyan' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          Alle
+        </button>
+        {LOCAL_FILTERS.map((f) => (
+          <button
+            key={f}
+            type="button"
+            className={`pixel-btn pixel-btn--small${filter === f ? ' pixel-btn--cyan' : ''}`}
+            onClick={() => setFilter(f)}
+          >
+            {MODE_LABEL[f] ?? f}
+          </button>
+        ))}
+      </div>
+
       {sorted.length === 0 ? (
         <p className="dim center">
-          Noch keine Ergebnisse — spiel eine Runde, dann taucht sie hier auf!
+          {filter === 'all'
+            ? 'Noch keine Ergebnisse — spiel eine Runde, dann taucht sie hier auf!'
+            : 'In dieser Kategorie ist noch nichts — spiel eine Runde!'}
         </p>
       ) : (
         <table className="summary-table">

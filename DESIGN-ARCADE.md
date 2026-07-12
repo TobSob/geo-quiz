@@ -101,6 +101,26 @@ Eine pausierende Uhr hat zwei Missbrauchs-Vektoren — beide werden per Design g
 *Konkrete Implementierungs-Entscheidungen, damit jede Session ohne Neu-Analyse
 weitermachen kann. Neueste oben.*
 
+### E6-Feedback Runde 1 ✅ (2026-07-12, Handy-Test des Nutzers)
+
+Drei Punkte aus dem ersten Praxistest, alle umgesetzt und im Browser verifiziert:
+
+1. **Kategorie-Texte** (HomeScreen): Kein Text erwähnte das Zeitsystem. Neu:
+   Tagline „⏱ 60 Sekunden pro Runde · richtige Serien bringen Multiplikator
+   und Extra-Zeit" unterm Titel; Cup-Karte „à 30 Sekunden … Punktsumme";
+   Pin-Karten erklären die Distanz-Logik; Training sagt „Ohne Zeitdruck".
+2. **3-2-1-GO-Countdown** vor jeder Runde (auch je Cup-Leg): Hook startet
+   nicht mehr automatisch nach dem Preload (`ready` + `begin()` statt
+   Auto-Start), View zeigt `StartCountdown` (3→2→1 je 800 ms, GO! 500 ms,
+   Farbwechsel pink→gelb→cyan→grün, CSS `countdown-num`/`countdown-pop`).
+   Pausen-Regeln intakt: Frage bleibt bis GO! verdeckt, Uhr startet mit dem
+   Aufdecken. Per In-Page-Sampling verifiziert (Frage erscheint bei ~3,0 s).
+3. **Lokal-Filter** (ScoresScreen): Chip-Leiste „Alle / 6 Modi / 🏆 Cup /
+   🎯 Training" filtert die lokale Liste (vorher alles gemischt).
+
+Noch offen aus E6: eigentliches Balancing (Stufen-Gefühl, Fragen/Minute,
+Label-Feinschliff) — braucht weiteren Praxistest.
+
 ### E5 ✅ (Code) — DB-Migration + Leaderboard-Umbau (2026-07-12)
 
 **Migration `supabase/migrations/0005_arcade_scoring.sql`** (auch in

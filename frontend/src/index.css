@@ -363,6 +363,19 @@ a { color: var(--cyan); }
   100% { opacity: 0; transform: scale(1); }
 }
 
+/* 3-2-1-GO! vor dem Rundenstart */
+.countdown-num {
+  font-size: 72px;
+  line-height: 1;
+  animation: countdown-pop 0.8s steps(6) both;
+}
+
+@keyframes countdown-pop {
+  0% { opacity: 0; transform: scale(1.7); }
+  35% { opacity: 1; transform: scale(1); }
+  100% { opacity: 1; transform: scale(0.92); }
+}
+
 /* --- mode select cards --- */
 .mode-grid {
   display: grid;

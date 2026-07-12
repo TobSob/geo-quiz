@@ -29,13 +29,13 @@ const MODES = [
     path: '/play/city-pin',
     icon: '📍',
     name: 'Städte-Pin',
-    desc: 'Setze den Pin — je näher, desto mehr Punkte.',
+    desc: 'Wo liegt die Stadt? Tippe auf die Weltkarte.',
   },
   {
     path: '/play/landmark-pin',
     icon: '🗿',
     name: 'Landmark-Pin',
-    desc: 'Wo steht das Wahrzeichen?',
+    desc: 'Wo steht das Wahrzeichen? Tippe auf die Weltkarte.',
   },
 ] as const
 
@@ -52,6 +52,9 @@ export function HomeScreen() {
         <p className="dim" style={{ marginTop: 10 }}>
           Flaggen · Hauptstädte · Karten — wie gut kennst du die Welt?
         </p>
+        <p className="dim" style={{ marginTop: 6, fontSize: 18 }}>
+          ⏱ Du hast 60 Sekunden — schaff so viele Fragen, wie du kannst!
+        </p>
         <p className="display blink glow-yellow" style={{ fontSize: 11 }}>
           ▼ WÄHLE EINEN MODUS ▼
         </p>
@@ -67,7 +70,7 @@ export function HomeScreen() {
           <span className="stack" style={{ gap: 6 }}>
             <span className="mode-name glow-yellow">GEO CUP</span>
             <span className="mode-desc">
-              Alle 6 Disziplinen hintereinander — eine Gesamtwertung.
+              Alle 6 Disziplinen hintereinander — je 30 Sekunden.
             </span>
           </span>
         </button>
@@ -93,7 +96,7 @@ export function HomeScreen() {
           <span className="mode-icon">🎯</span>
           <span className="mode-name glow-pink">Training</span>
           <span className="mode-desc">
-            Adaptiv: Fragen, die du oft falsch hattest, kommen öfter.
+            Üben ohne Zeitdruck — was du oft falsch hattest, kommt öfter dran.
           </span>
         </button>
 
