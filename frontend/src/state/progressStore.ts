@@ -16,6 +16,22 @@ export interface LocalScoreEntry {
 }
 
 const MAX_SCORE_ENTRIES = 50
+/** Arcade-Automat: pro Kategorie bleiben die 10 besten Runden — für immer. */
+const MAX_BESTS_PER_MODE = 10
+
+/**
+ * Sortiert einen Lauf in die Allzeit-Top-10 seiner Kategorie ein.
+ * Bei Punktgleichheit gewinnt der ältere Lauf (wer zuerst da war, bleibt vorn).
+ */
+export function addToBests(
+  bests: Record<string, LocalScoreEntry[]>,
+  entry: LocalScoreEntry,
+): Record<string, LocalScoreEntry[]> {
+  const list = [...(bests[entry.mode] ?? []), entry]
+    .sort((a, b) => b.score - a.score || a.playedAt - b.playedAt)
+    .slice(0, MAX_BESTS_PER_MODE)
+  return { ...bests, [entry.mode]: list }
+}
 
 /** Unsynced counter deltas per question, waiting to be pushed to Supabase. */
 export interface PendingDelta {
@@ -26,7 +42,10 @@ export interface PendingDelta {
 
 interface ProgressState {
   progressById: Record<string, QuestionProgress>
+  /** Rollierender Verlauf der letzten Runden (Rohmaterial, UI zeigt `bests`). */
   scores: LocalScoreEntry[]
+  /** Allzeit-Top-10 je Kategorie — Grundlage für „Meine Rekorde". */
+  bests: Record<string, LocalScoreEntry[]>
   pending: Record<string, PendingDelta>
   recordAnswer: (questionId: string, correct: boolean) => void
   recordSession: (summary: SessionSummary) => void
@@ -41,6 +60,7 @@ export const useProgressStore = create<ProgressState>()(
     (set) => ({
       progressById: {},
       scores: [],
+      bests: {},
       pending: {},
 
       recordAnswer: (questionId, correct) =>
@@ -73,35 +93,37 @@ export const useProgressStore = create<ProgressState>()(
         }),
 
       recordSession: (summary) =>
-        set((state) => ({
-          scores: [
-            {
-              mode: summary.mode,
-              score: summary.score,
-              maxPossible: summary.maxPossible,
-              questionCount: summary.questionCount,
-              durationMs: summary.durationMs,
-              playedAt: Date.now(),
-            },
-            ...state.scores,
-          ].slice(0, MAX_SCORE_ENTRIES),
-        })),
+        set((state) => {
+          const entry: LocalScoreEntry = {
+            mode: summary.mode,
+            score: summary.score,
+            maxPossible: summary.maxPossible,
+            questionCount: summary.questionCount,
+            durationMs: summary.durationMs,
+            playedAt: Date.now(),
+          }
+          return {
+            scores: [entry, ...state.scores].slice(0, MAX_SCORE_ENTRIES),
+            bests: addToBests(state.bests, entry),
+          }
+        }),
 
       recordCup: (totalScore, legs) =>
-        set((state) => ({
-          scores: [
-            {
-              mode: 'cup' as const,
-              score: totalScore,
-              // Interim bis E5: Rohsumme hat kein Maximum (wie toSessionSummary)
-              maxPossible: Math.max(totalScore, 1),
-              questionCount: legs.reduce((s, l) => s + l.questionCount, 0),
-              durationMs: legs.reduce((s, l) => s + l.durationMs, 0),
-              playedAt: Date.now(),
-            },
-            ...state.scores,
-          ].slice(0, MAX_SCORE_ENTRIES),
-        })),
+        set((state) => {
+          const entry: LocalScoreEntry = {
+            mode: 'cup' as const,
+            score: totalScore,
+            // Interim bis Phase D: Rohsumme hat kein Maximum (wie toSessionSummary)
+            maxPossible: Math.max(totalScore, 1),
+            questionCount: legs.reduce((s, l) => s + l.questionCount, 0),
+            durationMs: legs.reduce((s, l) => s + l.durationMs, 0),
+            playedAt: Date.now(),
+          }
+          return {
+            scores: [entry, ...state.scores].slice(0, MAX_SCORE_ENTRIES),
+            bests: addToBests(state.bests, entry),
+          }
+        }),
 
       consumePending: (synced) =>
         set((state) => {
@@ -124,8 +146,20 @@ export const useProgressStore = create<ProgressState>()(
           return { pending }
         }),
 
-      resetProgress: () => set({ progressById: {}, scores: [], pending: {} }),
+      resetProgress: () =>
+        set({ progressById: {}, scores: [], bests: {}, pending: {} }),
     }),
-    { name: 'geo-quiz-progress' },
+    {
+      name: 'geo-quiz-progress',
+      version: 2,
+      // v0/v1 kannten nur den rollierenden Verlauf — Allzeit-Rekorde daraus aufbauen.
+      migrate: (persisted, version) => {
+        const state = persisted as ProgressState
+        if (version < 2) {
+          state.bests = (state.scores ?? []).reduce(addToBests, {})
+        }
+        return state
+      },
+    },
   ),
 )

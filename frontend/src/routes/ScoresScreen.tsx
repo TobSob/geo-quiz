@@ -49,7 +49,7 @@ export function ScoresScreen() {
           className={`pixel-btn${tab === 'local' ? ' pixel-btn--cyan' : ''}`}
           onClick={() => setTab('local')}
         >
-          Lokal
+          Meine Rekorde
         </button>
         <button
           type="button"
@@ -177,16 +177,21 @@ function PeriodPicker({
 const LOCAL_FILTERS = [...(Object.keys(MODE_TITLES) as GameMode[]), 'cup', 'training'] as const
 type LocalFilter = (typeof LOCAL_FILTERS)[number] | 'all'
 
+/**
+ * „Meine Rekorde": Allzeit-Top-10 je Kategorie auf diesem Gerät.
+ * „Alle" zeigt die Bestmarke jeder Kategorie, ein Kategorie-Chip die Top 10.
+ */
 function LocalScores() {
-  const scores = useProgressStore((s) => s.scores)
+  const bests = useProgressStore((s) => s.bests)
   const resetProgress = useProgressStore((s) => s.resetProgress)
   const [confirmReset, setConfirmReset] = useState(false)
   const [filter, setFilter] = useState<LocalFilter>('all')
 
-  // Arcade-Scores sind Rohpunkte — sortiert wird schlicht nach Punktzahl.
-  const sorted = [...scores]
-    .filter((s) => filter === 'all' || s.mode === filter)
-    .sort((a, b) => b.score - a.score)
+  const showRank = filter !== 'all'
+  const rows =
+    filter === 'all'
+      ? LOCAL_FILTERS.flatMap((f) => (bests[f]?.[0] ? [bests[f][0]] : []))
+      : bests[filter] ?? []
 
   return (
     <>
@@ -210,27 +215,33 @@ function LocalScores() {
         ))}
       </div>
 
-      {sorted.length === 0 ? (
+      <p className="dim center" style={{ margin: 0, fontSize: 18 }}>
+        {filter === 'all'
+          ? 'Deine Bestmarke in jeder Kategorie — nur auf diesem Gerät.'
+          : 'Deine 10 besten Runden dieser Kategorie — nur auf diesem Gerät.'}
+      </p>
+
+      {rows.length === 0 ? (
         <p className="dim center">
           {filter === 'all'
-            ? 'Noch keine Ergebnisse — spiel eine Runde, dann taucht sie hier auf!'
+            ? 'Noch keine Rekorde — spiel eine Runde, dann geht es hier los!'
             : 'In dieser Kategorie ist noch nichts — spiel eine Runde!'}
         </p>
       ) : (
         <table className="summary-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Modus</th>
+              <th>{showRank ? '#' : 'Modus'}</th>
+              {showRank && <th>Modus</th>}
               <th>Punkte</th>
               <th>Fragen</th>
               <th>Datum</th>
             </tr>
           </thead>
           <tbody>
-            {sorted.slice(0, 25).map((s, i) => (
-              <tr key={`${s.playedAt}-${i}`}>
-                <td className="dim">{i + 1}</td>
+            {rows.map((s, i) => (
+              <tr key={`${s.mode}-${s.playedAt}-${i}`}>
+                {showRank && <td className="dim">{i + 1}</td>}
                 <td>{MODE_LABEL[s.mode] ?? s.mode}</td>
                 <td className="glow-yellow">{s.score}</td>
                 <td className="dim">{s.questionCount}</td>

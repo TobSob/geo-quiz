@@ -135,6 +135,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-12 | Lokale Bestenliste → „Meine Rekorde" umgebaut (Nutzer-Feedback: Bestleistungen statt Rundenverlauf): Allzeit-Top-10 je Kategorie im Store (`bests` + `addToBests`, 4 neue Tests), Migration v2 baut Rekorde aus dem Alt-Verlauf, UI zeigt unter „Alle" die Bestmarke je Kategorie bzw. Top 10 pro Kategorie-Chip. Migration + UI im Browser mit geseedetem v0-Stand verifiziert |
 | 2026-07-12 | E6-Feedback Runde 1 umgesetzt (Details im Umsetzungs-Log von [DESIGN-ARCADE.md](DESIGN-ARCADE.md)): Startseiten-Texte erklären das Zeitsystem, 3-2-1-GO-Countdown vor jeder Runde (Frage bleibt bis GO verdeckt), Filter-Chips für die lokale Bestenliste. Dev-Server läuft jetzt mit `--host` für Handy-Tests im WLAN |
 | 2026-07-12 | Nutzer-Feedback zur Auth-Mail (englisches Standard-Template beim Account-Upgrade): deutsche Retro-Templates in [supabase/email-templates.md](supabase/email-templates.md) vorbereitet, als A4b in Phase A aufgenommen. Nebenbei: Profil-Texte erwähnen Freundesgruppen jetzt als Account-Vorteil (Entdeckbarkeit für Gäste) |
 | 2026-07-12 | 0006 auf der Live-DB verifiziert (alle Gruppen- und Leaderboard-RPCs mit `p_group`-Signatur vorhanden, anon korrekt gesperrt) — DB ist damit vollständig auf Code-Stand (0001–0006). `apply_pending.sql` gelöscht. Offen nur noch: E6-Gerätetest + F6-Zwei-Account-Test, danach Phase D |
