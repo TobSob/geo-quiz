@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GeoQuiz</string>
+    <string name="title_activity_main">GeoQuiz</string>
+    <string name="package_name">de.tobsob.geoquiz</string>
+    <string name="custom_url_scheme">de.tobsob.geoquiz</string>
+</resources>

@@ -98,40 +98,67 @@ export function QuizView({
   if (!question) return null
 
   return (
-    <div className="stack">
-      <div className="hud">
-        <div className="hud-stat">
-          <span className="label">MODUS</span>
-          <span className="glow-cyan">{title}</span>
+    <div className={question.kind === 'pin' ? 'stack quiz-screen--pin' : 'stack'}>
+      {/* Chrome (HUD, timer, pin prompt/photo) is a plain pass-through on
+          desktop; in the fullscreen pin layout it becomes the translucent
+          top bar overlaying the map. */}
+      <div className="quiz-chrome">
+        <div className="quiz-chrome-main">
+          <div className="hud">
+            <div className="hud-stat">
+              <span className="label">MODUS</span>
+              <span className="glow-cyan">{title}</span>
+            </div>
+            <div className="hud-stat">
+              <span className="label">FRAGE</span>
+              {index + 1}/{total}
+            </div>
+            <div className="hud-stat">
+              <span className="label">SCORE</span>
+              <span className="glow-yellow">{score}</span>
+            </div>
+            <StreakBadge streak={streak} />
+          </div>
+
+          <TimerBar
+            resetKey={questionKey}
+            timeLimitMs={question.timeLimitMs}
+            running={phase === 'question'}
+            onTimeout={() =>
+              question.kind === 'choice' ? answerChoice(null) : answerPin(pendingPin)
+            }
+          />
+
+          {question.kind === 'pin' && (
+            <h2 className="center pin-prompt">{question.prompt}</h2>
+          )}
         </div>
-        <div className="hud-stat">
-          <span className="label">FRAGE</span>
-          {index + 1}/{total}
-        </div>
-        <div className="hud-stat">
-          <span className="label">SCORE</span>
-          <span className="glow-yellow">{score}</span>
-        </div>
-        <StreakBadge streak={streak} />
+
+        {question.kind === 'pin' && question.image && (
+          <img
+            src={question.image}
+            alt={question.targetName}
+            className="landmark-photo"
+          />
+        )}
       </div>
 
-      <TimerBar
-        resetKey={questionKey}
-        timeLimitMs={question.timeLimitMs}
-        running={phase === 'question'}
-        onTimeout={() =>
-          question.kind === 'choice' ? answerChoice(null) : answerPin(pendingPin)
-        }
-      />
-
       {question.kind === 'choice' ? (
-        <ChoiceQuestionView
-          question={question}
-          phase={phase}
-          chosenIndex={feedback?.chosenIndex ?? null}
-          lastScore={feedback?.result.score ?? 0}
-          onAnswer={answerChoice}
-        />
+        <>
+          <ChoiceQuestionView
+            question={question}
+            phase={phase}
+            chosenIndex={feedback?.chosenIndex ?? null}
+            lastScore={feedback?.result.score ?? 0}
+            onAnswer={answerChoice}
+          />
+          <div className="row">
+            <div className="spacer" />
+            <button type="button" className="pixel-btn" onClick={onExit}>
+              Aufgeben
+            </button>
+          </div>
+        </>
       ) : (
         <PinQuestionView
           question={question}
@@ -143,15 +170,9 @@ export function QuizView({
           onPin={setPendingPin}
           onConfirm={() => answerPin(pendingPin)}
           onNext={next}
+          onExit={onExit}
         />
       )}
-
-      <div className="row">
-        <div className="spacer" />
-        <button type="button" className="pixel-btn" onClick={onExit}>
-          Aufgeben
-        </button>
-      </div>
     </div>
   )
 }
@@ -234,6 +255,7 @@ function PinQuestionView({
   onPin,
   onConfirm,
   onNext,
+  onExit,
 }: {
   question: Extract<Question, { kind: 'pin' }>
   phase: 'question' | 'feedback'
@@ -244,55 +266,49 @@ function PinQuestionView({
   onPin: (p: PinAnswer) => void
   onConfirm: () => void
   onNext: () => void
+  onExit: () => void
 }) {
   return (
-    <div className="stack">
-      <h2 className="center" style={{ marginTop: 8 }}>
-        {question.prompt}
-      </h2>
+    <div className="stack pin-question">
+      <div className="pin-map-area">
+        <MapPicker
+          resetKey={resetKey}
+          guess={pendingPin}
+          revealTarget={phase === 'feedback' ? question.target : null}
+          disabled={phase === 'feedback'}
+          onPick={onPin}
+        />
+      </div>
 
-      {question.image && (
-        <div className="center">
-          <img
-            src={question.image}
-            alt={question.targetName}
-            className="landmark-photo"
-          />
-        </div>
-      )}
-
-      <MapPicker
-        resetKey={resetKey}
-        guess={pendingPin}
-        revealTarget={phase === 'feedback' ? question.target : null}
-        disabled={phase === 'feedback'}
-        onPick={onPin}
-      />
-
-      {phase === 'question' ? (
-        <div className="row" style={{ justifyContent: 'center' }}>
-          <button
-            type="button"
-            className="pixel-btn pixel-btn--primary"
-            disabled={!pendingPin}
-            onClick={onConfirm}
-          >
-            {pendingPin ? 'Bestätigen' : 'Setze einen Pin…'}
-          </button>
-        </div>
-      ) : (
-        <div className="stack center">
-          <div aria-live="polite">
-            <span className="display glow-yellow" style={{ fontSize: 16 }}>
-              {distanceKm !== undefined
-                ? `${Math.round(distanceKm)} km daneben`
-                : 'Kein Pin gesetzt!'}
-            </span>{' '}
-            <span className="display glow-green" style={{ fontSize: 16, marginLeft: 12 }}>
-              +{feedbackScore}
-            </span>
-          </div>
-          <div>
+      <div className="row pin-actions">
+        {phase === 'question' ? (
+          <>
+            <button type="button" className="pixel-btn" onClick={onExit}>
+              Aufgeben
+            </button>
+            <div className="spacer" />
+            <button
+              type="button"
+              className="pixel-btn pixel-btn--primary"
+              disabled={!pendingPin}
+              onClick={onConfirm}
+            >
+              {pendingPin ? 'Bestätigen' : 'Setze einen Pin…'}
+            </button>
+          </>
+        ) : (
+          <>
+            <div aria-live="polite">
+              <span className="display glow-yellow" style={{ fontSize: 14 }}>
+                {distanceKm !== undefined
+                  ? `${Math.round(distanceKm)} km daneben`
+                  : 'Kein Pin gesetzt!'}
+              </span>{' '}
+              <span className="display glow-green" style={{ fontSize: 14, marginLeft: 10 }}>
+                +{feedbackScore}
+              </span>
+            </div>
+            <div className="spacer" />
             <button
               type="button"
               className="pixel-btn pixel-btn--cyan"
@@ -300,9 +316,9 @@ function PinQuestionView({
             >
               Weiter ▶
             </button>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import {
   TileLayer,
   useMap,
   useMapEvents,
+  ZoomControl,
 } from 'react-leaflet'
 import L from 'leaflet'
 import type { PinAnswer } from '../hooks/useQuizSession'
@@ -73,6 +74,22 @@ function ResetView({ resetKey }: { resetKey: number }) {
   return null
 }
 
+/**
+ * Leaflet measures its container once on mount — in the fullscreen mobile
+ * layout the container resizes with the viewport (esp. on device rotation),
+ * so re-measure whenever that happens or tiles stay misaligned.
+ */
+function InvalidateOnResize() {
+  const map = useMap()
+  useEffect(() => {
+    const container = map.getContainer()
+    const observer = new ResizeObserver(() => map.invalidateSize())
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [map])
+  return null
+}
+
 interface Props {
   resetKey: number
   guess: PinAnswer | null
@@ -84,23 +101,28 @@ interface Props {
 
 export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: Props) {
   return (
-    <div className="map-frame">
+    <div className="map-frame map-frame--pin">
       <MapContainer
         center={[25, 10]}
         zoom={2}
         minZoom={2}
         maxZoom={10}
-        style={{ height: 440, width: '100%' }}
+        style={{ height: '100%', width: '100%' }}
         worldCopyJump
         attributionControl
+        zoomControl={false}
       >
         {/* No-labels basemap: place names would give the answer away. */}
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
+        {/* Bottom-left: the fullscreen mobile layout overlays a top bar
+            where the default control would sit. */}
+        <ZoomControl position="bottomleft" />
         <ClickCapture onPick={onPick} disabled={disabled} />
         <ResetView resetKey={resetKey} />
+        <InvalidateOnResize />
         {guess && <Marker position={[guess.lat, guess.lng]} icon={guessIcon} />}
         {revealTarget && (
           <Marker position={[revealTarget.lat, revealTarget.lng]} icon={targetIcon} />
