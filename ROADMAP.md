@@ -17,6 +17,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 | A2 | Build-Env am Host konfigurieren (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) | ⬜ | Werden zur Buildzeit eingebacken — Anon-Key ist öffentlich, darf ins Build-Env |
 | A3 | Deploy einrichten (Git-Push → Auto-Build aus `frontend/`) | ⬜ | Build-Command `npm run build`, Output `frontend/dist` |
 | A4 | Supabase-Auth-Konfiguration: Site-URL + Redirect-URLs auf die neue Domain | ⬜ | Wichtig für die Bestätigungs-Mail des Account-Upgrades |
+| A4b | Auth-Mails eindeutschen — **bewusst aufgeschoben bis zum echten Public-Launch** (Nutzer-Entscheid 2026-07-12; bis dahin bleiben die englischen Supabase-Standard-Mails). Dann: Custom SMTP einrichten (Pflicht — Templates sind beim eingebauten Versand gesperrt), Templates aus [supabase/email-templates.md](supabase/email-templates.md) einfügen (v. a. „Change email address") | ⬜ | Alles vorbereitet, Setup-Anleitung in der Template-Datei. Absender dann am besten direkt über die eigene Domain (fällt mit A1/A7 an) statt Zwischenschritt Gmail |
 | A5 | Smoke-Test Desktop: alle 8 Modi einmal anspielen, Anmeldung, Leaderboard | ⬜ | |
 | A6 | Smoke-Test Handy (echtes Gerät): Touch auf Leaflet-Pins, Umriss-Karte, Lesbarkeit der Pixel-Fonts | ⬜ | Erster echter Mobile-Praxistest — Erkenntnisse fließen in Phase B |
 | A7 | Live-URL in README + GitHub-About eintragen | ⬜ | |
@@ -134,6 +135,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-12 | Nutzer-Feedback zur Auth-Mail (englisches Standard-Template beim Account-Upgrade): deutsche Retro-Templates in [supabase/email-templates.md](supabase/email-templates.md) vorbereitet, als A4b in Phase A aufgenommen. Nebenbei: Profil-Texte erwähnen Freundesgruppen jetzt als Account-Vorteil (Entdeckbarkeit für Gäste) |
 | 2026-07-12 | 0006 auf der Live-DB verifiziert (alle Gruppen- und Leaderboard-RPCs mit `p_group`-Signatur vorhanden, anon korrekt gesperrt) — DB ist damit vollständig auf Code-Stand (0001–0006). `apply_pending.sql` gelöscht. Offen nur noch: E6-Gerätetest + F6-Zwei-Account-Test, danach Phase D |
 | 2026-07-12 | 0005 auf der Live-DB verifiziert (RPC-Probe: 3-Parameter-Signatur existiert, anon korrekt gesperrt). `apply_pending.sql` auf nur-0006 umgeschrieben — 0005 darf wegen des `delete`-Blocks nie doppelt laufen. Offen: 0006 einspielen, dann funktionieren Bestenliste (neue `p_group`-Signatur!) und Gruppen |
 | 2026-07-12 | Phase F umgesetzt (F1–F5, Code komplett): Migration 0006 (Gruppen-Tabellen, RLS via `is_group_member()`-Helper, RPCs mit Rate-Limit, Leaderboard-RPCs mit `p_group`), `groupApi.ts`, Gruppen-Panel im Profil, Global/Gruppe-Umschalter in der Bestenliste. **Offen: `apply_pending.sql` (0005+0006) auf Live-DB, dann F6-Zwei-Account-Test.** Faktencheck: 0005 war zum Zeitpunkt noch nicht angewendet (RPC-Probe: PGRST202) |

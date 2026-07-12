@@ -71,8 +71,8 @@ export function ProfileScreen() {
       <p className="dim" style={{ fontSize: 18, lineHeight: 1.3 }}>
         Als Gast kannst du alles spielen — Scores und Lernfortschritt bleiben
         aber an dieses Gerät gebunden. Mit Account kommst du auf die globalen
-        Bestenlisten, kannst sie einsehen und dich auf jedem Gerät anmelden
-        ({displayName ?? 'dein Name'} bleibt dabei erhalten).
+        Bestenlisten, kannst Freundesgruppen erstellen und dich auf jedem
+        Gerät anmelden ({displayName ?? 'dein Name'} bleibt dabei erhalten).
       </p>
     </div>
   )
@@ -333,7 +333,8 @@ function UpgradePanel() {
       <h3 className="glow-green">Account sichern</h3>
       <p className="dim" style={{ margin: 0, fontSize: 19 }}>
         Macht deinen Gast-Zugang dauerhaft und schaltet die globalen
-        Bestenlisten frei — gleicher Fortschritt, gleicher Name.
+        Bestenlisten und Freundesgruppen frei — gleicher Fortschritt,
+        gleicher Name.
       </p>
       <input
         type="email"
