@@ -1,5 +1,7 @@
 # 🌍 GeoQuiz
 
+**▶ Jetzt spielen: [geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev)**
+
 Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Flaggen raten, Hauptstädte kennen, Städte auf der Karte pinnen und im **Geo Cup** alle Disziplinen hintereinander spielen. Ein adaptiver Trainingsmodus bringt genau die Fragen zurück, die du am häufigsten verhaust.
 
 > 🎮 Sofort spielbar ohne Anmeldung · 🏆 Globale Bestenlisten mit Account · 📴 Läuft komplett offline

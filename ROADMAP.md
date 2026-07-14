@@ -13,14 +13,14 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | # | Schritt | Status | Notiz |
 |---|---|---|---|
-| A1 | Hosting-Entscheidung (Cloudflare Pages / GitHub Pages / Netlify) | ⬜ | Empfehlung: Cloudflare Pages (Git-Integration, Build-Env-Vars, schnelles CDN, kein Traffic-Limit im Free Tier) |
-| A2 | Build-Env am Host konfigurieren (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) | ⬜ | Werden zur Buildzeit eingebacken — Anon-Key ist öffentlich, darf ins Build-Env |
-| A3 | Deploy einrichten (Git-Push → Auto-Build aus `frontend/`) | ⬜ | Build-Command `npm run build`, Output `frontend/dist` |
-| A4 | Supabase-Auth-Konfiguration: Site-URL + Redirect-URLs auf die neue Domain | ⬜ | Wichtig für die Bestätigungs-Mail des Account-Upgrades |
+| A1 | Hosting-Entscheidung (Cloudflare Pages / GitHub Pages / Netlify) | ✅ | **Cloudflare Pages** (Nutzer-Entscheid 2026-07-14): Git-Integration, Build-Env-Vars, schnelles CDN, kein Traffic-Limit im Free Tier. Prod-Build lokal verifiziert (292 KB gzip JS), HashRouter → keine Redirect-Config nötig |
+| A2 | Build-Env am Host konfigurieren (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) | ✅ | Entfällt beim gewählten Direct-Upload-Flow: gebaut wird lokal, die Werte kommen aus `frontend/.env.local` (Anon-Key ist öffentlich) |
+| A3 | Deploy einrichten | ✅ | **Direct Upload statt Git-Integration** (Dashboard-Git-Flow war 2026 unbrauchbar versteckt): `npm run deploy` in `frontend/` baut und deployt per Wrangler CLI (`wrangler login` einmalig). Live: https://geo-quiz-a6s.pages.dev — Achtung: Push deployt NICHT automatisch, nach Releases `npm run deploy` ausführen |
+| A4 | Supabase-Auth-Konfiguration: Site-URL + Redirect-URLs auf die neue Domain | ⬜ | Wichtig für die Bestätigungs-Mail des Account-Upgrades — Dashboard → Authentication → URL Configuration: Site-URL `https://geo-quiz-a6s.pages.dev`, Redirect-URLs ergänzen (localhost:5173 drinlassen) |
 | A4b | Auth-Mails eindeutschen — **bewusst aufgeschoben bis zum echten Public-Launch** (Nutzer-Entscheid 2026-07-12; bis dahin bleiben die englischen Supabase-Standard-Mails). Dann: Custom SMTP einrichten (Pflicht — Templates sind beim eingebauten Versand gesperrt), Templates aus [supabase/email-templates.md](supabase/email-templates.md) einfügen (v. a. „Change email address") | ⬜ | Alles vorbereitet, Setup-Anleitung in der Template-Datei. Absender dann am besten direkt über die eigene Domain (fällt mit A1/A7 an) statt Zwischenschritt Gmail |
-| A5 | Smoke-Test Desktop: alle 8 Modi einmal anspielen, Anmeldung, Leaderboard | ⬜ | |
-| A6 | Smoke-Test Handy (echtes Gerät): Touch auf Leaflet-Pins, Umriss-Karte, Lesbarkeit der Pixel-Fonts | ⬜ | Erster echter Mobile-Praxistest — Erkenntnisse fließen in Phase B |
-| A7 | Live-URL in README + GitHub-About eintragen | ⬜ | |
+| A5 | Smoke-Test Desktop: alle 8 Modi einmal anspielen, Anmeldung, Leaderboard | 🔄 | Basis-Check live bestanden (Seite lädt, ● ONLINE, Konsole sauber); vollständiger Modi-Durchlauf durch den Menschen offen |
+| A6 | Smoke-Test Handy (echtes Gerät): Touch auf Leaflet-Pins, Umriss-Karte, Lesbarkeit der Pixel-Fonts | ⬜ | Erster echter Mobile-Praxistest — Erkenntnisse fließen in Phase B; jetzt einfach die Live-URL am Handy öffnen |
+| A7 | Live-URL in README + GitHub-About eintragen | ✅ | README-Kopf verlinkt https://geo-quiz-a6s.pages.dev; GitHub-Homepage per `gh repo edit` gesetzt |
 
 **Fertig-Kriterium:** Eine fremde Person kann die URL öffnen, sofort spielen und sich optional registrieren.
 
@@ -154,6 +154,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-14 | **Web-Deployment live** (Phase A weitgehend durch): Cloudflare Pages per Wrangler Direct Upload (Dashboard-Git-Flow unbrauchbar), Projekt `geo-quiz` → https://geo-quiz-a6s.pages.dev, `npm run deploy`-Script, README + GitHub-About verlinkt. Live-Smoke-Test: lädt, ONLINE, Konsole sauber. Offen: A4 (Supabase-Site-URL, manuell), voller A5-Durchlauf, A6-Handy-Test |
 | 2026-07-14 | 0009 auf Live-DB verifiziert (`rank` in den RPC-Antworten, Idempotenz bestätigt) — **Phase G komplett abgeschlossen**. `apply_pending.sql` + `revert_bot_round.sql` gelöscht, Live-DB-Stand: 0001–0009 |
 | 2026-07-14 | G5 abgeschlossen (0007+0008 auf Live-DB, Account-E2E komplett bestätigt inkl. Backfill, Unlock-Panel, rückwirkendem Wochen-Pokal; Test-Bot-Runde per Revert-SQL entfernt). G6 „Pokale Top 3" auf Nutzer-Wunsch umgesetzt (Migration 0009 + UI mit 🥇/🥈/🥉 und XP-Staffel) — **offen: 0009 einspielen (`apply_pending.sql`)** |
 | 2026-07-13 | Phase G umgesetzt (G1–G4 Code komplett, Details im Umsetzungs-Log von [DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)): Migration 0008, Badge-Katalog (16×5 Sprüche), Erfolge-Screen, Level-Bestenliste, Unlock-Panel. Tests 101/101, Gast-Flows im Browser verifiziert. **Offen: `apply_pending.sql` (0007→0008) auf Live-DB, dann Account-E2E** — bis dahin scheitern Online-Submits weiterhin still (0007 fehlt ja ebenfalls noch) |
