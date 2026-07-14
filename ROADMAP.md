@@ -51,7 +51,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | # | Schritt | Status | Notiz |
 |---|---|---|---|
-| C1 | 8-Bit-Sound-Effekte via WebAudio (richtig/falsch/Streak/Bullseye/Cup-Fanfare) + Mute-Toggle | ⬜ | Chiptune-Bleeps direkt per Oszillator synthetisieren — keine Audio-Assets nötig |
+| C1 | 8-Bit-Sound-Effekte via WebAudio (richtig/falsch/Streak/Bullseye/Cup-Fanfare) + Mute-Toggle | ✅ | `features/audio/sfx.ts`: Oszillator-Synthese ohne Assets — richtig (Blips hoch), falsch (Sägezahn runter), VOLLTREFFER (C-Dur-Arpeggio), +5 SEC (Münz-Jingle), Countdown-Tick/GO, Fanfare (Runden-/Cup-Ende); auch Training (alter Pfad) hat richtig/falsch. Mute-Toggle 🔊/🔇 im Header, persistiert (`settingsStore`, localStorage `geo-quiz-settings`). AudioContext lazy nach User-Geste (Autoplay-Policy) |
 | C2 | Code-Splitting: Leaflet + Topojson lazy laden (`React.lazy` pro Route) | ⬜ | Bundle aktuell ~700 KB JS; Ziel: < 300 KB initial |
 | C3 | Haptics auf Android (`@capacitor/haptics` bei richtig/falsch) | ⬜ | erst nach Phase B sinnvoll |
 | C4 | Screen-Übergänge + Feedback-Animationen verfeinern (steps()-Transitions, Konfetti-Pixel bei Rang S) | ⬜ | |
@@ -93,7 +93,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 | F3 | Gruppen-Bestenliste: Leaderboard-RPCs um `p_group` erweitert (Bestleistung je Mitglied) | ✅ | Signaturwechsel → alte Funktionen gedroppt; Nicht-Mitglieder bekommen leere Liste |
 | F4 | Profil-UI: Abschnitt „Freundesgruppen" — erstellen, Code teilen (Share-Sheet/Clipboard), beitreten, Liste mit Mitgliederzahl, verlassen/löschen mit Rückfrage | ✅ | `groupApi.ts` mit deutschen Fehlermeldungen; Panel nur für registrierte Accounts |
 | F5 | Bestenlisten-UI: Umschalter „🌍 Global / 👥 Gruppe" im Global- und Cup-Tab | ✅ | Erscheint erst, wenn man Gruppen hat |
-| F6 | E2E-Test mit zwei Accounts (zweites Gerät/Emulator): erstellen, beitreten, Scores vergleichen, austreten, löschen | ⬜ | Entblockt: 0006 auf Live-DB verifiziert (2026-07-12, alle RPCs vorhanden + korrekt gegated). Braucht zwei registrierte Accounts — zusammen mit E6-Gerätetest erledigen |
+| F6 | E2E-Test mit zwei Accounts (zweites Gerät/Emulator): erstellen, beitreten, Scores vergleichen, austreten, löschen | ✅ | Vom Nutzer real getestet (2026-07-12): Gruppenflow funktioniert. **Phase F damit abgeschlossen** |
 
 **Fertig-Kriterium:** Zwei echte Accounts können über einen geteilten Code in einer Gruppe landen und ihre Bestleistungen pro Modus vergleichen.
 
@@ -107,8 +107,8 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | # | Schritt | Status | Notiz |
 |---|---|---|---|
-| D1 | **Stufe 1 (Zwischenschritt mit Sofortnutzen):** `start_session()`-RPC mit serverseitigem Startzeitstempel; Score-Abgabe als RPC, die reale Serverzeit gegen `duration_ms` prüft (z. B. min. `question_count × 2 s`); direkten Insert auf `score_entries` per RLS entziehen | ⬜ | Nur SQL-Migrationen, keine neue Infrastruktur. Killt erfundene Scores per `curl` komplett |
-| D2 | Rate-Limit: max. X Scores pro User/Stunde (Trigger oder Check in der Abgabe-RPC) | ⬜ | Größenordnung: realistisch spielbar sind < 20/h |
+| D1 | **Stufe 1 (Zwischenschritt mit Sofortnutzen):** `start_session()`-RPC mit serverseitigem Startzeitstempel; Score-Abgabe als RPC, die reale Serverzeit gegen `duration_ms` prüft; direkten Insert auf `score_entries`/`cup_runs` entzogen | ✅ | Migration `0007_session_guard.sql`: `play_sessions`-Wanduhrkonto (started_at + consumed_ms — behauptete Spielzeit muss real vergangen sein; Cup teilt sich EIN Konto über alle 6 Legs, Start nur beim ersten Leg), Session-Verfall nach 30 min, alter Plausibilitäts-Trigger läuft als zweite Schicht weiter. Client: `submit_score`/`submit_cup_run`-RPCs + `startPlaySession()` in PlayScreen (je Runde/Replay) und CupScreen (Cup-Start). **⚠️ 0007 noch auf Live-DB einspielen (`apply_pending.sql`)** |
+| D2 | Rate-Limit: max. Scores pro User/Stunde (Check in der Abgabe-RPC) | ✅ | In 0007 enthalten: 30 Einzel-Scores/h, 6 Cup-Runs/h (Cup braucht Luft: 1 Cup = 1 Run + 6 Leg-Scores) |
 | D3 | Quiz-Engine serverfähig machen: `questionGenerator`/`scoring` in ein von Web + Edge Function geteiltes Paket extrahieren (inkl. Distanz-Scoring der Pin-Modi) | ⬜ | Deno-kompatibel halten (keine DOM-/Node-APIs im Kern); Länderdaten mitliefern |
 | D4 | Edge Function `quiz-session`: erzeugt Fragerunde aus Seed, richtige Antworten bleiben serverseitig (nur Session-ID + Fragen ohne Lösungen an den Client) | ⬜ | Session-State in eigener Tabelle (`quiz_sessions`), ablaufend nach z. B. 30 min |
 | D5 | Antwort-Endpoint: Client schickt pro Frage nur die Antwort, Server bewertet, misst Zeit pro Frage und schreibt am Ende selbst den Score (`score_entries`-Insert nur noch durch die Function) | ⬜ | Antwort-Latenz tolerant handhaben (Netzwerk-Jitter ≠ Bedenkzeit); Cup-Runs mitdenken |
@@ -116,6 +116,25 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 | D7 | Ausreißer-Sicht für Moderation: Admin-Query/View für statistische Anomalien (100 %-Runs nahe Zeitminimum, Score-Frequenz) + Weg, Einträge vom Leaderboard zu entfernen | ⬜ | „Erkennen statt verhindern" als letzte Schicht |
 
 **Fertig-Kriterium:** Kein Weg mehr, einen Leaderboard-Score einzutragen, dessen Punktzahl der Client selbst berechnet hat; D1 wirkt bereits vorab als eigenständige Hürde.
+
+---
+
+## Phase G — Gamification 🏅
+
+> **Reihenfolge-Hinweis:** unabhängig von D3–D7 umsetzbar, setzt aber das Einspielen von Migration 0007 voraus (0008 baut auf den 0007-RPCs auf).
+
+*Ziel: Abzeichen in 5 Stufen (Normal/Bronze/Silber/Gold/Diamant) mit witzigen Untertiteln je Stufe, Pokale für Wochen-/Monats-/Jahresbeste im Cup-Modus (Hall of Fame), XP + Level (Cap 99) inkl. Level-Bestenliste (global + Gruppen). Speicherung serverseitig, account-gebunden; rückwirkender Backfill. Vollständiges Konzept in [DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md).*
+
+| # | Schritt | Status | Notiz |
+|---|---|---|---|
+| G1 | DB-Migration `0008_gamification.sql`: `player_stats`, `badge_definitions` (Seed), `player_badges`, `cup_trophies`; `submit_score`/`submit_cup_run` neu (Unlock-Payload als jsonb, 3 neue defaultete Parameter), `award_badges()`, `finalize_cup_trophies()` (lazy, kein pg_cron), `get_cup_trophies`, `get_gamification`, `get_leaderboard_levels`; Backfill inkl. rückwirkender Pokale | ✅ | Code komplett; Reihenfolge in `apply_pending.sql` zwingend 0007 → 0008. **Auf Live-DB noch nicht eingespielt (G5)** |
+| G2 | Frontend-Fundament: `features/gamification/` (Level-Kurve + Badge-Katalog mit Tests), `api/gamificationApi.ts`, `state/gamificationStore.ts`, `scoreApi` auf Unlock-Payload | ✅ | Katalog-Test pinnt Schwellen gegen den SQL-Seed |
+| G3 | UI: Erfolge-Screen (`/achievements`, Tabs Abzeichen/Pokale/Level), LV-Chip im Header, Menüpunkt, Level-Tab in der Bestenliste (Global/Gruppe) | ✅ | Gast-Teaser mit eigenem Text |
+| G4 | Unlock-Anzeige am Rundenende (+XP, LEVEL UP, neue Badges mit Spruch) + `sfx.levelup()` | ✅ | `UnlockPanel` im Runden-Summary und Cup-Endscreen |
+| G5 | Verifikation: Tests/tsc/lint, Browser-E2E, Migration auf Live-DB (`apply_pending.sql`), SQL-Idempotenz-Checks | ✅ | 0007+0008 live (2026-07-14), Account-E2E bestätigt: Backfill (LV 6, 8/16 Badges, rückwirkender Wochen-Pokal), Unlock-Panel mit LEVEL UP, Level-Bestenliste. Test-Bot-Runde rückstandslos entfernt |
+| G6 | Pokale auf **Top 3** umstellen (Nutzer-Wunsch): `cup_trophies.rank`, XP-Staffel 200/100/50 (Woche), 500/250/125 (Monat), 1500/750/375 (Jahr), Nachvergabe alter Perioden, UI mit 🥇/🥈/🥉 | ✅ | 0009 auf Live-DB verifiziert (2026-07-14): `rank` kommt in beiden Lese-RPCs an, Finalisierung idempotent (kein XP-Doppel), Nachvergabe korrekt leer (KW 28 hatte nur einen Cup-Spieler). **Phase G damit abgeschlossen** |
+
+**Fertig-Kriterium:** Eine gespielte Runde zeigt XP-Gewinn und neue Abzeichen, der Erfolge-Screen führt Abzeichen/Pokale/Level, abgelaufene Cup-Perioden erzeugen Pokale in der Hall of Fame, die Level-Bestenliste funktioniert global und in Gruppen.
 
 ---
 
@@ -135,6 +154,12 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-14 | 0009 auf Live-DB verifiziert (`rank` in den RPC-Antworten, Idempotenz bestätigt) — **Phase G komplett abgeschlossen**. `apply_pending.sql` + `revert_bot_round.sql` gelöscht, Live-DB-Stand: 0001–0009 |
+| 2026-07-14 | G5 abgeschlossen (0007+0008 auf Live-DB, Account-E2E komplett bestätigt inkl. Backfill, Unlock-Panel, rückwirkendem Wochen-Pokal; Test-Bot-Runde per Revert-SQL entfernt). G6 „Pokale Top 3" auf Nutzer-Wunsch umgesetzt (Migration 0009 + UI mit 🥇/🥈/🥉 und XP-Staffel) — **offen: 0009 einspielen (`apply_pending.sql`)** |
+| 2026-07-13 | Phase G umgesetzt (G1–G4 Code komplett, Details im Umsetzungs-Log von [DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)): Migration 0008, Badge-Katalog (16×5 Sprüche), Erfolge-Screen, Level-Bestenliste, Unlock-Panel. Tests 101/101, Gast-Flows im Browser verifiziert. **Offen: `apply_pending.sql` (0007→0008) auf Live-DB, dann Account-E2E** — bis dahin scheitern Online-Submits weiterhin still (0007 fehlt ja ebenfalls noch) |
+| 2026-07-13 | Phase G „Gamification" geplant und durchentschieden ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)): Abzeichen in 5 Stufen mit eigenem Spruch je Stufe, Pokale nur im Cup-Modus (Kalenderperioden, lazy finalisiert), XP/Level serverseitig account-gebunden, Level-Bestenliste global + Gruppen, rückwirkender Backfill |
+| 2026-07-12 | D1+D2 und C1 umgesetzt (Reihenfolge-Entscheid: SQL-Anti-Cheat + Sounds vor dem Deployment; großer D-Umbau D3–D6 bewusst NACH dem Balancing mit echten Spielern, sonst wird die Server-Engine bei jedem Balance-Tweak doppelt angefasst). Migration 0007 wartet auf die Live-DB (`apply_pending.sql`) — bis dahin scheitern Online-Submits still, weil die Insert-Policies clientseitig nicht mehr genutzt werden |
+| 2026-07-12 | F6 vom Nutzer bestätigt — Phase F (Freundesgruppen) komplett abgeschlossen. E6 weitgehend durch (zwei Feedback-Runden umgesetzt); offen nur noch das finale Balancing-Urteil zu Pin-Stufen & Labels |
 | 2026-07-12 | Lokale Bestenliste → „Meine Rekorde" umgebaut (Nutzer-Feedback: Bestleistungen statt Rundenverlauf): Allzeit-Top-10 je Kategorie im Store (`bests` + `addToBests`, 4 neue Tests), Migration v2 baut Rekorde aus dem Alt-Verlauf, UI zeigt unter „Alle" die Bestmarke je Kategorie bzw. Top 10 pro Kategorie-Chip. Migration + UI im Browser mit geseedetem v0-Stand verifiziert |
 | 2026-07-12 | E6-Feedback Runde 1 umgesetzt (Details im Umsetzungs-Log von [DESIGN-ARCADE.md](DESIGN-ARCADE.md)): Startseiten-Texte erklären das Zeitsystem, 3-2-1-GO-Countdown vor jeder Runde (Frage bleibt bis GO verdeckt), Filter-Chips für die lokale Bestenliste. Dev-Server läuft jetzt mit `--host` für Handy-Tests im WLAN |
 | 2026-07-12 | Nutzer-Feedback zur Auth-Mail (englisches Standard-Template beim Account-Upgrade): deutsche Retro-Templates in [supabase/email-templates.md](supabase/email-templates.md) vorbereitet, als A4b in Phase A aufgenommen. Nebenbei: Profil-Texte erwähnen Freundesgruppen jetzt als Account-Vorteil (Entdeckbarkeit für Gäste) |

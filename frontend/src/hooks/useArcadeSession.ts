@@ -12,6 +12,7 @@ import {
   streakMultiplier,
 } from '../features/quiz-engine/arcadeScoring'
 import { haversineKm } from '../features/geo/distance'
+import { sfx } from '../features/audio/sfx'
 import { dataBundle, outlineDataBundle } from '../data'
 import { useProgressStore } from '../state/progressStore'
 import type { PinAnswer } from './useQuizSession'
@@ -88,6 +89,13 @@ export function useArcadeSession(
     rerender()
   }, [session, rerender])
 
+  const playFeedbackSound = useCallback((fb: ArcadeAnswerFeedback) => {
+    if (fb.tier?.id === 'volltreffer') sfx.volltreffer()
+    else if (fb.points > 0) sfx.correct()
+    else sfx.wrong()
+    if (fb.reclaimedSeconds > 0) sfx.reclaim()
+  }, [])
+
   /** Nach jeder Antwort: nächste Frage unsichtbar vorbereiten. */
   const stageNext = useCallback(() => {
     setNextReady(false)
@@ -103,12 +111,13 @@ export function useArcadeSession(
       const fb = session.answerChoice(chosenIndex)
       if (fb) {
         recordAnswer(fb.questionId, fb.correct)
+        playFeedbackSound(fb)
         setFeedback(fb)
         stageNext()
       }
       rerender() // deckt auch "Antwort zu spät → done" ab
     },
-    [session, recordAnswer, stageNext, rerender],
+    [session, recordAnswer, playFeedbackSound, stageNext, rerender],
   )
 
   const answerPin = useCallback(
@@ -121,12 +130,13 @@ export function useArcadeSession(
       const fb = session.answerPin(distanceKm)
       if (fb) {
         recordAnswer(fb.questionId, fb.correct)
+        playFeedbackSound(fb)
         setFeedback(fb)
         stageNext()
       }
       rerender()
     },
-    [session, recordAnswer, stageNext, rerender],
+    [session, recordAnswer, playFeedbackSound, stageNext, rerender],
   )
 
   const next = useCallback(() => {
@@ -187,5 +197,7 @@ export function toSessionSummary(s: ArcadeSummary): SessionSummary {
     bestStreak: Math.floor(s.bestStreak),
     durationMs: Math.max(s.playedMs, 1),
     answers: [],
+    volltrefferCount: s.answers.filter((a) => a.tier?.id === 'volltreffer')
+      .length,
   }
 }

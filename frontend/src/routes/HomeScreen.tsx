@@ -113,6 +113,18 @@ export function HomeScreen() {
         <button
           type="button"
           className="mode-card"
+          onClick={() => navigate('/achievements')}
+        >
+          <span className="mode-icon">🏅</span>
+          <span className="mode-name">Erfolge</span>
+          <span className="mode-desc">
+            Abzeichen sammeln, Pokale gewinnen, Level aufsteigen.
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="mode-card"
           onClick={() => navigate('/profile')}
         >
           <span className="mode-icon">👤</span>

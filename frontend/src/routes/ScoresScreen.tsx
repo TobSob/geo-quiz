@@ -10,6 +10,11 @@ import {
   type LeaderboardScore,
 } from '../api/leaderboardApi'
 import { isOnlineEnabled } from '../api/supabaseClient'
+import {
+  fetchLeaderboardLevels,
+  type LeaderboardLevelEntry,
+} from '../api/gamificationApi'
+import { levelForXp } from '../features/gamification/levels'
 import { listMyGroups, type FriendGroup } from '../api/groupApi'
 import { useUserStore } from '../state/userStore'
 import type { GameMode } from '../features/quiz-engine/types'
@@ -24,7 +29,7 @@ const MODE_LABEL: Record<string, string> = {
 const GAME_MODES = Object.keys(MODE_TITLES) as GameMode[]
 const PERIODS: LeaderboardPeriod[] = ['week', 'month', 'year', 'all']
 
-type Tab = 'local' | 'global' | 'cups'
+type Tab = 'local' | 'global' | 'cups' | 'level'
 
 function formatDate(ts: number | string): string {
   return new Date(ts).toLocaleDateString('de-DE', {
@@ -67,11 +72,20 @@ export function ScoresScreen() {
         >
           Cups
         </button>
+        <button
+          type="button"
+          className={`pixel-btn${tab === 'level' ? ' pixel-btn--cyan' : ''}`}
+          onClick={() => setTab('level')}
+          disabled={!isOnlineEnabled}
+        >
+          Level
+        </button>
       </div>
 
       {tab === 'local' && <LocalScores />}
       {tab === 'global' && <RequireAccount render={() => <GlobalScores />} />}
       {tab === 'cups' && <RequireAccount render={() => <CupScores />} />}
+      {tab === 'level' && <RequireAccount render={() => <LevelScores />} />}
     </div>
   )
 }
@@ -79,8 +93,15 @@ export function ScoresScreen() {
 /**
  * Global lists are registered-accounts-only (server enforces it via RLS —
  * this is just the friendly explanation instead of an empty table).
+ * Auch vom Erfolge-Screen genutzt (Phase G) — mit eigenem Teaser-Text.
  */
-function RequireAccount({ render }: { render: () => ReactNode }) {
+export function RequireAccount({
+  render,
+  message,
+}: {
+  render: () => ReactNode
+  message?: string
+}) {
   const status = useUserStore((s) => s.status)
   const isAnonymous = useUserStore((s) => s.isAnonymous)
 
@@ -91,9 +112,10 @@ function RequireAccount({ render }: { render: () => ReactNode }) {
     <div className="stack center" style={{ gap: 16, padding: '24px 0' }}>
       <div style={{ fontSize: 40 }}>🔒</div>
       <p className="dim" style={{ margin: 0, maxWidth: 480 }}>
-        Die globalen Bestenlisten sind Spielern mit Account vorbehalten.
-        Spielen kannst du jederzeit ohne — aber um dich einzutragen oder die
-        Rangliste zu sehen, sichere kurz deinen Account.
+        {message ??
+          'Die globalen Bestenlisten sind Spielern mit Account vorbehalten. ' +
+            'Spielen kannst du jederzeit ohne — aber um dich einzutragen oder ' +
+            'die Rangliste zu sehen, sichere kurz deinen Account.'}
       </p>
       <div>
         <Link to="/profile">
@@ -350,6 +372,64 @@ function GlobalScores() {
                 <td className="glow-yellow">{r.score}</td>
                 <td className="dim">{r.question_count}</td>
                 <td className="dim">{formatDate(r.played_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
+/** Level-Bestenliste (Phase G): XP-Konten absteigend, Level rechnet der Client. */
+function LevelScores() {
+  const [groupId, setGroupId] = useState<number | null>(null)
+  const groups = useMyGroups()
+  const [rows, setRows] = useState<LeaderboardLevelEntry[] | null | 'loading'>('loading')
+
+  useEffect(() => {
+    let stale = false
+    setRows('loading')
+    fetchLeaderboardLevels(25, groupId).then((r) => {
+      if (!stale) setRows(r)
+    })
+    return () => {
+      stale = true
+    }
+  }, [groupId])
+
+  return (
+    <div className="stack" style={{ gap: 16 }}>
+      <ScopePicker groups={groups} groupId={groupId} onChange={setGroupId} />
+      <p className="dim center" style={{ margin: 0, fontSize: 18 }}>
+        XP aus Runden, Abzeichen und Pokalen — alle Zeiträume zusammen.
+      </p>
+
+      {rows === 'loading' ? (
+        <p className="dim center blink">LADE…</p>
+      ) : rows === null ? (
+        <p className="dim center">Leaderboard nicht erreichbar.</p>
+      ) : rows.length === 0 ? (
+        <p className="dim center">
+          Noch keine Level — spiel eine gewertete Runde, dann geht es los!
+        </p>
+      ) : (
+        <table className="summary-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Spieler</th>
+              <th>Level</th>
+              <th>XP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={`${r.display_name}-${i}`}>
+                <td className="dim">{i + 1}</td>
+                <td className="glow-cyan">{r.display_name}</td>
+                <td className="glow-yellow">LV {levelForXp(r.xp)}</td>
+                <td className="dim">{r.xp.toLocaleString('de-DE')}</td>
               </tr>
             ))}
           </tbody>

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { GameMode, SessionSummary } from '../features/quiz-engine/types'
 import {
@@ -12,9 +12,13 @@ import {
 } from '../features/quiz-engine/cupSession'
 import { CUP_LEG_SECONDS } from '../features/quiz-engine/arcadeScoring'
 import { ArcadeQuizView } from '../components/ArcadeQuizView'
+import { UnlockPanel } from '../components/UnlockPanel'
 import { MODE_TITLES } from './PlayScreen'
 import { useProgressStore } from '../state/progressStore'
-import { submitCupRun } from '../api/scoreApi'
+import { useGamificationStore } from '../state/gamificationStore'
+import { startPlaySession, submitCupRun } from '../api/scoreApi'
+import type { UnlockPayload } from '../api/gamificationApi'
+import { sfx } from '../features/audio/sfx'
 import { flushProgress } from '../features/progress/progressSync'
 
 type CupPhase = 'intro' | 'leg' | 'interstitial' | 'finished'
@@ -26,8 +30,13 @@ export function CupScreen() {
   const [cup, setCup] = useState<CupState>(newCup)
   const [phase, setPhase] = useState<CupPhase>('intro')
   const [legKey, setLegKey] = useState(0)
+  const [unlocks, setUnlocks] = useState<UnlockPayload | null>(null)
 
   const mode = currentCupMode(cup)
+
+  useEffect(() => {
+    if (phase === 'finished') sfx.fanfare()
+  }, [phase])
 
   const onLegDone = useCallback(
     (summary: SessionSummary) => {
@@ -35,7 +44,13 @@ export function CupScreen() {
         const next = completeLeg(c, summary)
         if (isCupFinished(next)) {
           recordCup(cupScore(next), next.legs)
-          void submitCupRun(cupScore(next), next.legs)
+          // Unlock-Payload (Run + Legs gebündelt) fürs Endscreen-Panel.
+          void submitCupRun(cupScore(next), next.legs).then((u) => {
+            if (u) {
+              useGamificationStore.getState().applyUnlock(u)
+              setUnlocks(u)
+            }
+          })
           void flushProgress()
           setPhase('finished')
         } else {
@@ -48,6 +63,10 @@ export function CupScreen() {
   )
 
   const startNextLeg = () => {
+    // Der GANZE Cup teilt sich ein Wanduhr-Konto (Anti-Cheat D1): nur beim
+    // ersten Leg verankern — ein Reset je Leg würde die Summenprüfung der
+    // am Ende gesammelt abgegebenen Legs zerschießen.
+    if (cup.legIndex === 0) void startPlaySession()
     setLegKey((k) => k + 1)
     setPhase('leg')
   }
@@ -55,6 +74,7 @@ export function CupScreen() {
   const restart = () => {
     setCup(newCup())
     setLegKey((k) => k + 1)
+    setUnlocks(null)
     setPhase('intro')
   }
 
@@ -142,6 +162,7 @@ export function CupScreen() {
             ))}
           </tbody>
         </table>
+        <UnlockPanel unlocks={unlocks} />
         <div className="row" style={{ justifyContent: 'center' }}>
           <button
             type="button"

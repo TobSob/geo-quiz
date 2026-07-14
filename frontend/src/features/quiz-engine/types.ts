@@ -101,6 +101,8 @@ export interface SessionSummary {
   bestStreak: number
   durationMs: number
   answers: AnswerResult[]
+  /** Pin-Volltreffer der Runde (Badge-Metrik, Phase G) — fehlt im alten Pfad. */
+  volltrefferCount?: number
 }
 
 /** Per-question progress counters, persisted locally (and later synced). */

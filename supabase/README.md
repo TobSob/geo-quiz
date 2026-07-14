@@ -31,8 +31,11 @@ npx supabase db push
 | `0004_gate_leaderboards.sql` | Leaderboards nur für registrierte Accounts (`is_registered_user()`-Gate in Views + Insert-Policies) |
 | `0005_arcade_scoring.sql` | **Arcade-Umbau (Phase E):** Rohpunkte statt Prozent (Checks/Trigger neu), Views ersetzt durch RPCs `get_leaderboard_scores(mode, since, limit)` / `get_leaderboard_cups(since, limit)` — Bestleistung pro Spieler + Zeitfilter. Löscht Alt-Einträge |
 | `0006_friend_groups.sql` | **Freundesgruppen (Phase F):** `friend_groups` + `friend_group_members` + Join-Rate-Limit, RPCs `create_group`/`join_group`/`leave_group`/`delete_group`/`list_my_groups`, Leaderboard-RPCs um `p_group`-Filter erweitert (neue Signatur) |
+| `0007_session_guard.sql` | **Anti-Cheat D1+D2:** `play_sessions`-Wanduhrkonto, Abgabe nur noch per RPC `submit_score`/`submit_cup_run` (behauptete Spielzeit muss real vergangen sein), `start_session()`-Rundenstart, Rate-Limits (30 Scores/h, 6 Cups/h), direkte Insert-Policies entfernt |
+| `0008_gamification.sql` | **Gamification (Phase G):** `player_stats` (XP + Badge-Metriken), `badge_definitions` (Seed) + `player_badges`, `cup_trophies` (Hall of Fame, lazy finalisiert via `finalize_cup_trophies()` — kein pg_cron), `submit_score`/`submit_cup_run` neu (jsonb-Unlock-Payload, 3 neue defaultete Parameter), `get_gamification`/`get_cup_trophies`/`get_leaderboard_levels`, Backfill inkl. rückwirkender Pokale. **Backfill nie doppelt ausführen (XP!)** |
+| `0009_trophy_top3.sql` | **Pokale Top 3 (Phase G):** `cup_trophies.rank` (1–3, unique je Periode+Rang und Periode+Spieler), `finalize_cup_trophies()` vergibt die drei besten Cup-Spieler je Periode mit XP-Staffel (Woche 200/100/50, Monat 500/250/125, Jahr 1500/750/375), `get_cup_trophies`/`get_gamification` liefern den Rang mit; Nachvergabe fehlender Plätze 2/3 |
 
-> Live-DB-Stand: 0001–0006 vollständig eingespielt (verifiziert 2026-07-12). `apply_all.sql` dient der Vollinstallation frischer Projekte — auf der bestehenden Live-DB nichts erneut ausführen (0005 löscht Scores!).
+> Live-DB-Stand: **0001–0009 vollständig eingespielt** (verifiziert 2026-07-14). `apply_all.sql` dient der Vollinstallation frischer Projekte — auf der bestehenden Live-DB nichts erneut ausführen (0005 löscht Scores, der 0008-Backfill würde XP doppeln!).
 
 ## Sicherheitsmodell
 

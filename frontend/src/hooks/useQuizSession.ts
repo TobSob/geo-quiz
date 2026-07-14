@@ -12,6 +12,7 @@ import {
   scorePin,
 } from '../features/quiz-engine/scoring'
 import { haversineKm } from '../features/geo/distance'
+import { sfx } from '../features/audio/sfx'
 import { useProgressStore } from '../state/progressStore'
 
 export type QuizPhase = 'question' | 'feedback' | 'done'
@@ -55,6 +56,8 @@ export function useQuizSession(mode: GameMode | 'training', questions: Question[
     (result: AnswerResult, chosenIndex: number | null, guess: PinAnswer | null) => {
       if (answeredRef.current) return
       answeredRef.current = true
+      if (result.correct) sfx.correct()
+      else sfx.wrong()
       recordAnswer(result.questionId, result.correct)
       const nextStreak = result.correct ? streak + 1 : 0
       setScore((s) => s + result.score)

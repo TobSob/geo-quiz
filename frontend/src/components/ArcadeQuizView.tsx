@@ -3,8 +3,11 @@ import type { GameMode, Question, SessionSummary } from '../features/quiz-engine
 import type { ArcadeAnswerFeedback, ArcadeSummary } from '../features/quiz-engine/arcadeSession'
 import { useArcadeSession, toSessionSummary } from '../hooks/useArcadeSession'
 import type { PinAnswer } from '../hooks/useQuizSession'
+import type { UnlockPayload } from '../api/gamificationApi'
+import { sfx } from '../features/audio/sfx'
 import { CountryOutline } from './CountryOutline'
 import { MapPicker } from './MapPicker'
+import { UnlockPanel } from './UnlockPanel'
 
 const CHOICE_FEEDBACK_MS = 1200
 
@@ -29,6 +32,8 @@ interface Props {
   onDone: (summary: SessionSummary) => void
   /** false beim Cup — der rendert eigene Zwischen-/Endscreens. */
   showSummary?: boolean
+  /** Unlock-Payload der Abgabe (XP/Badges) — erscheint async im Summary. */
+  unlocks?: UnlockPayload | null
   onExit: () => void
   onReplay?: () => void
 }
@@ -43,6 +48,7 @@ export function ArcadeQuizView({
   budgetMs,
   onDone,
   showSummary = true,
+  unlocks = null,
   onExit,
   onReplay,
 }: Props) {
@@ -91,6 +97,7 @@ export function ArcadeQuizView({
       <ArcadeSummaryView
         title={title}
         summary={lastSummary ?? summary()}
+        unlocks={unlocks}
         onExit={onExit}
         onReplay={onReplay}
       />
@@ -222,6 +229,8 @@ function StartCountdown({ title, onDone }: { title: string; onDone: () => void }
 
   useEffect(() => {
     const isLast = step === COUNTDOWN_STEPS.length - 1
+    if (isLast) sfx.go()
+    else sfx.tick()
     const t = setTimeout(
       () => {
         if (isLast) onDone()
@@ -414,14 +423,20 @@ function ArcadePinView({
 export function ArcadeSummaryView({
   title,
   summary,
+  unlocks = null,
   onExit,
   onReplay,
 }: {
   title: string
   summary: ArcadeSummary
+  unlocks?: UnlockPayload | null
   onExit: () => void
   onReplay?: () => void
 }) {
+  useEffect(() => {
+    sfx.fanfare()
+  }, [])
+
   const accuracy =
     summary.questionCount > 0
       ? Math.round((100 * summary.correctCount) / summary.questionCount)
@@ -460,6 +475,7 @@ export function ArcadeSummaryView({
         {summary.timeAddedSeconds > 0 &&
           ` · +${summary.timeAddedSeconds} s geholt`}
       </div>
+      <UnlockPanel unlocks={unlocks} />
       <div className="row" style={{ justifyContent: 'center' }}>
         {onReplay && (
           <button
