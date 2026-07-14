@@ -224,6 +224,10 @@ a { color: var(--cyan); }
 .glow-pink { color: var(--pink); text-shadow: 0 0 8px #ff77a888, 0 0 24px #ff77a833; }
 
 /* --- layout --- */
+html {
+  overflow-x: hidden;
+}
+
 #root {
   position: relative;
   z-index: 1;
@@ -233,6 +237,30 @@ a { color: var(--cyan); }
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* --- segmented tab row (leaderboard / achievements) --- */
+.tab-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 560px) {
+  .tab-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .tab-row > .pixel-btn {
+    width: 100%;
+  }
+  /* Bei 3 Tabs (Erfolge) füllt der letzte die zweite Reihe. */
+  .tab-row--three > .pixel-btn:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 /* --- timer bar --- */
@@ -346,6 +374,25 @@ a { color: var(--cyan); }
 .arcade-clock {
   font-family: var(--font-display);
   font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Score/Zeit mit gleich breiten Ziffern → HUD wackelt nicht beim Zählen. */
+.hud-stat span {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reservierter Platz für die Feedback-Popups, damit der Inhalt darunter
+   nicht springt, wenn „+X SEC!" bzw. „+Punkte" ein-/ausblenden. */
+.time-pop-slot {
+  min-height: 22px;
+}
+
+.score-pop-slot {
+  min-height: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .time-pop {
@@ -578,6 +625,9 @@ a { color: var(--cyan); }
   .quiz-screen--pin .hud-stat { font-size: 10px; }
   .quiz-screen--pin .hud-stat .label { font-size: 7px; margin-bottom: 2px; }
 
+  /* In der kompakten Pin-Topbar keinen Extra-Platz reservieren. */
+  .quiz-screen--pin .time-pop-slot { min-height: 0; }
+
   .quiz-screen--pin .pin-prompt {
     font-size: 11px;
     margin: 0;
@@ -647,4 +697,11 @@ a { color: var(--cyan); }
   body { font-size: 20px; }
   h1 { font-size: 18px; }
   .flag-frame .fi { width: 180px; height: 135px; }
+}
+
+/* Tabellen auf schmale Handys eindampfen, damit alle Spalten passen. */
+@media (max-width: 560px) {
+  .summary-table { font-size: 16px; }
+  .summary-table th { font-size: 8px; padding: 6px 5px; }
+  .summary-table td { padding: 5px 5px; }
 }

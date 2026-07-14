@@ -37,7 +37,7 @@ export function UnlockPanel({ unlocks }: { unlocks: UnlockPayload | null }) {
 
       {leveledUp && (
         <span className="display glow-yellow blink" style={{ fontSize: 16 }}>
-          LEVEL UP! LV {levelForXp(unlocks.xpTotal)}
+          LEVEL UP! LVL {levelForXp(unlocks.xpTotal)}
         </span>
       )}
 

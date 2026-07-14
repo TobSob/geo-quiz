@@ -48,7 +48,7 @@ export function ScoresScreen() {
     <div className="stack" style={{ gap: 24 }}>
       <h2 className="glow-yellow center">🥇 Bestenliste</h2>
 
-      <div className="row" style={{ justifyContent: 'center' }}>
+      <div className="tab-row">
         <button
           type="button"
           className={`pixel-btn${tab === 'local' ? ' pixel-btn--cyan' : ''}`}
@@ -428,7 +428,7 @@ function LevelScores() {
               <tr key={`${r.display_name}-${i}`}>
                 <td className="dim">{i + 1}</td>
                 <td className="glow-cyan">{r.display_name}</td>
-                <td className="glow-yellow">LV {levelForXp(r.xp)}</td>
+                <td className="glow-yellow">LVL {levelForXp(r.xp)}</td>
                 <td className="dim">{r.xp.toLocaleString('de-DE')}</td>
               </tr>
             ))}

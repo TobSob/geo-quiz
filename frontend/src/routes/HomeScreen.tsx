@@ -44,12 +44,8 @@ export function HomeScreen() {
 
   return (
     <div className="stack" style={{ gap: 32 }}>
-      <div className="center" style={{ padding: '18px 0 6px' }}>
-        <h1>
-          <span className="glow-green">GEO</span>
-          <span className="glow-cyan">QUIZ</span>
-        </h1>
-        <p className="dim" style={{ marginTop: 10 }}>
+      <div className="center" style={{ padding: '8px 0 6px' }}>
+        <p className="dim" style={{ marginTop: 0 }}>
           Flaggen · Hauptstädte · Karten — wie gut kennst du die Welt?
         </p>
         <p className="dim" style={{ marginTop: 6, fontSize: 18 }}>

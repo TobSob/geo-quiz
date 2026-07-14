@@ -149,25 +149,31 @@ export function ArcadeQuizView({
               <span className="label">SCORE</span>
               <span className="glow-yellow">{s.score}</span>
             </div>
-            {s.streak >= 1 && (
-              <span
-                className={`streak-badge${s.streak >= 5 ? ' streak-badge--hot' : ''}`}
-              >
-                {s.streak >= 5 ? '🔥' : '⚡'} {formatStreak(s.streak)} ·{' '}
-                {Math.round(s.multiplier * 100)}%
-              </span>
-            )}
+            {/* Slot bleibt immer belegt, damit das HUD beim Erscheinen der
+                Serie nicht springt (Layout-Stabilität). */}
+            <span
+              className={`streak-badge${s.streak >= 5 ? ' streak-badge--hot' : ''}`}
+              style={s.streak < 1 ? { visibility: 'hidden' } : undefined}
+              aria-hidden={s.streak < 1}
+            >
+              {s.streak >= 5 ? '🔥' : '⚡'} {formatStreak(s.streak)} ·{' '}
+              {Math.round(s.multiplier * 100)}%
+            </span>
           </div>
 
           <div className="timer-track" aria-label="Zeit">
             <div className={fillCls} style={{ width: `${fraction * 100}%` }} />
           </div>
 
-          {s.feedback && s.feedback.reclaimedSeconds > 0 && (
-            <div className="time-pop display glow-cyan" aria-live="polite">
-              +{s.feedback.reclaimedSeconds} SEC!
-            </div>
-          )}
+          {/* Feste Höhe reserviert den Platz für „+X SEC!", damit die
+              Frage darunter nicht nach unten rutscht. */}
+          <div className="time-pop-slot">
+            {s.feedback && s.feedback.reclaimedSeconds > 0 && (
+              <div className="time-pop display glow-cyan" aria-live="polite">
+                +{s.feedback.reclaimedSeconds} SEC!
+              </div>
+            )}
+          </div>
 
           {question.kind === 'pin' && (
             <h2 className="center pin-prompt">{question.prompt}</h2>
@@ -288,17 +294,21 @@ function ArcadeChoiceView({
         <CountryOutline iso2={question.promptIso2} />
       )}
 
-      {phase === 'feedback' && feedback && (
-        <div className="score-pop glow-green" aria-live="polite">
-          {feedback.points > 0 ? `+${feedback.points}` : 'DANEBEN!'}
-        </div>
-      )}
+      {/* Feste Höhe: die Antwort-Buttons sollen beim Feedback nicht springen. */}
+      <div className="score-pop-slot">
+        {phase === 'feedback' && feedback && (
+          <div className="score-pop glow-green" aria-live="polite">
+            {feedback.points > 0 ? `+${feedback.points}` : 'DANEBEN!'}
+          </div>
+        )}
+      </div>
 
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
           gap: 16,
+          width: '100%',
         }}
       >
         {question.options.map((opt, i) => {

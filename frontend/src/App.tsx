@@ -25,6 +25,12 @@ function App() {
   const gamificationStatus = useGamificationStore((s) => s.status)
   const xp = useGamificationStore((s) => s.xp)
 
+  // Beim Screenwechsel immer nach oben — sonst startet z. B. eine Runde noch
+  // an der weit unten gescrollten Menü-Position.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+
   // Anonymous sign-in on launch, then push any progress queued while offline.
   useEffect(() => {
     if (!isOnlineEnabled) return
@@ -82,7 +88,7 @@ function App() {
             style={{ fontSize: 12, marginRight: 16, textDecoration: 'none' }}
             title="Erfolge: Abzeichen, Pokale & Level"
           >
-            LV {levelForXp(xp)}
+            LVL {levelForXp(xp)}
           </Link>
         )}
         <Link

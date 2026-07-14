@@ -53,7 +53,7 @@ export function AchievementsScreen() {
     <div className="stack" style={{ gap: 24 }}>
       <h2 className="glow-yellow center">🏅 Erfolge</h2>
 
-      <div className="row" style={{ justifyContent: 'center' }}>
+      <div className="tab-row tab-row--three">
         <button
           type="button"
           className={`pixel-btn${tab === 'badges' ? ' pixel-btn--cyan' : ''}`}
@@ -304,7 +304,7 @@ function LevelTab() {
     <div className="stack" style={{ gap: 20 }}>
       <div className="pixel-panel stack center" style={{ padding: 20, gap: 12 }}>
         <span className="display glow-yellow" style={{ fontSize: 32 }}>
-          LV {p.level}
+          LVL {p.level}
         </span>
         <span className="dim" style={{ fontSize: 18 }}>
           {xp.toLocaleString('de-DE')} XP gesamt
@@ -346,7 +346,7 @@ function LevelTab() {
           <tbody>
             {nextLevels.map((n) => (
               <tr key={n}>
-                <td className="glow-cyan">LV {n}</td>
+                <td className="glow-cyan">LVL {n}</td>
                 <td className="dim">{xpForLevel(n).toLocaleString('de-DE')}</td>
                 <td className="glow-yellow">
                   {Math.max(0, xpForLevel(n) - xp).toLocaleString('de-DE')}
