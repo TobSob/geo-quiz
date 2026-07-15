@@ -8,7 +8,7 @@ import {
 } from '../features/avatars/avatarCatalog'
 import { PixelAvatar } from './PixelAvatar'
 
-/**
+  AVATARS_BY_LEVEL,
  * Avatar-Auswahl (Feature-Idee R3): Starter sind immer wählbar, gesperrte
  * zeigen ausgegraut ihre Freischalt-Bedingung. Auswahl liegt lokal.
  */
@@ -26,8 +26,8 @@ export function AvatarPicker() {
       <h3 className="glow-cyan">🎭 Avatar</h3>
       <p className="dim" style={{ margin: 0, fontSize: 18 }}>
         Wähle deinen Pixel-Avatar — er erscheint im Menü und auf deiner Zeile in
-        der Bestenliste.{' '}
-        {hasAccount
+      <div className="avatar-grid">
+        {AVATARS_BY_LEVEL.map((spec) => {
           ? 'Weitere schaltest du mit Level und Erfolgen frei.'
           : 'Weitere Avatare gibt es mit einem Account (Level & Erfolge).'}
       </p>
