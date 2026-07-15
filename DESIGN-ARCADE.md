@@ -31,18 +31,26 @@ dass mehr Fragen ins Zeitfenster passen.
 Ersetzt das bisherige `100 × e^(−d/R)`-Scoring. Jede Stufe hat ein witziges
 Retro-Label (deutsch), Punkte und einen Streak-Effekt:
 
-| Stufe | Label (Arbeitsstand) | Punkte | Streak | Status |
-|---|---|---|---|---|
-| ≤ 100 km | VOLLTREFFER! | 100 | +1 | ✅ |
-| ≤ 200 km | STARK! | 50 | +0,5 | ✅ |
-| ≤ 500 km | KNAPP VORBEI | 10 | +0,1 | ✅ |
-| ≤ 1000 km | NAJA… | 1 | bleibt stehen (+0) | ✅ |
-| > 1000 km | VÖLLIG VERPEILT | 0 | Streak weg | ✅ |
+| Stufe | Label | Punkte | Streak | Extra | Status |
+|---|---|---|---|---|---|
+| ≤ 100 km | VOLLTREFFER! | 100 | +1 | **+3 s Zeit** | ✅ |
+| ≤ 350 km | STARK! | 50 | +0,5 | | ✅ |
+| ≤ 1000 km | KNAPP VORBEI | 10 | +0,1 | | ✅ |
+| ≤ 2500 km | NAJA… | 1 | bleibt stehen (+0) | | ✅ |
+| > 2500 km | VÖLLIG VERPEILT | 0 | Streak weg | | ✅ |
 
 Streaks können dadurch krumme Werte haben (4,4 → 144 %). Die +5-Sekunden-Rückholung
 zieht erst beim Überschreiten ganzer Zehner (9,8 → 10,3 löst aus).
 
-*Labels sind Arbeitsstand — Feinschliff später gesammelt.*
+*Rebalancing 2026-07-15 (Playtest R3, Nutzer-Entscheid): Zonen von 100/200/500/1000
+auf 100/350/1000/2500 km erweitert (Pins lieferten zu schwer Punkte) und
+Volltreffer-Zeitbonus +3 s eingeführt. `correct` fürs Lern-Tracking ≤ 350 km.*
+
+**Anti-Tasten-Spam (R3/R4):** Jede beantwortete Frage verbraucht mindestens
+**0,5 s** Budget (`MIN_QUESTION_MS`) — unsichtbar statt sichtbarer Strafsekunden
+(eine „−2 s"-Variante wurde nach Nutzer-Feedback wieder verworfen). Gehaltene
+Tasten (Auto-Repeat auf 1–4) zählen nicht als Antwort. Liegt bewusst über der
+Server-Plausibilitätsgrenze von 400 ms/Frage (Migration 0005).
 
 ---
 
@@ -253,7 +261,7 @@ in der Edge Function.
   anzeigen), `tier` (Pin-Label via `tier.label`). Kein Pin gesetzt = VERPEILT.
   Die UI berechnet die Distanz (haversine) und übergibt nur km.
 - Rückholungen erhöhen das Budget sofort (`remainingMs()` springt hoch).
-- Pin-`correct` fürs Lern-Tracking (progressStore): Stufe ≤ 200 km (VOLLTREFFER/STARK).
+- Pin-`correct` fürs Lern-Tracking (progressStore): Stufe VOLLTREFFER/STARK — seit dem R3-Rebalancing (2026-07-15) ≤ 350 km (`PIN_CORRECT_MAX_KM`).
 - `forceTimeUp()`: UI-Anzeige bei 0 → beendet nur, wenn das Budget wirklich leer
   ist (verhindert Drift zwischen Anzeige und Engine).
 - `summary()` → `ArcadeSummary { mode, score, questionCount, correctCount,

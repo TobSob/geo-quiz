@@ -20,6 +20,10 @@ interface Props {
   onDone: (summary: SessionSummary) => void
   /** Render the built-in summary screen (standalone modes). Cup renders its own. */
   showSummary?: boolean
+  /** Streaming source (Training): yields questions endlessly until `limit`. */
+  produceNext?: () => Question | null
+  /** Cap a streamed session to this many questions (0/undefined = endless). */
+  limit?: number
   onExit: () => void
   onReplay?: () => void
 }
@@ -30,10 +34,14 @@ export function QuizView({
   title,
   onDone,
   showSummary = true,
+  produceNext,
+  limit,
   onExit,
   onReplay,
 }: Props) {
-  const session = useQuizSession(mode, questions)
+  const session = useQuizSession(mode, questions, { produceNext, limit })
+  // Training übt ohne Zeitdruck (Playtest-Feedback R3): kein Frage-Timer.
+  const untimed = mode === 'training'
   const {
     question,
     index,
@@ -98,7 +106,7 @@ export function QuizView({
   if (!question) return null
 
   return (
-    <div className={question.kind === 'pin' ? 'stack quiz-screen--pin' : 'stack'}>
+    <div className={question.kind === 'pin' ? 'stack quiz-screen--pin' : 'stack quiz-screen--choice'}>
       {/* Chrome (HUD, timer, pin prompt/photo) is a plain pass-through on
           desktop; in the fullscreen pin layout it becomes the translucent
           top bar overlaying the map. */}
@@ -111,7 +119,7 @@ export function QuizView({
             </div>
             <div className="hud-stat">
               <span className="label">FRAGE</span>
-              {index + 1}/{total}
+              {total > 0 ? `${index + 1}/${total}` : index + 1}
             </div>
             <div className="hud-stat">
               <span className="label">SCORE</span>
@@ -120,14 +128,16 @@ export function QuizView({
             <StreakBadge streak={streak} />
           </div>
 
-          <TimerBar
-            resetKey={questionKey}
-            timeLimitMs={question.timeLimitMs}
-            running={phase === 'question'}
-            onTimeout={() =>
-              question.kind === 'choice' ? answerChoice(null) : answerPin(pendingPin)
-            }
-          />
+          {!untimed && (
+            <TimerBar
+              resetKey={questionKey}
+              timeLimitMs={question.timeLimitMs}
+              running={phase === 'question'}
+              onTimeout={() =>
+                question.kind === 'choice' ? answerChoice(null) : answerPin(pendingPin)
+              }
+            />
+          )}
 
           {question.kind === 'pin' && (
             <h2 className="center pin-prompt">{question.prompt}</h2>

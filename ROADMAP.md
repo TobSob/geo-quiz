@@ -74,7 +74,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 | E3 | UI-Umbau: Countdown prominent, Streak/Multiplikator-HUD, „+5 SEC!"-Effekt, Distanzstufen-Feedback mit Retro-Labels | ✅ | Neu: `useArcadeSession.ts` (Hook um die Engine, Foto-Preload, Anzeige-Tick) + `ArcadeQuizView.tsx` (eigene Ansicht; alte `QuizView` bleibt für Training + Cup bis E4). `PlayScreen` umgestellt (Session-Key = Mode+RunKey — Bugfix: Mode-Wechsel erzeugte sonst keine frische Session). Im Browser E2E verifiziert: Countdown, 100→110-Punkte-Multiplikator, Streak-Badge „⚡ 2 · 120%", Tier-Feedback „VÖLLIG VERPEILT +0", Uhr eingefroren im Feedback, Zeitablauf → Ergebnisscreen. Tests 75/75, tsc + lint sauber. Details: Umsetzungs-Log |
 | E4 | Cup umstellen: 30-s-Legs statt 5 Fragen (`CUP_QUESTIONS_PER_LEG` entfällt), Cup-Total = Rohsumme statt 0–100-Prozentwert | ✅ | `CupScreen` auf `ArcadeQuizView` (`budgetMs = CUP_LEG_SECONDS`), `cupScore()` = Rohsumme (eigener Test), `cupTotalScore` aus `scoring.ts` entfernt, `showSummary`-Prop ergänzt, Intro/Zwischenstand/Endscreen-Texte auf Punktsumme. Browser-verifiziert: Intro → Leg 1 (30 s) → Zeitablauf → Interstitial „+100 / Zwischenstand 100 Punkte" → Leg 2 mit frischem Budget. Tests 75/75, tsc + lint sauber. ⚠️ `submitCupRun` scheitert bei Rohsummen > 100 am alten DB-Check — behoben in E5 |
 | E5 | DB-Migration: `cup_runs.total_score`-Check (0–100) ersetzen, Leaderboard-Views auf Rohpunkte statt `percent` sortieren, **Bestleistung pro Spieler** (S1) + **Zeitfilter Woche/Monat/Jahr/Alle** (Nutzer-Wunsch), `max_possible`-Semantik geklärt (Spalte bleibt, Client schreibt Score; Ablösung in Phase D). UI: Modus-Auswahl im Global-Tab + Zeitraum-Picker (Global & Cups), Lokal-Tab auf Rohpunkte | ✅ | Migration `0005_arcade_scoring.sql`: löscht Alt-Einträge (Nutzer-Entscheid), ersetzt Views durch RPCs `get_leaderboard_scores/cups(mode, since, limit)` (security definer, nur `authenticated`), neuer Trigger (400 ms/Frage, max. 10 min, Score ≤ 100n+5n(n−1)). **0005 auf Live-DB verifiziert (2026-07-12: RPC existiert, Gating greift)** — Achtung: 0005 nie erneut ausführen, der `delete`-Block würde neue Scores löschen |
-| E6 | Balancing-Runde auf echtem Gerät: Fragen/Minute pro Modus messen, Stufen-Gefühl bei Pins prüfen, Label-Feinschliff | 🔄 | Erst danach Phase D starten. **Offene Nutzer-Rückmeldung (2026-07-14):** Städte-Pin liefert deutlich schwerer Punkte als Flaggen — langes Reinzoomen nötig, km-Stufen (100/200/500/1000) streng. Entscheidung ausstehend: Pin-Stufen aufweichen (betrifft Live-Leaderboard) oder so lassen. Zoom-Default (Weltansicht, zoom 2) ist inhärent nötig, da Ziel unbekannt |
+| E6 | Balancing-Runde auf echtem Gerät: Fragen/Minute pro Modus messen, Stufen-Gefühl bei Pins prüfen, Label-Feinschliff | ✅ | Drei Playtest-Runden umgesetzt (2026-07-14/15, siehe Verlauf): Pin-Zonen auf **100/350/1000/2500 km** erweitert (Nutzer-Entscheid), VOLLTREFFER gibt **+3 s** zurück, „correct"-Grenze ≤ 350 km; Anti-Tasten-Spam als unsichtbare Mindestzeit 0,5 s/Frage (sichtbare Strafsekunden nach Feedback wieder verworfen); Choice-Layout ohne Scrollen (Flagge/Umriss skalieren mit Fensterhöhe); Training komplett neu (Setup: Kategorien + Endlos/10/25, ohne Zeitdruck) |
 
 **Fertig-Kriterium:** Alle Modi außer Training laufen zeitbasiert nach dem neuen Regelwerk, Leaderboards zeigen Rohpunkte, Cup funktioniert mit 30-s-Legs — verifiziert auf einem echten Gerät.
 
@@ -138,6 +138,22 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 ---
 
+## Phase H — Avatare & Spielerkarten 🎭
+
+*Ziel: Wählbare 8-Bit-Pixel-Avatare (GB-Trainer-Stil), Spielerkarte mit Erfolgen/Bestpunkten, Avatare in der Bestenliste. Vollständiges Regelwerk in [DESIGN-AVATARS.md](DESIGN-AVATARS.md).*
+
+| # | Schritt | Status | Notiz |
+|---|---|---|---|
+| H1 | Avatar-Katalog (prozedurale 16×16-Sprites) + Renderer + Picker im Profil + `avatarStore` | ✅ | 21 Avatare: 8 Starter (u. a. Kanarienvögel Sora/Riku, Prinzessin Mira, Superheld), 13 freischaltbar über Level/Abzeichen/Pokal; Prestige „Geologe" bei allen 16 Abzeichen auf Diamant. Gäste können nichts freischalten (Picker: „Nur mit Account"). Zwei Grafik-Iterationen (flache Icons → geschattete GB-Sprites nach Nutzer-Feedback) |
+| H2 | Avatar in Header (mit Verbindungsstatus-Punkt statt „● ONLINE"-Text), Spielerkarte (`PlayerCard`: Level/XP, Erfolgs-Embleme, Bestpunkte) + Overlay beim Klick auf die eigene Bestenlisten-Zeile, Cup-Punkte-Hover in „Meine Rekorde" | ✅ | Header dadurch mobil-tauglich (kein Überlauf bei 375 px) |
+| H3 | Migration `0010_profile_avatars.sql`: `profiles.avatar_id` + Nur-Lese-RPC `get_profile_avatars(names[])`; Client-Sync (`avatarApi.ts`): Auswahl → Profil, Login-Reconcile, Bestenlisten-Zeilen aller Spieler mit Avatar | ✅ | Additiv — Leaderboard-RPCs unangetastet; Client läuft ohne Migration graceful (nur ohne fremde Avatare) |
+| H4 | **Migration 0010 auf Live-DB einspielen** | ⬜ | Danach erscheinen fremde Avatare in der Bestenliste; Datei auch ans Ende von `apply_all.sql` angehängt |
+| H5 | Spielerkarten fremder Accounts (Embleme/Bestpunkte anderer beim Klick) + „Karten-Skins" | ⬜ | Braucht weitere Profil-RPC — Umfang siehe DESIGN-AVATARS A2/A3 |
+
+**Fertig-Kriterium:** Jeder Spieler in der globalen Bestenliste ist an seinem Pixel-Avatar erkennbar; die eigene Karte zeigt Avatar, Level, Embleme und Bestpunkte.
+
+---
+
 ## Ideen-Parkplatz (unpriorisiert)
 
 - Duell-Modus (asynchron: gleicher Fragen-Seed, Ergebnis vergleichen)
@@ -154,6 +170,9 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-15 | Playtest R5: Starter-Avatare umgebaut (Nutzer-Wunsch) — Kanarienvögel **Sora** (orange) + **Riku** (gelb/schwarz) ersetzen Lena/Max, **Mira → Prinzessin**, **Superheld** neu, Robo → Level 8 (21 Avatare gesamt). [DESIGN-AVATARS.md](DESIGN-AVATARS.md) als Plan-Doc angelegt, README/STATUS/ROADMAP auf aktuellen Stand gebracht. Arbeitsweise ab jetzt: jede Umsetzung bekommt ein Design-Doc, Docs werden nachgezogen |
+| 2026-07-15 | Playtest R4: keine Avatar-Unlocks als Gast („Nur mit Account"), 4 neue Avatare (Geist, Vampir, Drache, **Geologe** = Prestige bei 16× Diamant), Header mobil kompakt (Status-Punkt am Avatar statt „● ONLINE"), sichtbare „−2 s"-Strafe ersetzt durch unsichtbare Mindestzeit 0,5 s/Frage, **Avatare in der Bestenliste für alle Spieler** (Migration `0010_profile_avatars.sql` + `avatarApi` — **H4: 0010 noch auf Live-DB einspielen**) |
+| 2026-07-15 | Playtest R3 umgesetzt: Pin-Zonen 100/**350/1000/2500** km + VOLLTREFFER +3 s (E6-Entscheid), Anti-Tasten-Spam, Training-Neubau (Setup-Screen: Kategorien-Filter + Endlos/10/25, ohne Zeitdruck — `useQuizSession` mit Streaming-Quelle), Choice-Layout ohne Scrollen. **Avatar-System eingeführt** (Phase H1/H2): Katalog + Picker + Spielerkarte + Cup-Punkte-Hover; Grafik-Iteration 2 im GB-Trainer-Stil nach Feedback |
 | 2026-07-14 | **Web-Deployment live** (Phase A weitgehend durch): Cloudflare Pages per Wrangler Direct Upload (Dashboard-Git-Flow unbrauchbar), Projekt `geo-quiz` → https://geo-quiz-a6s.pages.dev, `npm run deploy`-Script, README + GitHub-About verlinkt. Live-Smoke-Test: lädt, ONLINE, Konsole sauber. Offen: A4 (Supabase-Site-URL, manuell), voller A5-Durchlauf, A6-Handy-Test |
 | 2026-07-14 | 0009 auf Live-DB verifiziert (`rank` in den RPC-Antworten, Idempotenz bestätigt) — **Phase G komplett abgeschlossen**. `apply_pending.sql` + `revert_bot_round.sql` gelöscht, Live-DB-Stand: 0001–0009 |
 | 2026-07-14 | G5 abgeschlossen (0007+0008 auf Live-DB, Account-E2E komplett bestätigt inkl. Backfill, Unlock-Panel, rückwirkendem Wochen-Pokal; Test-Bot-Runde per Revert-SQL entfernt). G6 „Pokale Top 3" auf Nutzer-Wunsch umgesetzt (Migration 0009 + UI mit 🥇/🥈/🥉 und XP-Staffel) — **offen: 0009 einspielen (`apply_pending.sql`)** |

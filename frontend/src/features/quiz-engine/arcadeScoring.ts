@@ -21,6 +21,16 @@ export const STREAK_STEP = 0.1
 export const RECLAIM_EVERY = 10
 export const RECLAIM_SECONDS = 5
 
+/**
+ * Mindest-Budgetverbrauch pro Frage (Playtest-Feedback R3, ersetzt die
+ * Strafsekunden). Jede beantwortete Frage kostet mindestens so viel Zeit —
+ * blindes Tasten-Spammen (1–4) frisst dadurch trotzdem Budget, ganz ohne
+ * sichtbaren „Strafabzug". Liegt bewusst über der Server-Plausibilitätsgrenze
+ * von 400 ms/Frage (Migration 0001/0005), damit echte Läufe nie abgelehnt
+ * werden. Eine gelesene Multiple-Choice-Frage dauert real ohnehin länger.
+ */
+export const MIN_QUESTION_MS = 500
+
 export const SESSION_SECONDS = 60
 export const CUP_LEG_SECONDS = 30
 
@@ -36,16 +46,30 @@ export interface PinTier {
   /** Streak-Zuwachs; die Fehlstufe setzt stattdessen auf 0 zurück. */
   streakDelta: number
   breaksStreak: boolean
+  /** Zurückgeholte Sekunden allein für diese Stufe (Volltreffer-Bonus, R3). */
+  timeBonusSeconds: number
 }
 
-/** Einheitliche Stufen für beide Pin-Modi (DESIGN-ARCADE O1). */
+/**
+ * Einheitliche Stufen für beide Pin-Modi (DESIGN-ARCADE O1).
+ *
+ * Zonen bewusst großzügig (Playtest-Feedback R3): präzises Klicken auf der
+ * niedrig gezoomten Weltkarte ist schwer, darum zählt schon „grob richtig".
+ * Nur der Volltreffer bleibt eng (≤ 100 km) und gibt dafür +3 s Zeit zurück —
+ * das belohnt Präzision und verlängert die (langsamere) Pin-Session spürbar.
+ */
+export const VOLLTREFFER_TIME_BONUS = 3
+
 export const PIN_TIERS: readonly PinTier[] = [
-  { id: 'volltreffer', label: 'VOLLTREFFER!', maxKm: 100, points: 100, streakDelta: 1, breaksStreak: false },
-  { id: 'stark', label: 'STARK!', maxKm: 200, points: 50, streakDelta: 0.5, breaksStreak: false },
-  { id: 'knapp', label: 'KNAPP VORBEI', maxKm: 500, points: 10, streakDelta: 0.1, breaksStreak: false },
-  { id: 'naja', label: 'NAJA…', maxKm: 1000, points: 1, streakDelta: 0, breaksStreak: false },
-  { id: 'verpeilt', label: 'VÖLLIG VERPEILT', maxKm: Infinity, points: 0, streakDelta: 0, breaksStreak: true },
+  { id: 'volltreffer', label: 'VOLLTREFFER!', maxKm: 100, points: 100, streakDelta: 1, breaksStreak: false, timeBonusSeconds: VOLLTREFFER_TIME_BONUS },
+  { id: 'stark', label: 'STARK!', maxKm: 350, points: 50, streakDelta: 0.5, breaksStreak: false, timeBonusSeconds: 0 },
+  { id: 'knapp', label: 'KNAPP VORBEI', maxKm: 1000, points: 10, streakDelta: 0.1, breaksStreak: false, timeBonusSeconds: 0 },
+  { id: 'naja', label: 'NAJA…', maxKm: 2500, points: 1, streakDelta: 0, breaksStreak: false, timeBonusSeconds: 0 },
+  { id: 'verpeilt', label: 'VÖLLIG VERPEILT', maxKm: Infinity, points: 0, streakDelta: 0, breaksStreak: true, timeBonusSeconds: 0 },
 ] as const
+
+/** Obere Grenze (km), bis zu der eine Pin-Antwort als „richtig" zählt (STARK! oder besser). */
+export const PIN_CORRECT_MAX_KM = 350
 
 export function pinTierFor(distanceKm: number): PinTier {
   const tier = PIN_TIERS.find((t) => distanceKm <= t.maxKm)

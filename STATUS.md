@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · Stand: 2026-07-10
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-15
 
 ## Gesamtfortschritt
 
@@ -9,14 +9,24 @@
 |---|---|---|
 | 0 | Scaffold (Vite + React 18 + TS, Deps, Fonts, Rohdaten) | ✅ Fertig |
 | 1a | Daten: countries.json, cities.json, landmarks.json | ✅ Fertig |
-| 1b | Quiz-Engine (pure TS) + Vitest-Tests | ✅ Fertig (32 Tests grün) |
+| 1b | Quiz-Engine (pure TS) + Vitest-Tests | ✅ Fertig |
 | 1c | 8-Bit-Design-System + Home-Screen | ✅ Fertig |
 | 1d | MC-Modi: Flags, Countries, Capitals | ✅ Fertig (im Browser durchgespielt) |
-| 2 | Karten-Modi: Outline, City-Pin, Landmark-Pin | ✅ Fertig (Distanz-Score gegen Plan-Tabelle verifiziert) |
+| 2 | Karten-Modi: Outline, City-Pin, Landmark-Pin | ✅ Fertig |
 | 3 | Cup-Modus + Training-Modus + lokale Persistenz | ✅ Fertig (localStorage via zustand/persist) |
 | 4 | Supabase: Leaderboard + Sync + Account-Upgrade | ✅ Fertig (E2E verifiziert 2026-07-10) |
-| 5 | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Projekt-Setup fertig, Emulator/Geräte-Test offen) |
-| 6 | Polish + Deployment | ⬜ Offen |
+| A | Web-Deployment (Cloudflare Pages) | ✅ Live: [geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev) (`npm run deploy`) |
+| E | Arcade-Umbau: zeitbasierte Modi + neues Scoring ([DESIGN-ARCADE.md](DESIGN-ARCADE.md)) | ✅ Fertig inkl. 3 Playtest-Balancing-Runden (2026-07-14/15) |
+| F | Freundesgruppen ([DESIGN-SOCIAL.md](DESIGN-SOCIAL.md)) | ✅ Fertig (Zwei-Account-E2E 2026-07-12) |
+| G | Gamification: Abzeichen, Pokale Top 3, XP/Level ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | ✅ Fertig (Live-DB 0007–0009, E2E 2026-07-14) |
+| H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (21 Avatare, Karte, Bestenlisten-Avatare) — **Migration 0010 noch auf Live-DB** |
+| B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Projekt-Setup fertig, Geräte-Test offen) |
+| C | Polish (Sounds ✅, Code-Splitting/PWA/Haptics offen) | 🔄 |
+| D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |
+
+**Training seit R3 (2026-07-15):** eigenständig ohne Arcade — Setup-Screen mit
+Kategorien-Filter und Länge (Endlos/10/25), ohne Zeitdruck, adaptiver Sampler
+bevorzugt Ungesehenes & oft Falsches.
 
 ## Bereichs-Status
 
@@ -33,12 +43,13 @@
 | Modul | Status | Notiz |
 |---|---|---|
 | `types.ts` | ✅ | Question/Progress/Summary-Typen |
-| `scoring.ts` | ✅ | 179-Punkte-Beispiel + Distanztabelle verifiziert |
+| `arcadeScoring.ts` + `arcadeSession.ts` | ✅ | Zeitbudget-Engine (60 s / Cup 30 s), Streak ohne Deckel, Pin-Distanzstufen, Mindestzeit 0,5 s/Frage — Regelwerk: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) |
+| `scoring.ts` (alt) | ✅ | nur noch Trainings-Pfad (ohne Zeitdruck) |
 | `questionGenerator.ts` | ✅ | 6 Modi, deterministische IDs, Same-Region-Distraktoren, `questionFromId`-Roundtrip |
 | `adaptiveSampler.ts` | ✅ | Weighted-random, 30 % Flat-Mix, 5er-Ring-Buffer |
-| `cupSession.ts` | ✅ | 6 Legs à 5 Fragen, Normalisierung 0–100 |
+| `cupSession.ts` | ✅ | 6 Legs à 30 s, Cup-Total = Rohsumme |
 | `geo/distance.ts` (Haversine) | ✅ | Berlin↔Paris-Test |
-| Vitest-Tests | ✅ | 32 Tests, 3 Dateien |
+| Vitest-Tests | ✅ | 103 Tests, 9 Dateien |
 
 ### 🎨 UI / Design
 | Baustein | Status | Notiz |
@@ -58,9 +69,11 @@
 | Outline (markiertes Land erkennen) | ✅ | react-simple-maps @ React 18, MC-Antworten |
 | City-Pin | ✅ | Leaflet + Haversine, Feedback mit Ziel-Marker + Distanzlinie |
 | Landmark-Pin | ✅ | steilerer Falloff (R=90), zeigt Foto der Sehenswürdigkeit/des Ortes |
-| Cup (alle 6 Modi rotierend) | ✅ | 5 Fragen/Leg, Interstitials, End-Breakdown-Tabelle |
-| Training (adaptiv) | ✅ | Sampler über ~980 Fragen-IDs aller Modi, zählt nicht in Bestenliste |
-| Bestenliste (lokal) | ✅ | Top 25 nach %, Reset mit Bestätigung |
+| Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte-Hover je Disziplin in „Meine Rekorde" |
+| Training (adaptiv, eigenständig) | ✅ | Setup: Kategorien + Endlos/10/25, ohne Zeitdruck, zählt nicht in Bestenliste |
+| Bestenliste | ✅ | Lokal „Meine Rekorde" (Allzeit-Top-10 je Kategorie) · Global/Cups/Level mit Zeitfilter, Gruppen-Umschalter und Avataren |
+| Avatare & Spielerkarte | 🔄 | 21 Pixel-Avatare, Picker, Karte, Header-Status-Punkt — fremde Avatare erst nach Migration 0010 ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) |
+| Erfolge (Abzeichen/Pokale/Level) | ✅ | `/achievements`, Unlock-Panel am Rundenende, Level-Chip im Header |
 
 ### ☁️ Backend (Supabase) — Phase 4
 Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md)

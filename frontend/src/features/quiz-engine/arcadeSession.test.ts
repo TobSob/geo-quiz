@@ -138,6 +138,16 @@ describe('ArcadeSession — Scoring & Streak', () => {
     expect(session.bestStreak).toBe(1)
   })
 
+  it('jede Frage kostet mindestens die Mindestzeit (Anti-Spam R3)', () => {
+    const { session } = choiceSession()
+    session.start()
+
+    // Sofort geantwortet (Uhr steht) → trotzdem MIN_QUESTION_MS verbraucht.
+    session.answerChoice(3)
+    session.next()
+    expect(session.remainingMs()).toBe(59_500) // 60 s − 0,5 s
+  })
+
   it('Streak 10 erreicht → +5 Sekunden aufs Budget (O3: automatisch)', () => {
     const { session } = choiceSession()
     session.start()
@@ -150,7 +160,8 @@ describe('ArcadeSession — Scoring & Streak', () => {
     }
 
     expect(lastReclaim).toBe(5) // 10. Antwort überschreitet den Zehner
-    expect(session.remainingMs()).toBe(65_000) // keine Zeit verbraucht, +5 s
+    // 10 Fragen × 0,5 s Mindestzeit = 5 s verbraucht; +5 s zurückgeholt.
+    expect(session.remainingMs()).toBe(60_000)
     expect(session.summary().timeAddedSeconds).toBe(5)
   })
 })
@@ -168,7 +179,7 @@ describe('ArcadeSession — Pin-Antworten', () => {
     return { clock, session }
   }
 
-  it('Stufen: Punkte, Streak-Delta und correct-Grenze (≤ 200 km)', () => {
+  it('Stufen: Punkte, Streak-Delta und correct-Grenze (≤ 350 km)', () => {
     const { session } = pinSession()
 
     const fb1 = session.answerPin(50) // VOLLTREFFER!
@@ -176,6 +187,7 @@ describe('ArcadeSession — Pin-Antworten', () => {
     expect(fb1?.points).toBe(100)
     expect(fb1?.correct).toBe(true)
     expect(fb1?.streakAfter).toBe(1)
+    expect(fb1?.reclaimedSeconds).toBe(3) // Volltreffer-Zeitbonus
     session.next()
 
     const fb2 = session.answerPin(180) // STARK!
@@ -184,12 +196,13 @@ describe('ArcadeSession — Pin-Antworten', () => {
     expect(fb2?.streakAfter).toBe(1.5)
     session.next()
 
-    const fb3 = session.answerPin(450) // KNAPP VORBEI
+    const fb3 = session.answerPin(800) // KNAPP VORBEI
+    expect(fb3?.tier?.id).toBe('knapp')
     expect(fb3?.correct).toBe(false)
     expect(fb3?.streakAfter).toBe(1.6)
     session.next()
 
-    const fb4 = session.answerPin(900) // NAJA… hält die Streak
+    const fb4 = session.answerPin(1500) // NAJA… hält die Streak
     expect(fb4?.points).toBe(1)
     expect(fb4?.streakAfter).toBe(1.6)
     session.next()

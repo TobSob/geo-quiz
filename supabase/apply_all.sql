@@ -1755,3 +1755,31 @@ grant execute on function public.get_gamification() to authenticated;
 -- Füllt Plätze 2/3 bereits finalisierter Perioden auf, falls es dort weitere
 -- Cup-Spieler gab (inkl. XP + ggf. Pokal-Regal-Badge).
 select public.finalize_cup_trophies();
+
+-- ===== 0010_profile_avatars.sql =====
+-- Avatare (Feature-Idee R3): jedes Profil merkt sich seinen gewählten Avatar,
+-- damit die Bestenliste die Avatare aller Spieler anzeigen kann. Additiv —
+-- die Leaderboard-RPCs bleiben unangetastet, der Client dekoriert die Zeilen
+-- über get_profile_avatars() nach.
+
+alter table public.profiles
+  add column if not exists avatar_id text
+  check (avatar_id is null or char_length(avatar_id) <= 32);
+
+create or replace function public.get_profile_avatars(p_names text[])
+returns table (display_name text, avatar_id text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select distinct on (p.display_name) p.display_name, p.avatar_id
+  from public.profiles p
+  where public.is_registered_user()
+    and p.avatar_id is not null
+    and p.display_name = any (p_names)
+  order by p.display_name, p.last_seen_at desc;
+$$;
+
+revoke execute on function public.get_profile_avatars(text[]) from public, anon;
+grant execute on function public.get_profile_avatars(text[]) to authenticated;

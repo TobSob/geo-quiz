@@ -12,6 +12,9 @@ import { isOnlineEnabled } from './api/supabaseClient'
 import { flushProgress } from './features/progress/progressSync'
 import { useUserStore } from './state/userStore'
 import { useSettingsStore } from './state/settingsStore'
+import { useAvatarStore } from './state/avatarStore'
+import { reconcileAvatar } from './api/avatarApi'
+import { PixelAvatar } from './components/PixelAvatar'
 import { useGamificationStore } from './state/gamificationStore'
 import { levelForXp } from './features/gamification/levels'
 
@@ -22,6 +25,7 @@ function App() {
   const isAnonymous = useUserStore((s) => s.isAnonymous)
   const muted = useSettingsStore((s) => s.muted)
   const toggleMuted = useSettingsStore((s) => s.toggleMuted)
+  const avatarId = useAvatarStore((s) => s.avatarId)
   const gamificationStatus = useGamificationStore((s) => s.status)
   const xp = useGamificationStore((s) => s.xp)
 
@@ -41,6 +45,10 @@ function App() {
       if (auth) {
         setOnline(auth)
         void flushProgress()
+        // Avatar mit dem Server abgleichen — folgt so dem Account übers Gerät.
+        void reconcileAvatar(useAvatarStore.getState().avatarId).then((server) => {
+          if (server) useAvatarStore.setState({ avatarId: server })
+        })
         // XP/Badges/Pokale gibt es nur für registrierte Accounts (Phase G).
         if (!auth.isAnonymous) void gamification.load()
         else gamification.reset()
@@ -93,17 +101,19 @@ function App() {
         )}
         <Link
           to="/profile"
-          className="dim"
-          style={{ fontSize: 18, marginRight: 16, textDecoration: 'none' }}
           title={
             status === 'online'
               ? 'Mit dem Leaderboard verbunden — zum Profil'
               : status === 'connecting'
-                ? 'Verbinde…'
-                : 'Offline — Scores werden nur lokal gespeichert'
+                ? 'Verbinde… — zum Profil'
+                : 'Offline — Scores nur lokal · zum Profil'
           }
+          style={{ marginRight: 12, display: 'flex', textDecoration: 'none' }}
         >
-          {status === 'online' ? '● ONLINE' : status === 'connecting' ? '○ …' : '○ OFFLINE'}
+          {/* Status steckt jetzt im Punkt am Avatar — spart Platz auf Handys. */}
+          <span className={`header-avatar header-avatar--${status}`}>
+            <PixelAvatar id={avatarId} size={30} />
+          </span>
         </Link>
         {!isHome && (
           <Link to="/" className="dim" style={{ fontSize: 20 }}>

@@ -47,12 +47,12 @@ describe('pinTierFor / scorePinArcade', () => {
     [0, 'volltreffer', 100],
     [100, 'volltreffer', 100],
     [100.1, 'stark', 50],
-    [200, 'stark', 50],
-    [201, 'knapp', 10],
-    [500, 'knapp', 10],
-    [501, 'naja', 1],
-    [1000, 'naja', 1],
-    [1000.1, 'verpeilt', 0],
+    [350, 'stark', 50],
+    [350.1, 'knapp', 10],
+    [1000, 'knapp', 10],
+    [1000.1, 'naja', 1],
+    [2500, 'naja', 1],
+    [2500.1, 'verpeilt', 0],
     [19000, 'verpeilt', 0],
   ])('%s km → Stufe %s (%s Punkte)', (km, tierId, points) => {
     const tier = pinTierFor(km)
@@ -62,6 +62,12 @@ describe('pinTierFor / scorePinArcade', () => {
 
   it('Beispiel aus dem Design: STARK! bei Streak 4,4 → 72 Punkte', () => {
     expect(scorePinArcade(150, 4.4)).toBe(72)
+  })
+
+  it('Volltreffer trägt +3 s Zeitbonus, andere Stufen 0', () => {
+    expect(pinTierFor(50).timeBonusSeconds).toBe(3)
+    expect(pinTierFor(300).timeBonusSeconds).toBe(0)
+    expect(pinTierFor(9000).timeBonusSeconds).toBe(0)
   })
 })
 
@@ -75,8 +81,8 @@ describe('Streak-Übergänge', () => {
     expect(nextStreakPin(3, 80)).toBe(4)
     expect(nextStreakPin(3, 180)).toBe(3.5)
     expect(nextStreakPin(3, 450)).toBe(3.1)
-    expect(nextStreakPin(3, 900)).toBe(3) // NAJA… hält die Streak
-    expect(nextStreakPin(3, 1500)).toBe(0) // VÖLLIG VERPEILT bricht
+    expect(nextStreakPin(3, 1500)).toBe(3) // NAJA… hält die Streak
+    expect(nextStreakPin(3, 3000)).toBe(0) // VÖLLIG VERPEILT bricht
   })
 
   it('keine Float-Drift: zehnmal +0,1 ergibt exakt 1', () => {

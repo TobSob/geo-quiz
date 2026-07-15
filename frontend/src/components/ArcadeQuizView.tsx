@@ -84,6 +84,8 @@ export function ArcadeQuizView({
   useEffect(() => {
     if (phase !== 'question' || question?.kind !== 'choice') return
     const handler = (e: KeyboardEvent) => {
+      // Gehaltene Taste (Auto-Repeat) nicht als neue Antwort werten (R3).
+      if (e.repeat) return
       const n = Number(e.key)
       if (n >= 1 && n <= 4) answerChoice(n - 1)
     }
@@ -129,7 +131,7 @@ export function ArcadeQuizView({
         : 'timer-fill'
 
   return (
-    <div className={question.kind === 'pin' ? 'stack quiz-screen--pin' : 'stack'}>
+    <div className={question.kind === 'pin' ? 'stack quiz-screen--pin' : 'stack quiz-screen--choice'}>
       <div className="quiz-chrome">
         <div className="quiz-chrome-main">
           <div className="hud">

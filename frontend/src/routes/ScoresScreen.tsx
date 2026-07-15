@@ -17,7 +17,12 @@ import {
 import { levelForXp } from '../features/gamification/levels'
 import { listMyGroups, type FriendGroup } from '../api/groupApi'
 import { useUserStore } from '../state/userStore'
+import { useAvatarStore } from '../state/avatarStore'
+import { fetchAvatars } from '../api/avatarApi'
+import { PixelAvatar } from '../components/PixelAvatar'
+import { PlayerCardOverlay } from '../components/PlayerCard'
 import type { GameMode } from '../features/quiz-engine/types'
+import type { CupLegBreakdown } from '../state/progressStore'
 import { Link } from 'react-router-dom'
 
 const MODE_LABEL: Record<string, string> = {
@@ -39,6 +44,98 @@ function formatDate(ts: number | string): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/** Spielerkarten-Overlay als wiederverwendbarer Baustein je Tabelle. */
+function useCardOverlay() {
+  const [open, setOpen] = useState(false)
+  return {
+    openCard: () => setOpen(true),
+    node: open ? <PlayerCardOverlay onClose={() => setOpen(false)} /> : null,
+  }
+}
+
+/**
+ * Avatar-Zuordnung (Anzeigename → Avatar-ID) für die gerade geladenen Zeilen.
+ * Braucht Migration 0010; ohne sie bleibt die Map leer (dann nur Namen).
+ */
+function useAvatarMap(names: string[]): Map<string, string> {
+  const [map, setMap] = useState<Map<string, string>>(() => new Map())
+  const key = names.join('|')
+  useEffect(() => {
+    if (names.length === 0) {
+      setMap(new Map())
+      return
+    }
+    let stale = false
+    fetchAvatars(names).then((m) => {
+      if (!stale) setMap(m)
+    })
+    return () => {
+      stale = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+  return map
+}
+
+/**
+ * Spielername in der Bestenliste — mit Avatar, sodass man Mitspieler erkennt.
+ * Die eigene Zeile ist anklickbar (öffnet die eigene Karte).
+ */
+function LeaderName({
+  name,
+  isMe,
+  avatarId,
+  onOpen,
+}: {
+  name: string
+  isMe: boolean
+  avatarId: string | undefined
+  onOpen: () => void
+}) {
+  const avatar = avatarId ? <PixelAvatar id={avatarId} size={22} /> : null
+  if (isMe) {
+    return (
+      <button type="button" className="leader-me" onClick={onOpen} title="Deine Karte ansehen">
+        {avatar}
+        <span className="glow-cyan">{name}</span>
+      </button>
+    )
+  }
+  return (
+    <span className="leader-me leader-me--static">
+      {avatar}
+      <span className="glow-cyan">{name}</span>
+    </span>
+  )
+}
+
+/** Cup-Punkte mit Aufschlüsselung je Disziplin im Hover (R3). */
+function CupScoreCell({
+  score,
+  legs,
+}: {
+  score: number
+  legs: CupLegBreakdown[] | undefined
+}) {
+  if (!legs || legs.length === 0) {
+    return <span className="glow-yellow">{score.toLocaleString('de-DE')}</span>
+  }
+  return (
+    <span className="cup-cell" tabIndex={0}>
+      <span className="glow-yellow">{score.toLocaleString('de-DE')}</span>
+      <span className="cup-cell-hint">ℹ</span>
+      <span className="cup-tip" role="tooltip">
+        {legs.map((l) => (
+          <span key={l.mode} className="cup-tip-row">
+            <span className="dim">{MODE_TITLES[l.mode] ?? l.mode}</span>
+            <span className="glow-yellow">{l.score.toLocaleString('de-DE')}</span>
+          </span>
+        ))}
+      </span>
+    </span>
+  )
 }
 
 export function ScoresScreen() {
@@ -265,7 +362,13 @@ function LocalScores() {
               <tr key={`${s.mode}-${s.playedAt}-${i}`}>
                 {showRank && <td className="dim">{i + 1}</td>}
                 <td>{MODE_LABEL[s.mode] ?? s.mode}</td>
-                <td className="glow-yellow">{s.score}</td>
+                <td className={s.mode === 'cup' ? undefined : 'glow-yellow'}>
+                  {s.mode === 'cup' ? (
+                    <CupScoreCell score={s.score} legs={s.cupLegs} />
+                  ) : (
+                    s.score
+                  )}
+                </td>
                 <td className="dim">{s.questionCount}</td>
                 <td className="dim">{formatDate(s.playedAt)}</td>
               </tr>
@@ -316,6 +419,10 @@ function GlobalScores() {
   const [groupId, setGroupId] = useState<number | null>(null)
   const groups = useMyGroups()
   const [rows, setRows] = useState<LeaderboardScore[] | null | 'loading'>('loading')
+  const myName = useUserStore((s) => s.displayName)
+  const avatarId = useAvatarStore((s) => s.avatarId)
+  const { openCard, node } = useCardOverlay()
+  const avatarMap = useAvatarMap(Array.isArray(rows) ? rows.map((r) => r.display_name) : [])
 
   useEffect(() => {
     let stale = false
@@ -365,18 +472,32 @@ function GlobalScores() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={`${r.display_name}-${r.played_at}-${i}`}>
-                <td className="dim">{i + 1}</td>
-                <td className="glow-cyan">{r.display_name}</td>
-                <td className="glow-yellow">{r.score}</td>
-                <td className="dim">{r.question_count}</td>
-                <td className="dim">{formatDate(r.played_at)}</td>
-              </tr>
-            ))}
+            {rows.map((r, i) => {
+              const isMe = !!myName && r.display_name === myName
+              return (
+                <tr
+                  key={`${r.display_name}-${r.played_at}-${i}`}
+                  className={isMe ? 'leader-row-me' : undefined}
+                >
+                  <td className="dim">{i + 1}</td>
+                  <td>
+                    <LeaderName
+                      name={r.display_name}
+                      isMe={isMe}
+                      avatarId={isMe ? avatarId : avatarMap.get(r.display_name)}
+                      onOpen={openCard}
+                    />
+                  </td>
+                  <td className="glow-yellow">{r.score}</td>
+                  <td className="dim">{r.question_count}</td>
+                  <td className="dim">{formatDate(r.played_at)}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
+      {node}
     </div>
   )
 }
@@ -386,6 +507,10 @@ function LevelScores() {
   const [groupId, setGroupId] = useState<number | null>(null)
   const groups = useMyGroups()
   const [rows, setRows] = useState<LeaderboardLevelEntry[] | null | 'loading'>('loading')
+  const myName = useUserStore((s) => s.displayName)
+  const avatarId = useAvatarStore((s) => s.avatarId)
+  const { openCard, node } = useCardOverlay()
+  const avatarMap = useAvatarMap(Array.isArray(rows) ? rows.map((r) => r.display_name) : [])
 
   useEffect(() => {
     let stale = false
@@ -424,17 +549,31 @@ function LevelScores() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={`${r.display_name}-${i}`}>
-                <td className="dim">{i + 1}</td>
-                <td className="glow-cyan">{r.display_name}</td>
-                <td className="glow-yellow">LVL {levelForXp(r.xp)}</td>
-                <td className="dim">{r.xp.toLocaleString('de-DE')}</td>
-              </tr>
-            ))}
+            {rows.map((r, i) => {
+              const isMe = !!myName && r.display_name === myName
+              return (
+                <tr
+                  key={`${r.display_name}-${i}`}
+                  className={isMe ? 'leader-row-me' : undefined}
+                >
+                  <td className="dim">{i + 1}</td>
+                  <td>
+                    <LeaderName
+                      name={r.display_name}
+                      isMe={isMe}
+                      avatarId={isMe ? avatarId : avatarMap.get(r.display_name)}
+                      onOpen={openCard}
+                    />
+                  </td>
+                  <td className="glow-yellow">LVL {levelForXp(r.xp)}</td>
+                  <td className="dim">{r.xp.toLocaleString('de-DE')}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
+      {node}
     </div>
   )
 }
@@ -444,6 +583,10 @@ function CupScores() {
   const [groupId, setGroupId] = useState<number | null>(null)
   const groups = useMyGroups()
   const [rows, setRows] = useState<LeaderboardCup[] | null | 'loading'>('loading')
+  const myName = useUserStore((s) => s.displayName)
+  const avatarId = useAvatarStore((s) => s.avatarId)
+  const { openCard, node } = useCardOverlay()
+  const avatarMap = useAvatarMap(Array.isArray(rows) ? rows.map((r) => r.display_name) : [])
 
   useEffect(() => {
     let stale = false
@@ -480,17 +623,31 @@ function CupScores() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, i) => (
-              <tr key={`${r.display_name}-${r.played_at}-${i}`}>
-                <td className="dim">{i + 1}</td>
-                <td className="glow-cyan">{r.display_name}</td>
-                <td className="glow-yellow">{r.total_score}</td>
-                <td className="dim">{formatDate(r.played_at)}</td>
-              </tr>
-            ))}
+            {rows.map((r, i) => {
+              const isMe = !!myName && r.display_name === myName
+              return (
+                <tr
+                  key={`${r.display_name}-${r.played_at}-${i}`}
+                  className={isMe ? 'leader-row-me' : undefined}
+                >
+                  <td className="dim">{i + 1}</td>
+                  <td>
+                    <LeaderName
+                      name={r.display_name}
+                      isMe={isMe}
+                      avatarId={isMe ? avatarId : avatarMap.get(r.display_name)}
+                      onOpen={openCard}
+                    />
+                  </td>
+                  <td className="glow-yellow">{r.total_score}</td>
+                  <td className="dim">{formatDate(r.played_at)}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
+      {node}
     </div>
   )
 }

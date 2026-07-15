@@ -17,6 +17,8 @@ import {
 import { isOnlineEnabled } from '../api/supabaseClient'
 import { flushProgress } from '../features/progress/progressSync'
 import { useUserStore } from '../state/userStore'
+import { PlayerCard } from '../components/PlayerCard'
+import { AvatarPicker } from '../components/AvatarPicker'
 
 const inputStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
@@ -30,6 +32,18 @@ const inputStyle: CSSProperties = {
 }
 
 export function ProfileScreen() {
+  return (
+    <div className="stack" style={{ gap: 28, maxWidth: 560, margin: '0 auto', width: '100%' }}>
+      <h2 className="glow-cyan center">👤 Profil</h2>
+      <PlayerCard />
+      <AvatarPicker />
+      <AccountSection />
+    </div>
+  )
+}
+
+/** Account-Teil (Name, Gruppen, An-/Abmelden) — nur mit erreichbarem Server. */
+function AccountSection() {
   const { status, displayName, isAnonymous, email } = useUserStore()
 
   if (!isOnlineEnabled) {
@@ -49,9 +63,7 @@ export function ProfileScreen() {
   }
 
   return (
-    <div className="stack" style={{ gap: 28, maxWidth: 560, margin: '0 auto', width: '100%' }}>
-      <h2 className="glow-cyan center">👤 Profil</h2>
-
+    <>
       <div className="pixel-panel stack" style={{ padding: 20 }}>
         <NameEditor />
         <div className="dim" style={{ fontSize: 19 }}>
@@ -74,7 +86,7 @@ export function ProfileScreen() {
         Bestenlisten, kannst Freundesgruppen erstellen und dich auf jedem
         Gerät anmelden ({displayName ?? 'dein Name'} bleibt dabei erhalten).
       </p>
-    </div>
+    </>
   )
 }
 

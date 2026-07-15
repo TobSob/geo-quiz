@@ -9,6 +9,8 @@ import {
   reclaimedSeconds,
   scoreChoiceArcade,
   scorePinArcade,
+  PIN_CORRECT_MAX_KM,
+  MIN_QUESTION_MS,
 } from './arcadeScoring'
 
 /**
@@ -32,12 +34,12 @@ export type ArcadePhase = 'idle' | 'question' | 'feedback' | 'done'
 
 export interface ArcadeAnswerFeedback {
   questionId: string
-  /** Choice: getroffen. Pin: Stufe STARK! oder besser (≤ 200 km) — Basis fürs Lern-Tracking. */
+  /** Choice: getroffen. Pin: Stufe STARK! oder besser (≤ 350 km) — Basis fürs Lern-Tracking. */
   correct: boolean
   points: number
   streakBefore: number
   streakAfter: number
-  /** > 0 genau dann, wenn diese Antwort einen vollen Zehner überschritten hat. */
+  /** Zurückgeholte Sekunden: Zehner-Übergang (+5 s) plus Volltreffer-Bonus (+3 s). */
   reclaimedSeconds: number
   /** Nur bei Pin-Antworten gesetzt. */
   tier: PinTier | null
@@ -199,11 +201,13 @@ export class ArcadeSession {
     const streakAfter = nextStreakPin(streakBefore, distanceKm)
     return this.applyAnswer({
       questionId: this.current.id,
-      correct: distanceKm <= 200,
+      correct: distanceKm <= PIN_CORRECT_MAX_KM,
       points,
       streakBefore,
       streakAfter,
-      reclaimedSeconds: reclaimedSeconds(streakBefore, streakAfter),
+      // Zehner-Rückholung plus Volltreffer-Zeitbonus dieser Stufe.
+      reclaimedSeconds:
+        reclaimedSeconds(streakBefore, streakAfter) + tier.timeBonusSeconds,
       tier,
       distanceKm,
     })
@@ -245,7 +249,9 @@ export class ArcadeSession {
    * aufgebraucht (Antwort kam zu spät, Wanduhr!) und die Session ist beendet.
    */
   private closeQuestionOrEnd(): boolean {
-    const elapsed = this.now() - this.questionShownAt
+    // Jede Frage kostet mindestens MIN_QUESTION_MS Budget — so verliert auch
+    // Tasten-Spam Zeit, ohne dass es sich wie eine Strafe anfühlt (R3).
+    const elapsed = Math.max(this.now() - this.questionShownAt, MIN_QUESTION_MS)
     this.consumedMs += elapsed
     if (this.consumedMs >= this.budgetMs) {
       this.consumedMs = this.budgetMs

@@ -6,6 +6,12 @@ import type {
   SessionSummary,
 } from '../features/quiz-engine/types'
 
+/** Punkte je Disziplin eines Cup-Laufs — Basis fürs Punkte-Hover (R3). */
+export interface CupLegBreakdown {
+  mode: GameMode
+  score: number
+}
+
 export interface LocalScoreEntry {
   mode: GameMode | 'cup' | 'training'
   score: number
@@ -13,6 +19,8 @@ export interface LocalScoreEntry {
   questionCount: number
   durationMs: number
   playedAt: number
+  /** Nur bei Cup-Läufen: Punkte je Disziplin (für die Aufschlüsselung im Hover). */
+  cupLegs?: CupLegBreakdown[]
 }
 
 const MAX_SCORE_ENTRIES = 50
@@ -118,6 +126,10 @@ export const useProgressStore = create<ProgressState>()(
             questionCount: legs.reduce((s, l) => s + l.questionCount, 0),
             durationMs: legs.reduce((s, l) => s + l.durationMs, 0),
             playedAt: Date.now(),
+            cupLegs: legs.map((l) => ({
+              mode: l.mode as GameMode,
+              score: l.score,
+            })),
           }
           return {
             scores: [entry, ...state.scores].slice(0, MAX_SCORE_ENTRIES),

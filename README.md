@@ -2,22 +2,30 @@
 
 **▶ Jetzt spielen: [geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev)**
 
-Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Flaggen raten, Hauptstädte kennen, Städte auf der Karte pinnen und im **Geo Cup** alle Disziplinen hintereinander spielen. Ein adaptiver Trainingsmodus bringt genau die Fragen zurück, die du am häufigsten verhaust.
+Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Alle Spielmodi laufen als **Arcade-Sessions**: 60 Sekunden, so viele Fragen wie du schaffst, Streak-Multiplikator ohne Deckel. Dazu Pixel-Avatare, Abzeichen, Pokale, Level, Freundesgruppen — und ein adaptiver Trainingsmodus, der genau die Fragen zurückbringt, die du am häufigsten verhaust.
 
-> 🎮 Sofort spielbar ohne Anmeldung · 🏆 Globale Bestenlisten mit Account · 📴 Läuft komplett offline
+> 🎮 Sofort spielbar ohne Anmeldung · 🏆 Globale Bestenlisten, Erfolge & Gruppen mit Account · 📴 Läuft komplett offline
 
 ## Spielmodi
 
 | Modus | Beschreibung |
 |---|---|
-| 🚩 **Flaggen** | Welches Land gehört zur Flagge? (4 Antworten, Zeitbonus, Streak-Multiplikator) |
+| 🚩 **Flaggen** | Welches Land gehört zur Flagge? (60 s, 4 Antworten, Tasten 1–4) |
 | 🏛️ **Hauptstädte** | Nenne die Hauptstadt des Landes |
 | 🌍 **Länder** | Zu welchem Land gehört die Hauptstadt? |
 | 🗺️ **Umrisse** | Erkenne das markierte Land auf der Weltkarte |
-| 📍 **Städte-Pin** | Setze den Pin — Punkte nach Distanz (Haversine, exponentieller Falloff) |
-| 🗿 **Landmark-Pin** | Wo steht das Wahrzeichen? (steilerer Falloff, Präzision zählt) |
-| 🏆 **Geo Cup** | Alle 6 Disziplinen à 5 Fragen, normalisierte Gesamtwertung 0–100 |
-| 🎯 **Training** | Adaptiver Sampler: oft falsch beantwortete & lange nicht gesehene Fragen kommen öfter |
+| 📍 **Städte-Pin** | Setze den Pin — Punkte nach Distanzstufen (VOLLTREFFER! ≤ 100 km gibt +3 s) |
+| 🗿 **Landmark-Pin** | Wo steht das Wahrzeichen? (mit Foto, gleiche Distanzstufen) |
+| 🏆 **Geo Cup** | Alle 6 Disziplinen hintereinander à 30 Sekunden, Gesamtwertung = Punktsumme |
+| 🎯 **Training** | Ohne Zeitdruck, endlos oder 10/25 Fragen, Kategorien wählbar — adaptiver Sampler bevorzugt Ungesehenes & oft Falsches |
+
+## Meta-Features
+
+- 🎭 **Pixel-Avatare** — 21 handgepixelte 16×16-Sprites (8 Starter, Rest über Level/Erfolge freischaltbar, [Katalog & Regeln](DESIGN-AVATARS.md))
+- 🏅 **Erfolge** — 16 Abzeichen in 5 Stufen (Normal→Diamant) mit eigenem Spruch je Stufe, XP + Level (Cap 99)
+- 🏆 **Pokale & Hall of Fame** — Wochen-/Monats-/Jahresbeste im Cup (Top 3)
+- 👥 **Freundesgruppen** — per Beitrittscode (z. B. `TURBO-YETI-83`), eigene Gruppen-Bestenlisten
+- 🥇 **Bestenlisten** — lokal („Meine Rekorde", Allzeit-Top-10 je Kategorie) und global (Bestleistung pro Spieler, Zeitfilter, mit Avataren)
 
 ## Tech-Stack
 
@@ -34,18 +42,22 @@ geo-quiz/
 ├── frontend/
 │   ├── src/
 │   │   ├── features/
-│   │   │   ├── quiz-engine/    # pures TS: Scoring, Fragengenerator, adaptiver Sampler, Cup (+ Tests)
+│   │   │   ├── quiz-engine/    # pures TS: Arcade-Scoring & -Session, Fragengenerator, adaptiver Sampler, Cup (+ Tests)
+│   │   │   ├── avatars/        # Avatar-Katalog (prozedurale 16×16-Pixel-Sprites) + Unlock-Regeln
+│   │   │   ├── gamification/   # Level-Kurve, Badge-Katalog (16 Abzeichen × 5 Stufen)
+│   │   │   ├── audio/          # 8-Bit-SFX per WebAudio-Synthese (keine Assets)
 │   │   │   ├── geo/            # Haversine-Distanz
 │   │   │   └── progress/       # Delta-Sync zur Datenbank (Offline-Queue)
-│   │   ├── routes/             # ein Screen pro Datei (Home, Play, Cup, Training, Scores, Profile)
-│   │   ├── components/         # QuizView, MapPicker, CountryOutline, Timer, StreakBadge
-│   │   ├── api/                # Supabase-Client, Auth, Scores, Leaderboard
-│   │   ├── state/              # Zustand-Stores (Progress mit localStorage-Persistenz, User)
-│   │   └── data/               # countries.json (245), cities.json (141), landmarks.json (64), Topojson
+│   │   ├── routes/             # ein Screen pro Datei (Home, Play, Cup, Training, Scores, Achievements, Profile)
+│   │   ├── components/         # ArcadeQuizView, QuizView, MapPicker, PixelAvatar, PlayerCard, …
+│   │   ├── api/                # Supabase-Client, Auth, Scores, Leaderboard, Gruppen, Avatare
+│   │   ├── state/              # Zustand-Stores (Progress, User, Gamification, Avatar, Settings)
+│   │   └── data/               # countries.json (245), cities.json (141), landmarks.json (129), Topojson
 │   └── scripts/                # Daten-Transformation aus mledoze/countries
 ├── supabase/
-│   ├── migrations/             # das gesamte Backend: Tabellen, RLS, RPCs, Views, Anti-Cheat-Trigger
+│   ├── migrations/             # das gesamte Backend: Tabellen, RLS, RPCs, Anti-Cheat, Gamification
 │   └── apply_all.sql           # alle Migrations kombiniert (für den SQL-Editor)
+├── DESIGN-*.md                 # Regelwerke: Arcade, Gamification, Social, Avatare
 ├── docs/PLAN.md                # Architektur- und Phasenplan
 └── STATUS.md                   # Projekt-Status mit Testprotokollen
 ```
@@ -86,13 +98,16 @@ cp frontend/.env.example frontend/.env.local
 
 **Spielen geht immer** — beim ersten Start wird unsichtbar eine anonyme Supabase-Session mit Retro-Namen (z. B. `PIXEL_FOX_42`) erzeugt, die den Lernfortschritt geräteübergreifend sichert. **Globale Bestenlisten** (eintragen *und* einsehen) erfordern einen registrierten Account: im Profil E-Mail + Passwort hinterlegen, die User-ID bleibt dieselbe und aller Fortschritt wandert mit. Das Gate ist serverseitig per Row Level Security erzwungen (Views und Insert-Policies prüfen den `is_anonymous`-JWT-Claim), nicht nur in der UI.
 
-## Scoring (Kurzfassung)
+## Scoring (Kurzfassung — Arcade-Regelwerk)
 
-- **Multiple Choice:** `round((100 + Zeitbonus_max50) × Streak-Multiplikator_max1.5)` → max. 225/Frage
-- **Pin-Modi:** `100 × e^(−Distanz/R)` (R = 200 km Städte, 90 km Landmarks), < 5 km = Bullseye 100, kleiner additiver Zeitbonus
-- **Cup:** `100 × erreicht / maximal` über alle Legs — fair trotz unterschiedlicher Maximalpunkte pro Modus
+- **Zeitbudget:** 60 s pro Runde (Cup-Legs 30 s); die Uhr läuft nur, während eine Frage aktiv ist. Jede Antwort kostet mindestens 0,5 s (Anti-Spam).
+- **Multiple Choice:** `100 × Streak-Multiplikator` — +10 % pro Streak-Punkt, ohne Deckel (Streak 7 → 170 Punkte); falsch = 0 und Streak weg.
+- **Pin-Modi:** Distanzstufen statt Kurve: ≤ 100 km VOLLTREFFER! (100 Pkt, Streak +1, **+3 s Zeit**), ≤ 350 km STARK! (50, +0,5), ≤ 1000 km KNAPP VORBEI (10, +0,1), ≤ 2500 km NAJA… (1, hält), darüber VÖLLIG VERPEILT (0, Streak weg).
+- **Zeit-Rückholung:** alle 10 vollen Streak-Punkte automatisch **+5 s**.
+- **Cup:** Gesamtwertung = Rohsumme aller sechs 30-s-Legs.
+- **Training:** ohne Zeitdruck, zählt nicht in Bestenlisten (eigener Pfad über `scoring.ts`).
 
-Die Formeln sind in [`scoring.ts`](frontend/src/features/quiz-engine/scoring.ts) implementiert und in [`scoring.test.ts`](frontend/src/features/quiz-engine/scoring.test.ts) gegen durchgerechnete Beispiele festgeschrieben.
+Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementiert in [`arcadeScoring.ts`](frontend/src/features/quiz-engine/arcadeScoring.ts), festgeschrieben in [`arcadeScoring.test.ts`](frontend/src/features/quiz-engine/arcadeScoring.test.ts).
 
 ## Datenquellen & Lizenzen
 
@@ -106,15 +121,20 @@ Die Formeln sind in [`scoring.ts`](frontend/src/features/quiz-engine/scoring.ts)
 
 - [x] Phase 1–3: Alle Spielmodi, 8-Bit-Design, lokale Persistenz
 - [x] Phase 4: Supabase (anonyme Auth, Account-Upgrade, Progress-Sync, gegatete Leaderboards)
-- [ ] Phase A: Web-Deployment (öffentliche URL)
-- [ ] Phase B: Android-App mit Capacitor
-- [ ] Phase C: Polish (8-Bit-Sounds, Code-Splitting, PWA)
+- [x] Phase A: Web-Deployment ([geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev), `npm run deploy`)
+- [x] Phase E: Arcade-Umbau (zeitbasierte Modi, neues Scoring) + Playtest-Balancing
+- [x] Phase F: Freundesgruppen · Phase G: Gamification (Abzeichen, Pokale, Level)
+- [x] Phase H: Avatare & Spielerkarten (Client fertig; Migration 0010 fürs Avatar-Sync noch einspielen)
+- [ ] Phase B: Android-App mit Capacitor (Toolchain steht, Gerätetest offen)
+- [ ] Phase C: Polish (Code-Splitting, PWA, Haptics — Sounds ✅)
+- [ ] Phase D: Anti-Cheat Stufe 2 (server-autoritatives Scoring; Stufe 1 ✅)
 
 Detaillierter Plan zum Abhaken: **[ROADMAP.md](ROADMAP.md)** · Stand & Testprotokolle: [STATUS.md](STATUS.md)
 
 ## Weiterführende Doku
 
 - 🛠️ **[Developer-Doku](docs/DEVELOPMENT.md)** — der komplette Stack erklärt: Architekturprinzipien, Quiz-Engine, Delta-Sync, Supabase-Schema & Sicherheitsmodell, Design-System, Erweiterungs-Kochbuch
+- 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md)
 - 📋 [Architekturplan](docs/PLAN.md) — die ursprüngliche Planung (Tech-Entscheidungen, Datenmodell, Phasen)
 - ☁️ [Backend-Setup](supabase/README.md) — Migrations anwenden, Dashboard-Einstellungen
 

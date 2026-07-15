@@ -30,12 +30,38 @@ export interface FeedbackInfo {
   guess: PinAnswer | null
 }
 
+export interface QuizSessionOptions {
+  /**
+   * Endless/streaming source (Training): instead of a fixed array, the next
+   * question is produced on demand. `null` ends the session (pool exhausted).
+   */
+  produceNext?: () => Question | null
+  /** Cap the streamed session to this many questions (0/undefined = endless). */
+  limit?: number
+}
+
 /**
  * Session state machine shared by all modes: question → feedback → next.
  * Scoring, streaks and progress recording live here; screens only render.
+ *
+ * Two shapes: a fixed `questions` array, or a streaming `produceNext` source
+ * (Training) that yields questions endlessly until an optional `limit`.
  */
-export function useQuizSession(mode: GameMode | 'training', questions: Question[]) {
+export function useQuizSession(
+  mode: GameMode | 'training',
+  questions: Question[],
+  opts: QuizSessionOptions = {},
+) {
+  const { produceNext, limit } = opts
+  const streaming = !!produceNext
   const recordAnswer = useProgressStore((s) => s.recordAnswer)
+  // Streaming mode grows this list as questions are produced; fixed mode uses
+  // the passed array verbatim.
+  const [list, setList] = useState<Question[]>(() => {
+    if (!produceNext) return questions
+    const first = produceNext()
+    return first ? [first] : []
+  })
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState<QuizPhase>('question')
   const [score, setScore] = useState(0)
@@ -50,7 +76,7 @@ export function useQuizSession(mode: GameMode | 'training', questions: Question[
   // in the same render cycle (the `phase` state guard alone is stale then).
   const answeredRef = useRef(false)
 
-  const question = questions[index] ?? null
+  const question = list[index] ?? null
 
   const finishAnswer = useCallback(
     (result: AnswerResult, chosenIndex: number | null, guess: PinAnswer | null) => {
@@ -139,9 +165,28 @@ export function useQuizSession(mode: GameMode | 'training', questions: Question[
     [question, phase, finishAnswer],
   )
 
+  const advanceTo = useCallback((q: Question) => {
+    answeredRef.current = false
+    setList((l) => [...l, q])
+    setIndex((i) => i + 1)
+    setQuestionKey((k) => k + 1)
+    questionStartRef.current = Date.now()
+    setPhase('question')
+  }, [])
+
   const next = useCallback(() => {
     setFeedback(null)
-    if (index + 1 >= questions.length) {
+    if (streaming) {
+      if (limit && index + 1 >= limit) {
+        setPhase('done')
+        return
+      }
+      const q = produceNext!()
+      if (!q) setPhase('done')
+      else advanceTo(q)
+      return
+    }
+    if (index + 1 >= list.length) {
       setPhase('done')
     } else {
       answeredRef.current = false
@@ -150,29 +195,30 @@ export function useQuizSession(mode: GameMode | 'training', questions: Question[
       questionStartRef.current = Date.now()
       setPhase('question')
     }
-  }, [index, questions.length])
+  }, [index, list.length, streaming, produceNext, limit, advanceTo])
 
   const summary: SessionSummary = useMemo(
     () => ({
       mode,
       score,
-      maxPossible: questions.reduce(
+      maxPossible: list.reduce(
         (s, q) => s + (q.kind === 'choice' ? MAX_CHOICE_SCORE : MAX_PIN_SCORE),
         0,
       ),
-      questionCount: questions.length,
+      questionCount: answers.length,
       correctCount: answers.filter((a) => a.correct).length,
       bestStreak,
       durationMs: Date.now() - startedAtRef.current,
       answers,
     }),
-    [mode, score, questions, answers, bestStreak],
+    [mode, score, list, answers, bestStreak],
   )
 
   return {
     question,
     index,
-    total: questions.length,
+    // Endless streaming has no known total → 0 tells the UI to hide "x/total".
+    total: streaming ? (limit ?? 0) : list.length,
     phase,
     score,
     streak,
