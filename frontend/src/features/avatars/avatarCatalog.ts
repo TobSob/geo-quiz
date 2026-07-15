@@ -622,6 +622,35 @@ export const AVATARS: readonly AvatarSpec[] = [
   },
 ] as const
 
+/**
+ * Numerischer Schlüssel für Sortierung: Starter=0, Level=level, sonst große Werte.
+ */
+function unlockKey(u: AvatarUnlock): number {
+  switch (u.kind) {
+    case 'starter':
+      return 0
+    case 'level':
+      return u.level
+    case 'badge':
+      return 10000
+    case 'trophy':
+      return 20000
+    case 'allDiamond':
+      return 30000
+  }
+}
+
+/**
+ * `AVATARS_BY_LEVEL` liefert die Avatare sortiert nach benötigtem Level (aufsteigend).
+ * Avatare ohne Level-Freischaltung folgen am Ende.
+ */
+export const AVATARS_BY_LEVEL: readonly AvatarSpec[] = AVATARS.slice().sort((a, b) => {
+  const ka = unlockKey(a.unlock)
+  const kb = unlockKey(b.unlock)
+  if (ka !== kb) return ka - kb
+  return a.name.localeCompare(b.name)
+})
+
 export const AVATAR_BY_ID: ReadonlyMap<string, AvatarSpec> = new Map(
   AVATARS.map((a) => [a.id, a]),
 )
