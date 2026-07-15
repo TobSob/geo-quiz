@@ -508,37 +508,37 @@ export const AVATARS: readonly AvatarSpec[] = [
   {
     id: 'sora',
     name: 'Sora',
-    unlock: { kind: 'starter' },
+    unlock: { kind: 'level', level: 18 },
     body: sprite(SORA),
   },
   {
     id: 'riku',
     name: 'Riku',
-    unlock: { kind: 'starter' },
+    unlock: { kind: 'level', level: 18 },
     body: sprite(RIKU),
   },
   {
     id: 'punk',
     name: 'Punk',
-    unlock: { kind: 'starter' },
+    unlock: { kind: 'level', level: 7 },
     body: human({ ...skinA, '@': 'D', '&': 'd', H: 'C', h: 'g' }, HAIR_SPIKY),
   },
   {
     id: 'cool',
     name: 'Cool',
-    unlock: { kind: 'starter' },
+    unlock: { kind: 'level', level: 7 },
     body: human({ ...skinB, '@': 'G', '&': 'n' }, CAP, SHADES),
   },
   {
     id: 'princess',
     name: 'Mira',
-    unlock: { kind: 'starter' },
+    unlock: { kind: 'level', level: 23 },
     body: human({ ...skinB, '@': 'K', '&': 'k', H: 'D', h: 'd' }, HAIR_LONG, TIARA),
   },
   {
     id: 'hero',
     name: 'Superheld',
-    unlock: { kind: 'starter' },
+    unlock: { kind: 'level', level: 35 },
     body: human({ ...skinA, '@': 'E', '&': 'e', H: 'D', h: 'd' }, HAIR_SHORT, MASK, EMBLEM),
   },
   // --- Freischaltbar ---
@@ -563,7 +563,7 @@ export const AVATARS: readonly AvatarSpec[] = [
   {
     id: 'knight',
     name: 'Ritter',
-    unlock: { kind: 'level', level: 10 },
+    unlock: { kind: 'level', level: 9 },
     body: sprite(KNIGHT),
   },
   {
@@ -605,7 +605,7 @@ export const AVATARS: readonly AvatarSpec[] = [
   {
     id: 'alien',
     name: 'Alien',
-    unlock: { kind: 'badge', badgeId: 'globetrotter', tier: 1 },
+    unlock: { kind: 'badge', badgeId: 'globetrotter', tier: 3 },
     body: sprite(ALIEN),
   },
   {
