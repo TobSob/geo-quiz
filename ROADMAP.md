@@ -58,6 +58,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 | C5 | PWA-Manifest + Service Worker (installierbar am Handy, echtes Offline-Caching) | ⬜ | günstige Alternative/Ergänzung zur Android-App |
 | C6 | Cup-Ergebnis: Balken-Breakdown pro Disziplin statt nur Tabelle | ⬜ | |
 | C7 | `npm audit`-Findings prüfen (5 high, transitiv) | ⬜ | vermutlich Dev-Dependencies — prüfen, ob Runtime betroffen |
+| C8 | Pin-Mode-UX (Nutzer-Feedback: "mehr Stress als arcade-cool") — Karte kann nicht mehr ins Leere gescrollt werden (`maxBounds`), schlankere mobile Top-Leiste für mehr Kartenfläche im Hochformat | ✅ | Details, Ursachenanalyse und geparkte Idee (Kontinent-Sprung-Buttons): [DESIGN-PIN-UX.md](DESIGN-PIN-UX.md) |
 
 ---
 
@@ -172,6 +173,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-16 | Pin-Mode-UX-Feedback ("mehr Stress als arcade-cool") diskutiert und zwei konkrete Bugs gefixt: Karte konnte ins Leere gescrollt werden (jetzt `maxBounds` + `maxBoundsViscosity`), mobile Top-Leiste war zu groß (jetzt schlanker, mehr Kartenfläche im Hochformat). Kontinent-Sprung-Buttons als Idee in [DESIGN-PIN-UX.md](DESIGN-PIN-UX.md) geparkt, nicht umgesetzt |
 | 2026-07-16 | Bug-Fix R9: Disziplinen im aufgeklappten Cup-Score erschienen zufällig sortiert (Ursache: `submitCupRun` schickt alle 6 Legs parallel, Einfüge-Reihenfolge in `score_entries` hängt vom Timing ab). Migration `0013_cup_leg_order.sql` sortiert `get_cup_run_legs` jetzt fest nach Cup-Reihenfolge. Reiner SQL-Fix |
 | 2026-07-16 | Playtest R8 (Bug-Report): Klick auf eine fremde Bestenlisten-Zeile öffnete immer die eigene Karte. Neue Migration `0012_player_card.sql` (name-basierte RPC `get_player_card`, liefert XP/Abzeichen/Bestpunkte je Modus + Cup-Bestwert für jeden registrierten Account); `PlayerCard` in Anzeige- (`PlayerCardView`) und Datenquellen-Komponenten (eigen/fremd) aufgeteilt, jede Zeile jetzt klickbar. tsc/103 Tests/Build/Lint grün |
 | 2026-07-16 | Playtest R7 (Nutzer-Wunsch): Cup-Bestenliste bekommt Punkte je Disziplin — Klick auf den Score klappt die sechs Leg-Scores auf. Neue Migration `0011_cup_leg_breakdown.sql` (`get_leaderboard_cups` liefert `cup_run_id`, neue RPC `get_cup_run_legs`), Client fällt ohne Migration graceful auf reinen Text zurück. tsc/103 Tests/Build/Lint grün |

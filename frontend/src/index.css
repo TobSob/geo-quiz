@@ -621,11 +621,13 @@ html {
     box-shadow: none;
   }
 
-  /* Top bar over the map. */
+  /* Top bar over the map — bewusst schlank (Nutzer-Feedback: die Karte
+     wirkt im Hochformat zu klein), damit möglichst viel Kartenfläche unter
+     der Leiste klickbar bleibt. */
   .quiz-screen--pin .quiz-chrome {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
     position: absolute;
     top: 0;
     left: 0;
@@ -633,37 +635,38 @@ html {
     z-index: 950;
     background: rgba(7, 6, 19, 0.86);
     border-bottom: 3px solid var(--shadow);
-    padding: 8px 10px calc(8px + 2px);
+    padding: 6px 8px calc(6px + 2px);
   }
 
   .quiz-screen--pin .quiz-chrome-main {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     flex: 1;
     min-width: 0;
   }
 
   .quiz-screen--pin .hud {
-    gap: 10px;
+    gap: 8px;
     flex-wrap: nowrap;
   }
 
   .quiz-screen--pin .hud-stat { font-size: 10px; }
-  .quiz-screen--pin .hud-stat .label { font-size: 7px; margin-bottom: 2px; }
+  .quiz-screen--pin .hud-stat .label { font-size: 7px; margin-bottom: 1px; }
 
   /* In der kompakten Pin-Topbar keinen Extra-Platz reservieren. */
   .quiz-screen--pin .time-pop-slot { min-height: 0; }
 
   .quiz-screen--pin .pin-prompt {
-    font-size: 11px;
+    font-size: 10px;
     margin: 0;
     text-align: left;
+    line-height: 1.2;
   }
 
   .quiz-screen--pin .quiz-chrome > .landmark-photo {
-    width: 118px;
-    height: 84px;
+    width: 88px;
+    height: 62px;
     align-self: flex-start;
   }
 
@@ -706,8 +709,8 @@ html {
 /* Landscape phones: every vertical pixel counts in the top bar. */
 @media (max-height: 480px) {
   .quiz-screen--pin .quiz-chrome > .landmark-photo {
-    width: 92px;
-    height: 64px;
+    width: 76px;
+    height: 52px;
   }
 
   .quiz-screen--pin .hud-stat .label { display: none; }

@@ -99,6 +99,14 @@ interface Props {
   onPick: (p: PinAnswer) => void
 }
 
+/** Nord/Süd hart begrenzt (kein Abdriften ins Nichts jenseits der Pole);
+ * Ost/West bewusst weiter gefasst als eine Weltbreite, damit `worldCopyJump`
+ * beim Überqueren der ±180°-Naht weiter nahtlos zurückspringen kann. */
+const MAP_BOUNDS: [[number, number], [number, number]] = [
+  [-85, -270],
+  [85, 270],
+]
+
 export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: Props) {
   return (
     <div className="map-frame map-frame--pin">
@@ -107,6 +115,8 @@ export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: P
         zoom={2}
         minZoom={2}
         maxZoom={10}
+        maxBounds={MAP_BOUNDS}
+        maxBoundsViscosity={1.0}
         style={{ height: '100%', width: '100%' }}
         worldCopyJump
         attributionControl
