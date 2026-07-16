@@ -2,15 +2,17 @@ import { useAvatarStore } from '../state/avatarStore'
 import { useUserStore } from '../state/userStore'
 import { useUnlockContext } from '../features/avatars/useAvatarUnlocks'
 import {
-  AVATARS,
+  AVATARS_BY_LEVEL,
   isAvatarUnlocked,
   unlockLabel,
 } from '../features/avatars/avatarCatalog'
 import { PixelAvatar } from './PixelAvatar'
 
-  AVATARS_BY_LEVEL,
- * Avatar-Auswahl (Feature-Idee R3): Starter sind immer wählbar, gesperrte
- * zeigen ausgegraut ihre Freischalt-Bedingung. Auswahl liegt lokal.
+/**
+ * Avatar-Auswahl (Feature-Idee R3, Redesign R6): Starter (Junge/Mädchen) sind
+ * immer wählbar, alle anderen zeigen ausgegraut ihre Freischalt-Bedingung.
+ * Sortiert nach Schwierigkeit (`AVATARS_BY_LEVEL`), damit der Picker als
+ * Fortschrittsleiste liest. Auswahl liegt lokal + wird ans Profil synchronisiert.
  */
 export function AvatarPicker() {
   const avatarId = useAvatarStore((s) => s.avatarId)
@@ -26,13 +28,13 @@ export function AvatarPicker() {
       <h3 className="glow-cyan">🎭 Avatar</h3>
       <p className="dim" style={{ margin: 0, fontSize: 18 }}>
         Wähle deinen Pixel-Avatar — er erscheint im Menü und auf deiner Zeile in
-      <div className="avatar-grid">
-        {AVATARS_BY_LEVEL.map((spec) => {
+        der Bestenliste.{' '}
+        {hasAccount
           ? 'Weitere schaltest du mit Level und Erfolgen frei.'
           : 'Weitere Avatare gibt es mit einem Account (Level & Erfolge).'}
       </p>
       <div className="avatar-grid">
-        {AVATARS.map((spec) => {
+        {AVATARS_BY_LEVEL.map((spec) => {
           const unlocked = isAvatarUnlocked(spec, ctx)
           const selected = spec.id === avatarId
           // Gäste können nichts freischalten → einheitlicher Account-Hinweis

@@ -8,8 +8,9 @@ import { BADGES, type BadgeId } from '../gamification/badgeCatalog'
  *
  * Menschliche Trainer teilen sich ein Basis-Gesicht (`BASE`) und bekommen
  * Frisur/Accessoire als Overlay-Ebene daraufgelegt; Roboter, Alien & Co. sind
- * eigenständige Sprites. 8 Starter sind immer wählbar, „coolere" schaltet man
- * über Level bzw. Erfolge frei.
+ * eigenständige Sprites. Nur Junge/Mädchen sind Starter (immer wählbar, auch
+ * als Gast); alle anderen schaltet man über eine aufsteigende Level-Kurve
+ * (3–40) bzw. Erfolge/Pokal/Prestige frei — siehe DESIGN-AVATARS.md.
  */
 
 export type AvatarUnlock =
@@ -505,43 +506,7 @@ export const AVATARS: readonly AvatarSpec[] = [
     unlock: { kind: 'starter' },
     body: human({ ...skinA, '@': 'K', '&': 'k', H: 'O', h: 'o' }, HAIR_LONG),
   },
-  {
-    id: 'sora',
-    name: 'Sora',
-    unlock: { kind: 'level', level: 18 },
-    body: sprite(SORA),
-  },
-  {
-    id: 'riku',
-    name: 'Riku',
-    unlock: { kind: 'level', level: 18 },
-    body: sprite(RIKU),
-  },
-  {
-    id: 'punk',
-    name: 'Punk',
-    unlock: { kind: 'level', level: 7 },
-    body: human({ ...skinA, '@': 'D', '&': 'd', H: 'C', h: 'g' }, HAIR_SPIKY),
-  },
-  {
-    id: 'cool',
-    name: 'Cool',
-    unlock: { kind: 'level', level: 7 },
-    body: human({ ...skinB, '@': 'G', '&': 'n' }, CAP, SHADES),
-  },
-  {
-    id: 'princess',
-    name: 'Mira',
-    unlock: { kind: 'level', level: 23 },
-    body: human({ ...skinB, '@': 'K', '&': 'k', H: 'D', h: 'd' }, HAIR_LONG, TIARA),
-  },
-  {
-    id: 'hero',
-    name: 'Superheld',
-    unlock: { kind: 'level', level: 35 },
-    body: human({ ...skinA, '@': 'E', '&': 'e', H: 'D', h: 'd' }, HAIR_SHORT, MASK, EMBLEM),
-  },
-  // --- Freischaltbar ---
+  // --- Freischaltbar (aufsteigend nach benötigtem Level/Erfolg) ---
   {
     id: 'ninja',
     name: 'Ninja',
@@ -555,22 +520,28 @@ export const AVATARS: readonly AvatarSpec[] = [
     body: human({ ...skinA, '@': 'M', '&': 'm' }, WIZHAT),
   },
   {
+    id: 'punk',
+    name: 'Punk',
+    unlock: { kind: 'level', level: 7 },
+    body: human({ ...skinA, '@': 'D', '&': 'd', H: 'C', h: 'g' }, HAIR_SPIKY),
+  },
+  {
+    id: 'cool',
+    name: 'Cool',
+    unlock: { kind: 'level', level: 8 },
+    body: human({ ...skinB, '@': 'G', '&': 'n' }, CAP, SHADES),
+  },
+  {
     id: 'robot',
     name: 'Robo',
-    unlock: { kind: 'level', level: 8 },
+    unlock: { kind: 'level', level: 9 },
     body: sprite(ROBOT),
   },
   {
     id: 'knight',
     name: 'Ritter',
-    unlock: { kind: 'level', level: 9 },
+    unlock: { kind: 'level', level: 10 },
     body: sprite(KNIGHT),
-  },
-  {
-    id: 'astro',
-    name: 'Astronaut',
-    unlock: { kind: 'level', level: 15 },
-    body: sprite(ASTRO),
   },
   {
     id: 'ghost',
@@ -579,10 +550,40 @@ export const AVATARS: readonly AvatarSpec[] = [
     body: sprite(GHOST),
   },
   {
+    id: 'sora',
+    name: 'Sora',
+    unlock: { kind: 'level', level: 14 },
+    body: sprite(SORA),
+  },
+  {
+    id: 'riku',
+    name: 'Riku',
+    unlock: { kind: 'level', level: 15 },
+    body: sprite(RIKU),
+  },
+  {
+    id: 'astro',
+    name: 'Astronaut',
+    unlock: { kind: 'level', level: 17 },
+    body: sprite(ASTRO),
+  },
+  {
     id: 'robogirl',
     name: 'Cyra',
     unlock: { kind: 'level', level: 20 },
     body: sprite(ROBOGIRL),
+  },
+  {
+    id: 'princess',
+    name: 'Mira',
+    unlock: { kind: 'level', level: 23 },
+    body: human({ ...skinB, '@': 'K', '&': 'k', H: 'D', h: 'd' }, HAIR_LONG, TIARA),
+  },
+  {
+    id: 'vampire',
+    name: 'Vampir',
+    unlock: { kind: 'level', level: 26 },
+    body: human({ '#': 'q', '%': 'Q', '@': 'R', '&': 'r', H: 'D', h: 'd' }, VAMPHAIR),
   },
   {
     id: 'king',
@@ -591,10 +592,10 @@ export const AVATARS: readonly AvatarSpec[] = [
     body: human({ ...skinA, '@': 'M', '&': 'm', H: 'B', h: 'b' }, HAIR_SHORT, CROWN),
   },
   {
-    id: 'vampire',
-    name: 'Vampir',
-    unlock: { kind: 'level', level: 25 },
-    body: human({ '#': 'q', '%': 'Q', '@': 'R', '&': 'r', H: 'D', h: 'd' }, VAMPHAIR),
+    id: 'hero',
+    name: 'Superheld',
+    unlock: { kind: 'level', level: 34 },
+    body: human({ ...skinA, '@': 'E', '&': 'e', H: 'D', h: 'd' }, HAIR_SHORT, MASK, EMBLEM),
   },
   {
     id: 'dragon',
@@ -605,7 +606,7 @@ export const AVATARS: readonly AvatarSpec[] = [
   {
     id: 'alien',
     name: 'Alien',
-    unlock: { kind: 'badge', badgeId: 'globetrotter', tier: 3 },
+    unlock: { kind: 'badge', badgeId: 'globetrotter', tier: 1 },
     body: sprite(ALIEN),
   },
   {
@@ -623,7 +624,9 @@ export const AVATARS: readonly AvatarSpec[] = [
 ] as const
 
 /**
- * Numerischer Schlüssel für Sortierung: Starter=0, Level=level, sonst große Werte.
+ * Sortierschlüssel nach Freischalt-Schwierigkeit: Starter zuerst (0), dann
+ * Level aufsteigend, dann Erfolg/Pokal/Prestige (unabhängig vom Level, daher
+ * feste hohe Werte weit hinter dem Level-Cap von 99).
  */
 function unlockKey(u: AvatarUnlock): number {
   switch (u.kind) {
@@ -641,8 +644,10 @@ function unlockKey(u: AvatarUnlock): number {
 }
 
 /**
- * `AVATARS_BY_LEVEL` liefert die Avatare sortiert nach benötigtem Level (aufsteigend).
- * Avatare ohne Level-Freischaltung folgen am Ende.
+ * Picker-Reihenfolge: Starter zuerst, dann aufsteigend nach Freischalt-
+ * Schwierigkeit (Level, dann Erfolg/Pokal/Prestige). `AVATARS` ist bereits so
+ * einsortiert — diese abgeleitete Liste ist der robuste Anzeige-Vertrag, falls
+ * der Katalog künftig unsortiert erweitert wird.
  */
 export const AVATARS_BY_LEVEL: readonly AvatarSpec[] = AVATARS.slice().sort((a, b) => {
   const ka = unlockKey(a.unlock)

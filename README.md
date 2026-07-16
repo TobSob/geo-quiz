@@ -21,7 +21,7 @@ Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Alle
 
 ## Meta-Features
 
-- 🎭 **Pixel-Avatare** — 21 handgepixelte 16×16-Sprites (8 Starter, Rest über Level/Erfolge freischaltbar, [Katalog & Regeln](DESIGN-AVATARS.md))
+- 🎭 **Pixel-Avatare** — 21 handgepixelte 16×16-Sprites (2 Starter, Rest über eine Level-Kurve 3–40 sowie Erfolge/Pokal/Prestige freischaltbar, [Katalog & Regeln](DESIGN-AVATARS.md))
 - 🏅 **Erfolge** — 16 Abzeichen in 5 Stufen (Normal→Diamant) mit eigenem Spruch je Stufe, XP + Level (Cap 99)
 - 🏆 **Pokale & Hall of Fame** — Wochen-/Monats-/Jahresbeste im Cup (Top 3)
 - 👥 **Freundesgruppen** — per Beitrittscode (z. B. `TURBO-YETI-83`), eigene Gruppen-Bestenlisten
