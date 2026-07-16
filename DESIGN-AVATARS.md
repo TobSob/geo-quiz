@@ -81,7 +81,7 @@ Laden auf den Standard-Avatar (`boy`) zurück.*
 
 | # | Punkt | Stand | Status |
 |---|---|---|---|
-| A1 | **Migrationen 0010–0012 auf Live-DB einspielen** (`0010_profile_avatars.sql`, `0011_cup_leg_breakdown.sql`, `0012_player_card.sql`, alle auch in `apply_all.sql`) — erst danach erscheinen fremde Avatare, der Cup-Aufklapp-Button bzw. echte fremde Spielerkarten (sonst „Karte gerade nicht verfügbar") | wartet auf Deploy | ⬜ |
+| A1 | **Migrationen 0010–0013 auf Live-DB einspielen** (`0010_profile_avatars.sql`, `0011_cup_leg_breakdown.sql`, `0012_player_card.sql`, `0013_cup_leg_order.sql`, alle auch in `apply_all.sql`) — 0010–0012 vom Nutzer bereits eingespielt (2026-07-16); 0013 (Reihenfolge-Fix) folgt danach | 0010–0012 live, 0013 ausstehend | ⬜ |
 | A3 | „Karten-Skins" (Rahmen/Hintergründe der Spielerkarte als Unlocks) | Ideen-Parkplatz | ⬜ |
 | A4 | Avatar-Namen (Sora/Riku/Mira/Cyra) ggf. vom Nutzer umbenennbar? | nicht besprochen | ⬜ |
 
@@ -89,6 +89,14 @@ Laden auf den Standard-Avatar (`boy`) zurück.*
 
 *Neueste Einträge oben.*
 
+- **2026-07-16 (R9, Bug-Fix):** Disziplinen in der aufgeklappten Cup-
+  Bestenliste (0011) erschienen in zufälliger Reihenfolge. Ursache:
+  `submitCupRun` schickt alle sechs Leg-Scores gleichzeitig
+  (`Promise.all`), die Einfüge-Reihenfolge in `score_entries` (und damit
+  `id`) hängt vom Netzwerk-Timing ab. Migration `0013_cup_leg_order.sql`
+  sortiert `get_cup_run_legs` jetzt fest nach der echten Cup-Reihenfolge
+  (Flaggen→Hauptstädte→Länder→Umrisse→Städte-Pin→Landmark-Pin). Reiner
+  SQL-Fix, kein Frontend-Redeploy nötig.
 - **2026-07-16 (R8):** Bug-Fix (Nutzer-Report): Klick auf eine fremde
   Bestenlisten-Zeile öffnete immer die eigene Karte — `PlayerCardOverlay`
   hatte keinen Bezug zur angeklickten Zeile. Neue Migration

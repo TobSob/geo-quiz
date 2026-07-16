@@ -150,6 +150,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 | H4 | **Migrationen 0010–0012 auf Live-DB einspielen** | ⬜ | Danach erscheinen fremde Avatare, der Cup-Aufklapp-Button und echte fremde Spielerkarten; alle drei Dateien auch ans Ende von `apply_all.sql` angehängt |
 | H5 | Spielerkarten fremder Accounts (Embleme/Bestpunkte anderer beim Klick) | ✅ | Bug-Fix (R8, Nutzer-Report): Migration `0012_player_card.sql` (`get_player_card(display_name)`), `PlayerCard` in `PlayerCardView` (Anzeige) + Datenquellen (eigen/fremd) aufgeteilt, jede Bestenlisten-Zeile klickbar. „Karten-Skins" bleibt offen (DESIGN-AVATARS A3) |
 | H6 | Cup-Bestenliste: Klick auf den Score klappt die Punkte je Disziplin auf (Nutzer-Wunsch) | ✅ | Migration `0011_cup_leg_breakdown.sql` (`get_leaderboard_cups` + `cup_run_id`, neue RPC `get_cup_run_legs`); `CupScoreButton`/`CupLegBreakdownRow` in ScoresScreen.tsx, graceful ohne Migration (reiner Text statt Button). Details: DESIGN-AVATARS V9 |
+| H7 | **Bug-Fix:** Disziplin-Reihenfolge im Cup-Aufklapp war zufällig (Parallel-Submit-Timing) | ✅ | Migration `0013_cup_leg_order.sql`: `get_cup_run_legs` sortiert jetzt fest nach der echten Cup-Reihenfolge. Reiner SQL-Fix, kein Frontend-Redeploy nötig |
 
 **Fertig-Kriterium:** Jeder Spieler in der globalen Bestenliste ist an seinem Pixel-Avatar erkennbar; ein Klick auf eine Zeile zeigt DIESER Person Karte (Level, Embleme, Bestpunkte); die Cup-Bestenliste zeigt auf Klick die Punkte je Disziplin.
 
@@ -171,6 +172,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-16 | Bug-Fix R9: Disziplinen im aufgeklappten Cup-Score erschienen zufällig sortiert (Ursache: `submitCupRun` schickt alle 6 Legs parallel, Einfüge-Reihenfolge in `score_entries` hängt vom Timing ab). Migration `0013_cup_leg_order.sql` sortiert `get_cup_run_legs` jetzt fest nach Cup-Reihenfolge. Reiner SQL-Fix |
 | 2026-07-16 | Playtest R8 (Bug-Report): Klick auf eine fremde Bestenlisten-Zeile öffnete immer die eigene Karte. Neue Migration `0012_player_card.sql` (name-basierte RPC `get_player_card`, liefert XP/Abzeichen/Bestpunkte je Modus + Cup-Bestwert für jeden registrierten Account); `PlayerCard` in Anzeige- (`PlayerCardView`) und Datenquellen-Komponenten (eigen/fremd) aufgeteilt, jede Zeile jetzt klickbar. tsc/103 Tests/Build/Lint grün |
 | 2026-07-16 | Playtest R7 (Nutzer-Wunsch): Cup-Bestenliste bekommt Punkte je Disziplin — Klick auf den Score klappt die sechs Leg-Scores auf. Neue Migration `0011_cup_leg_breakdown.sql` (`get_leaderboard_cups` liefert `cup_run_id`, neue RPC `get_cup_run_legs`), Client fällt ohne Migration graceful auf reinen Text zurück. tsc/103 Tests/Build/Lint grün |
 | 2026-07-15 | Playtest R6: Avatar-Picker-Reihenfolge gefixt + Starter-Umfang neu entschieden (Nutzer-Entscheid) — nur **Junge/Mädchen** bleiben Starter, alle 19 übrigen Avatare (inkl. der bisherigen Starter Sora/Riku/Punk/Cool/Mira/Superheld) bekamen eindeutige, aufsteigende Level-Schwellen 3–40 statt der 8-Starter-Regelung aus R5. Picker zeigt jetzt konsistent eine Fortschrittsleiste (`AVATARS_BY_LEVEL`) |
