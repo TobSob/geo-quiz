@@ -19,7 +19,7 @@
 | E | Arcade-Umbau: zeitbasierte Modi + neues Scoring ([DESIGN-ARCADE.md](DESIGN-ARCADE.md)) | ✅ Fertig inkl. 3 Playtest-Balancing-Runden (2026-07-14/15) |
 | F | Freundesgruppen ([DESIGN-SOCIAL.md](DESIGN-SOCIAL.md)) | ✅ Fertig (Zwei-Account-E2E 2026-07-12) |
 | G | Gamification: Abzeichen, Pokale Top 3, XP/Level ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | ✅ Fertig (Live-DB 0007–0009, E2E 2026-07-14) |
-| H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (21 Avatare, Karte, Bestenlisten-Avatare) — **Migration 0010 noch auf Live-DB** |
+| H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (21 Avatare, Karte für jeden Spieler, Bestenlisten-Avatare, Cup-Punkte-Aufklappen) — **Migrationen 0010–0012 noch auf Live-DB** |
 | B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Projekt-Setup fertig, Geräte-Test offen) |
 | C | Polish (Sounds ✅, Code-Splitting/PWA/Haptics offen) | 🔄 |
 | D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |
@@ -69,10 +69,10 @@ bevorzugt Ungesehenes & oft Falsches.
 | Outline (markiertes Land erkennen) | ✅ | react-simple-maps @ React 18, MC-Antworten |
 | City-Pin | ✅ | Leaflet + Haversine, Feedback mit Ziel-Marker + Distanzlinie |
 | Landmark-Pin | ✅ | steilerer Falloff (R=90), zeigt Foto der Sehenswürdigkeit/des Ortes |
-| Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte-Hover je Disziplin in „Meine Rekorde" |
+| Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte je Disziplin einsehbar in „Meine Rekorde" (Hover) und globaler Cup-Bestenliste (Klick, Migration 0011 ausstehend) |
 | Training (adaptiv, eigenständig) | ✅ | Setup: Kategorien + Endlos/10/25, ohne Zeitdruck, zählt nicht in Bestenliste |
 | Bestenliste | ✅ | Lokal „Meine Rekorde" (Allzeit-Top-10 je Kategorie) · Global/Cups/Level mit Zeitfilter, Gruppen-Umschalter und Avataren |
-| Avatare & Spielerkarte | 🔄 | 21 Pixel-Avatare, Picker, Karte, Header-Status-Punkt — fremde Avatare erst nach Migration 0010 ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) |
+| Avatare & Spielerkarte | 🔄 | 21 Pixel-Avatare, Picker, Karte für jede angeklickte Bestenlisten-Zeile — fremde Avatare erst nach Migration 0010, Cup-Aufklapp-Button erst nach 0011, echte fremde Karten (statt „nicht verfügbar") erst nach 0012 ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) |
 | Erfolge (Abzeichen/Pokale/Level) | ✅ | `/achievements`, Unlock-Panel am Rundenende, Level-Chip im Header |
 
 ### ☁️ Backend (Supabase) — Phase 4

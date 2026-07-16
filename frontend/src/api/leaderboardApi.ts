@@ -14,10 +14,18 @@ export interface LeaderboardScore {
 }
 
 export interface LeaderboardCup {
+  cup_run_id: number
   display_name: string
   total_score: number
   modes_played: string[]
   played_at: string
+}
+
+/** Punkte einer einzelnen Disziplin innerhalb eines Cup-Laufs. */
+export interface CupRunLeg {
+  mode: GameMode
+  score: number
+  question_count: number
 }
 
 export type LeaderboardPeriod = 'week' | 'month' | 'year' | 'all'
@@ -67,4 +75,20 @@ export async function fetchLeaderboardCups(
   })
   if (error) return null
   return data as LeaderboardCup[]
+}
+
+/**
+ * Punkte je Disziplin eines Cup-Laufs (Klick auf den Score in der
+ * Bestenliste, Migration 0011) — funktioniert für jeden Lauf, nicht nur den
+ * eigenen: Score + Name sind über `fetchLeaderboardCups` ohnehin schon für
+ * alle registrierten Spieler sichtbar. `null` = Migration fehlt noch oder
+ * offline; Aufrufer zeigt dann einfach keine Aufschlüsselung.
+ */
+export async function fetchCupRunLegs(cupRunId: number): Promise<CupRunLeg[] | null> {
+  if (!supabase) return null
+  const { data, error } = await supabase.rpc('get_cup_run_legs', {
+    p_cup_run_id: cupRunId,
+  })
+  if (error) return null
+  return data as CupRunLeg[]
 }

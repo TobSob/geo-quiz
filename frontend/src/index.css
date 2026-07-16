@@ -900,15 +900,6 @@ html {
   text-decoration: underline;
 }
 
-/* Fremde Zeile: Avatar sichtbar, aber nicht anklickbar. */
-.leader-me--static {
-  cursor: default;
-}
-
-.leader-me--static:hover {
-  text-decoration: none;
-}
-
 .leader-me svg {
   background: var(--panel-light);
   border: 2px solid var(--shadow);
@@ -955,6 +946,46 @@ html {
   display: flex;
   justify-content: space-between;
   gap: 12px;
+}
+
+/* --- Cup-Bestenliste: Klick auf den Score zeigt die Disziplinen (0011) --- */
+.cup-score-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.cup-score-btn:hover {
+  text-decoration: underline;
+}
+
+.cup-score-hint {
+  font-size: 10px;
+  color: var(--cyan);
+}
+
+.cup-legs-row td {
+  padding: 10px 10px 14px;
+  background: rgba(41, 173, 255, 0.06);
+}
+
+.cup-legs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 6px 16px;
+}
+
+.cup-legs-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 18px;
 }
 
 @media (max-width: 640px) {

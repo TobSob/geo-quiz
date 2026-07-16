@@ -1,10 +1,12 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useState, type ReactNode } from 'react'
 import { useProgressStore } from '../state/progressStore'
 import { MODE_TITLES } from './PlayScreen'
 import {
+  fetchCupRunLegs,
   fetchLeaderboardCups,
   fetchLeaderboardScores,
   PERIOD_LABELS,
+  type CupRunLeg,
   type LeaderboardCup,
   type LeaderboardPeriod,
   type LeaderboardScore,
@@ -46,12 +48,24 @@ function formatDate(ts: number | string): string {
   })
 }
 
-/** Spielerkarten-Overlay als wiederverwendbarer Baustein je Tabelle. */
+/**
+ * Spielerkarten-Overlay als wiederverwendbarer Baustein je Tabelle. Merkt
+ * sich, WESSEN Karte gerade offen ist — Klick auf eine beliebige Zeile öffnet
+ * die Karte dieser Person, nicht immer die eigene.
+ */
 function useCardOverlay() {
-  const [open, setOpen] = useState(false)
+  const [target, setTarget] = useState<{ name: string; avatarId: string | undefined } | null>(
+    null,
+  )
   return {
-    openCard: () => setOpen(true),
-    node: open ? <PlayerCardOverlay onClose={() => setOpen(false)} /> : null,
+    openCard: (name: string, avatarId: string | undefined) => setTarget({ name, avatarId }),
+    node: target ? (
+      <PlayerCardOverlay
+        displayName={target.name}
+        fallbackAvatarId={target.avatarId}
+        onClose={() => setTarget(null)}
+      />
+    ) : null,
   }
 }
 
@@ -81,7 +95,8 @@ function useAvatarMap(names: string[]): Map<string, string> {
 
 /**
  * Spielername in der Bestenliste — mit Avatar, sodass man Mitspieler erkennt.
- * Die eigene Zeile ist anklickbar (öffnet die eigene Karte).
+ * Jede Zeile ist anklickbar und öffnet die Karte GENAU dieser Person (nicht
+ * immer die eigene) — Nutzer-Feedback 2026-07-16.
  */
 function LeaderName({
   name,
@@ -92,22 +107,19 @@ function LeaderName({
   name: string
   isMe: boolean
   avatarId: string | undefined
-  onOpen: () => void
+  onOpen: (name: string, avatarId: string | undefined) => void
 }) {
   const avatar = avatarId ? <PixelAvatar id={avatarId} size={22} /> : null
-  if (isMe) {
-    return (
-      <button type="button" className="leader-me" onClick={onOpen} title="Deine Karte ansehen">
-        {avatar}
-        <span className="glow-cyan">{name}</span>
-      </button>
-    )
-  }
   return (
-    <span className="leader-me leader-me--static">
+    <button
+      type="button"
+      className="leader-me"
+      onClick={() => onOpen(name, avatarId)}
+      title={isMe ? 'Deine Karte ansehen' : `Karte von ${name} ansehen`}
+    >
       {avatar}
       <span className="glow-cyan">{name}</span>
-    </span>
+    </button>
   )
 }
 
@@ -135,6 +147,69 @@ function CupScoreCell({
         ))}
       </span>
     </span>
+  )
+}
+
+/**
+ * Score-Button in der globalen Cup-Bestenliste (Nutzer-Wunsch): Klick öffnet
+ * die Punkte je Disziplin darunter (Migration 0011, `get_cup_run_legs`).
+ * Klick statt Hover, damit es auch am Handy funktioniert.
+ */
+function CupScoreButton({
+  score,
+  open,
+  onToggle,
+}: {
+  score: number
+  open: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button type="button" className="cup-score-btn" onClick={onToggle}>
+      <span className="glow-yellow">{score.toLocaleString('de-DE')}</span>
+      <span className="cup-score-hint">{open ? '▲' : '▼'}</span>
+    </button>
+  )
+}
+
+/** Aufklappzeile mit den sechs Disziplin-Scores eines Cup-Laufs. */
+function CupLegBreakdownRow({ cupRunId, colSpan }: { cupRunId: number; colSpan: number }) {
+  const [legs, setLegs] = useState<CupRunLeg[] | null | 'loading'>('loading')
+
+  useEffect(() => {
+    let stale = false
+    setLegs('loading')
+    fetchCupRunLegs(cupRunId).then((l) => {
+      if (!stale) setLegs(l)
+    })
+    return () => {
+      stale = true
+    }
+  }, [cupRunId])
+
+  return (
+    <tr className="cup-legs-row">
+      <td colSpan={colSpan}>
+        {legs === 'loading' ? (
+          <p className="dim center blink" style={{ margin: 0 }}>
+            LADE…
+          </p>
+        ) : legs === null || legs.length === 0 ? (
+          <p className="dim center" style={{ margin: 0 }}>
+            Keine Aufschlüsselung verfügbar.
+          </p>
+        ) : (
+          <div className="cup-legs-grid">
+            {legs.map((l) => (
+              <div key={l.mode} className="cup-legs-item">
+                <span className="dim">{MODE_TITLES[l.mode] ?? l.mode}</span>
+                <span className="glow-yellow">{l.score.toLocaleString('de-DE')}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </td>
+    </tr>
   )
 }
 
@@ -587,10 +662,13 @@ function CupScores() {
   const avatarId = useAvatarStore((s) => s.avatarId)
   const { openCard, node } = useCardOverlay()
   const avatarMap = useAvatarMap(Array.isArray(rows) ? rows.map((r) => r.display_name) : [])
+  // Nur ein aufgeklappter Lauf gleichzeitig — erneuter Klick schließt ihn wieder.
+  const [expandedRunId, setExpandedRunId] = useState<number | null>(null)
 
   useEffect(() => {
     let stale = false
     setRows('loading')
+    setExpandedRunId(null)
     fetchLeaderboardCups(period, 25, groupId).then((r) => {
       if (!stale) setRows(r)
     })
@@ -625,23 +703,37 @@ function CupScores() {
           <tbody>
             {rows.map((r, i) => {
               const isMe = !!myName && r.display_name === myName
+              // Ohne Migration 0011 fehlt cup_run_id noch — dann bleibt der
+              // Score wie bisher reiner Text statt Aufklapp-Button.
+              const hasRunId = typeof r.cup_run_id === 'number'
+              const isOpen = hasRunId && expandedRunId === r.cup_run_id
               return (
-                <tr
-                  key={`${r.display_name}-${r.played_at}-${i}`}
-                  className={isMe ? 'leader-row-me' : undefined}
-                >
-                  <td className="dim">{i + 1}</td>
-                  <td>
-                    <LeaderName
-                      name={r.display_name}
-                      isMe={isMe}
-                      avatarId={isMe ? avatarId : avatarMap.get(r.display_name)}
-                      onOpen={openCard}
-                    />
-                  </td>
-                  <td className="glow-yellow">{r.total_score}</td>
-                  <td className="dim">{formatDate(r.played_at)}</td>
-                </tr>
+                <Fragment key={`${r.display_name}-${r.played_at}-${i}`}>
+                  <tr className={isMe ? 'leader-row-me' : undefined}>
+                    <td className="dim">{i + 1}</td>
+                    <td>
+                      <LeaderName
+                        name={r.display_name}
+                        isMe={isMe}
+                        avatarId={isMe ? avatarId : avatarMap.get(r.display_name)}
+                        onOpen={openCard}
+                      />
+                    </td>
+                    <td>
+                      {hasRunId ? (
+                        <CupScoreButton
+                          score={r.total_score}
+                          open={isOpen}
+                          onToggle={() => setExpandedRunId(isOpen ? null : r.cup_run_id)}
+                        />
+                      ) : (
+                        <span className="glow-yellow">{r.total_score}</span>
+                      )}
+                    </td>
+                    <td className="dim">{formatDate(r.played_at)}</td>
+                  </tr>
+                  {isOpen && <CupLegBreakdownRow cupRunId={r.cup_run_id} colSpan={4} />}
+                </Fragment>
               )
             })}
           </tbody>

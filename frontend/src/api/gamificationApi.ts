@@ -78,6 +78,17 @@ export interface LeaderboardLevelEntry {
   xp: number
 }
 
+/** Spielerkarte eines beliebigen registrierten Accounts (Klick in der Bestenliste). */
+export interface OtherPlayerCard {
+  displayName: string
+  avatarId: string | null
+  xp: number
+  trophyCount: number
+  cupBestScore: number
+  badges: { badgeId: string; tier: BadgeTier }[]
+  modeBests: { mode: GameMode; score: number }[]
+}
+
 type Json = Record<string, unknown>
 
 function asObject(value: unknown): Json | null {
@@ -177,6 +188,37 @@ export async function fetchHallOfFame(
     totalScore: Number(row.total_score) || 0,
     awardedAt: String(row.awarded_at),
   }))
+}
+
+/**
+ * Spielerkarte eines beliebigen Accounts anhand seines Anzeigenamens
+ * (Migration 0012) — `null` bei Gast/offline, unbekanntem Namen oder wenn die
+ * Migration auf der Live-DB noch fehlt. Nie die eigene Karte hardcodiert:
+ * die Bestenliste ruft das für jede angeklickte Zeile mit ihrem Namen auf.
+ */
+export async function fetchPlayerCard(displayName: string): Promise<OtherPlayerCard | null> {
+  if (!supabase) return null
+  const { data, error } = await supabase.rpc('get_player_card', {
+    p_display_name: displayName,
+  })
+  if (error || !data) return null
+  const d = asObject(data)
+  if (!d) return null
+  return {
+    displayName: String(d.display_name ?? displayName),
+    avatarId: typeof d.avatar_id === 'string' ? d.avatar_id : null,
+    xp: Number(d.xp) || 0,
+    trophyCount: Number(d.trophy_count) || 0,
+    cupBestScore: Number(d.cup_best_score) || 0,
+    badges: asArray(d.badges).map((b) => ({
+      badgeId: String(b.badge_id),
+      tier: Number(b.tier) as BadgeTier,
+    })),
+    modeBests: asArray(d.mode_bests).map((m) => ({
+      mode: String(m.mode) as GameMode,
+      score: Number(m.score) || 0,
+    })),
+  }
 }
 
 /** Level-Bestenliste (XP absteigend); Level rechnet der Client. */

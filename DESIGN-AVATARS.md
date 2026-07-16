@@ -71,16 +71,17 @@ Laden auf den Standard-Avatar (`boy`) zurück.*
 | V3 | Unlock-Quelle | Level aus XP (`levels.ts`) + Badge-Stufen + Pokale aus dem `gamificationStore` — kein eigener Server-State nötig | ✅ |
 | V4 | Gast-Verhalten | Keine Unlocks ohne Account; Hinweis statt unerreichbarer Level-Angabe | ✅ |
 | V5 | Server-Sync | `profiles.avatar_id` + additive Nur-Lese-RPC `get_profile_avatars(names[])` (nur Name→Avatar, nie user_id). Leaderboard-RPCs bleiben unangetastet; Client läuft ohne Migration einfach ohne fremde Avatare weiter | ✅ |
-| V6 | Spielerkarte | Avatar + Level/XP-Balken + Erfolgs-Embleme (Stufenfarbe) + lokale Bestpunkte; im Profil und als Overlay beim Klick auf die eigene Bestenlisten-Zeile | ✅ |
-| V7 | Cup-Punkte-Hover | „Meine Rekorde": Cup-Einträge zeigen im Hover die Punkte je Disziplin (`cupLegs` im `progressStore`) | ✅ |
+| V6 | Spielerkarte | Avatar + Level/XP-Balken + Erfolgs-Embleme (Stufenfarbe) + Bestpunkte; im Profil und als Overlay beim Klick auf eine Bestenlisten-Zeile. Bug bis R8: das Overlay zeigte immer die eigene Karte, egal welche Zeile man anklickte — siehe V10 | ✅ |
+| V7 | Cup-Punkte-Hover | „Meine Rekorde": Cup-Einträge zeigen im Hover die Punkte je Disziplin (`cupLegs` im `progressStore`, rein lokal) | ✅ |
 | V8 | Starter-Umfang (R6) | Nur 2 Starter statt 8 — mehr Fortschrittsgefühl über eine durchgehende Level-Kurve (3–40); Picker sortiert entsprechend | ✅ |
+| V9 | Cup-Punkte je Disziplin — global (R7) | Nutzer-Wunsch: das Gleiche wie V7, aber für die **globale** Cup-Bestenliste (fremde Läufe). Klick statt Hover (Touch-tauglich). Daten lagen schon in `score_entries.cup_run_id` — neue Nur-Lese-RPC `get_cup_run_legs`, keine zusätzliche Preisgabe (Score+Name sind ohnehin schon öffentlich) | ✅ |
+| V10 | Fremde Spielerkarten (R8, löst A2) | Bug-Report des Nutzers: Klick auf eine fremde Bestenlisten-Zeile zeigte die eigene Karte. Fix: `PlayerCard` in eine reine `PlayerCardView` (Anzeige) + Datenquelle aufgeteilt; neue name-basierte RPC `get_player_card` liefert XP/Abzeichen/Bestpunkte je Modus + Cup-Bestwert für JEDEN registrierten Account. Jede Bestenlisten-Zeile ist jetzt klickbar (vorher nur die eigene) und öffnet die Karte genau dieser Person | ✅ |
 
 ## Offene Punkte
 
 | # | Punkt | Stand | Status |
 |---|---|---|---|
-| A1 | **Migration 0010 auf Live-DB einspielen** (`supabase/migrations/0010_profile_avatars.sql`, auch in `apply_all.sql`) — erst danach erscheinen fremde Avatare in der Bestenliste | wartet auf Deploy | ⬜ |
-| A2 | Spielerkarten **fremder** Accounts (Embleme/Bestpunkte anderer beim Klick) — braucht weitere Profil-RPC (Server kennt Bestscores, Badges) | Idee, nicht beauftragt | 💬 |
+| A1 | **Migrationen 0010–0012 auf Live-DB einspielen** (`0010_profile_avatars.sql`, `0011_cup_leg_breakdown.sql`, `0012_player_card.sql`, alle auch in `apply_all.sql`) — erst danach erscheinen fremde Avatare, der Cup-Aufklapp-Button bzw. echte fremde Spielerkarten (sonst „Karte gerade nicht verfügbar") | wartet auf Deploy | ⬜ |
 | A3 | „Karten-Skins" (Rahmen/Hintergründe der Spielerkarte als Unlocks) | Ideen-Parkplatz | ⬜ |
 | A4 | Avatar-Namen (Sora/Riku/Mira/Cyra) ggf. vom Nutzer umbenennbar? | nicht besprochen | ⬜ |
 
@@ -88,6 +89,22 @@ Laden auf den Standard-Avatar (`boy`) zurück.*
 
 *Neueste Einträge oben.*
 
+- **2026-07-16 (R8):** Bug-Fix (Nutzer-Report): Klick auf eine fremde
+  Bestenlisten-Zeile öffnete immer die eigene Karte — `PlayerCardOverlay`
+  hatte keinen Bezug zur angeklickten Zeile. Neue Migration
+  `0012_player_card.sql` (`get_player_card(display_name)`, name-basiert wie
+  `get_profile_avatars`) liefert XP/Abzeichen/Bestpunkte je Modus + Cup-
+  Bestwert für jeden registrierten Account. `PlayerCard` in `PlayerCardView`
+  (Anzeige) + `PlayerCard`/`OtherPlayerCardBody` (Datenquelle) aufgeteilt;
+  jede Bestenlisten-Zeile ist jetzt klickbar. tsc/103 Tests/Build/Lint grün;
+  Live-Verifikation mit zwei echten Accounts steht noch aus (Migration nicht
+  live, siehe A1).
+- **2026-07-16 (R7):** Cup-Punkte-Aufschlüsselung für die **globale**
+  Bestenliste (Nutzer-Wunsch): Klick auf den Score in der Cup-Bestenliste
+  klappt die sechs Disziplin-Scores auf. Neue Migration
+  `0011_cup_leg_breakdown.sql` (`get_leaderboard_cups` liefert `cup_run_id`
+  mit, neue RPC `get_cup_run_legs`); Client fällt ohne die Migration auf
+  reinen Text zurück (kein Button). tsc/Tests/Build/Lint grün.
 - **2026-07-15 (R6):** Picker-Reihenfolge gefixt + Starter-Umfang neu
   entschieden (Nutzer-Entscheid): nur Junge/Mädchen bleiben Starter, alle
   19 übrigen Avatare bekamen eindeutige, aufsteigende Level-Schwellen
