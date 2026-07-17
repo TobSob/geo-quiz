@@ -44,37 +44,67 @@ Beobachtung/Diskussion.
 
 ---
 
-## Geparkte Idee — Kontinent-Sprung-Buttons (nicht beauftragt)
+## Umgesetzt (2026-07-17)
 
-**Problem:** Ausgangspunkt #3 (manuelles Pixel-für-Pixel-Pannen über große
-Distanzen fühlt sich langsam/unspaßig an) ist damit noch nicht gelöst — das
-wäre ein echter Zusatz, keine reine Fehlerbehebung.
+| # | Fix | Umsetzung | Status |
+|---|---|---|---|
+| P3 | OSM/CARTO-Attribution-Link saß direkt über dem „Weiter"/„Bestätigen"-Button (nur 10px Abstand, fast volle horizontale Überlappung) — wurde beim Antippen des Buttons versehentlich mitgetroffen und hat aus dem Spiel raus auf externe Seiten geführt | `MapPicker.tsx`: eigene `<AttributionControl position="bottomleft" prefix={false} />` statt der Default-Attribution (die ohne Positionsangabe unten-rechts sitzt); jetzt zusammen mit dem Zoom-Control unten-links, wo nur der selten getippte „Aufgeben"-Button in der Nähe ist. Verifiziert per Bounding-Box-Check: keine horizontale Überlappung mehr mit „Weiter"/„Bestätigen" in Mobil- noch Desktop-Layout | ✅ |
 
-**Idee:** Kleine Kontinent-Buttons am Kartenrand (Europa/Asien/Afrika/
-Amerika/Ozeanien), die per Klick sofort per `fitBounds`/`setView` dorthin
-springen. Das manuelle Pannen wird dann nur noch für die **letzte
-Feinjustierung** gebraucht, nicht mehr um erstmal überhaupt in die richtige
-Weltgegend zu kommen.
+---
 
-**Tradeoff:** etwas mehr UI auf der Karte (Overlay-Buttons kosten Platz/
-Aufmerksamkeit), aber deutlich weniger Wisch-Frust bei weit entfernten
-Zielen (z. B. Sydney, wenn die Karte gerade auf Europa zentriert ist).
+## Beauftragt (2026-07-17) — Ein-Tap-Antwort + volles Tile-Preload
 
-**Offene Fragen, falls das umgesetzt wird:**
-- Wie viele/welche Regionen? (5 Kontinente vs. gröber/feiner)
-- Wo platziert, ohne mit Zoom-Control, Foto oder Aktionsleiste zu kollidieren?
-- Zählt ein Kontinent-Sprung fürs Lern-Tracking/Highscore anders als freies
-  Pannen? (Vermutlich nein — reine Navigationshilfe, keine Spielmechanik.)
+Nutzer-Entscheidung: Kombination aus der geparkten Kontinent-Sprung-Idee und
+der bisher nur notierten Ein-Schritt-Bestätigung, plus Tile-Preload gegen
+Nachlade-Ruckler. **Nach echtem Gerätetest (Handy) revidiert:** Kontinent-
+Buttons wieder entfernt ("unnötig"), Ein-Tap-Antwort bestätigt ("macht es
+schon besser"), Tile-Preload gezielt nachgebessert, weil das Nachladen beim
+seitlichen Pannen auf dem Handy weiter auftrat.
 
-Status: ⬜ Idee festgehalten, nicht terminiert.
+| # | Fix | Umsetzung | Status |
+|---|---|---|---|
+| P4 | Weites Pixel-für-Pixel-Pannen fühlt sich mühsam an | Kontinent-Sprung-Buttons implementiert (5 Buttons, `flyToBounds`) — nach Handy-Test wieder **entfernt**: Nutzer-Feedback "die Buttons sind unnötig". `ContinentJumpButtons`/`CONTINENTS`/`ExposeMap` komplett aus `MapPicker.tsx` und `ArcadeQuizView.tsx` raus, dazugehöriges CSS entfernt | ❌ verworfen (Nutzer-Feedback) |
+| P5 | Zwei manuelle Schritte pro Frage (Pin setzen → Bestätigen → warten → Weiter) nur in den **getimten** Modi (Arcade/Cup) | `ArcadeQuizView.tsx`: Klick auf die Karte beantwortet die Frage sofort (`onPin` ruft `answerPin` direkt), kein separater „Bestätigen"-Tap mehr. **Training bleibt bewusst zweistufig** (`QuizView.tsx` unverändert). Nutzer-Feedback nach Handy-Test: "macht es schon besser" | ✅ bestätigt |
+| P6 | Beim Pannen (v.a. seitlich am Handy) laden Kacheln sichtbar nach | Erste Version (Kontinent-Boxen bei Zoom 4 only) reichte laut Handy-Test nicht. Neu: `MapPicker.tsx` lädt jetzt die **komplette Welt** bei Zoom 2–5 vor (16+64+256+1024 = 1360 Kacheln), nicht mehr nur grobe Kontinent-Kästen — die alte Version hatte Ozeane, Lücken zwischen den Kästen und die niedrigen Start-Zoomstufen gar nicht abgedeckt | ✅ (Details/Bugs unten) |
+
+**Bewusst NICHT verändert:** Die Möglichkeit, den Pin vor dem Bestätigen zu
+verschieben, entfällt in Arcade/Cup jetzt tatsächlich (das war der in der
+vorherigen Runde notierte Trade-off) — abgefedert dadurch, dass die
+Distanz-Scoring-Stufen (100/350/1000/2500 km) ohnehin großzügig genug sind,
+dass ein leicht daneben gesetzter Pin selten den ganzen Punktetopf kostet.
+
+### Zwei echte Bugs beim P6-Rewrite gefunden (nicht nur das Layout-Problem der verworfenen Buttons)
+
+1. **Retina-Mismatch (der eigentliche Grund fürs Nachladen auf dem Handy):**
+   Leaflets `{r}`-Platzhalter im Tile-URL-Template löst auf jedem Retina-
+   Display (`devicePixelRatio > 1` — praktisch jedes moderne Handy) IMMER zu
+   `@2x` auf, unabhängig von der `detectRetina`-Option (die steuert einen
+   anderen Mechanismus, siehe `leaflet-src.js:12201` vs. `:12093`). Der
+   Preload lud bisher die 1x-Variante — komplett am eigentlich angeforderten
+   Kachel-Set vorbei. Jetzt: `RETINA_SUFFIX` per `devicePixelRatio` erkannt
+   und ins Preload-URL-Template übernommen, exakt wie Leaflet es macht.
+2. **GC-Risiko bei referenzlosen `Image()`-Prefetches:** `new Image().src = url`
+   ohne gehaltene Referenz ist für den Garbage Collector fair game — er kann
+   die laufende Anfrage abbrechen, bevor sie fertig lädt. Jetzt in einem
+   modulweiten `keepAlive`-Array gehalten, damit alle 1360 Anfragen wirklich
+   durchlaufen (in einem isolierten Test ohne Referenzhaltung liefen manche
+   Ladevorgänge nicht zuverlässig durch).
+
+Verifiziert im Browser (375px Mobile-Emulation, `devicePixelRatio: 2`):
+Live-Kachel-URL und Preload-URL stimmen jetzt exakt überein (`@2x` beidseitig),
+Pannen über mehrere Bildschirmbreiten (Europa → Mexiko) zeigt keine grauen
+Platzhalter-Kacheln mehr. Kontinent-Button-Layout-Bug (Buttons liefen aus dem
+375px-Screen) ist mit dem Feature selbst wieder verworfen, keine Nacharbeit
+nötig. Echtes Gerät noch offen (Handy-Rückmeldung zur zweiten Preload-Version
+steht noch aus).
 
 ---
 
 ## Weitere Beobachtungen (unpriorisiert, aus der Diskussion)
 
-- Zwei-Schritt-Bestätigung (Pin setzen → Bestätigen) könnte zu einem
-  Ein-Schritt-Flow werden (Doppelklick/Doppeltipp setzt direkt fest?) —
-  noch nicht besprochen, da es die Unterscheidung "Pin verschieben vor dem
-  Bestätigen" verlieren würde.
+- Kein Zwischenfeedback beim Zielen (man erfährt erst nach dem Tap, wie
+  daneben man lag) — durch P5 jetzt sogar noch "blinder", da der Tap direkt
+  die Antwort ist. Falls sich das nach echtem Spieltest immer noch komisch
+  anfühlt, wäre ein Distanz-Ring oder Live-Indikator der nächste Kandidat.
 - Denkbar: kleiner visueller Zoom-Hinweis oder Anfangs-Zoomstufe je nach
   Zielgröße (Land vs. Stadt) — noch nicht besprochen.

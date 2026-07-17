@@ -214,8 +214,13 @@ export function ArcadeQuizView({
           pendingPin={pendingPin}
           feedback={s.feedback}
           nextReady={s.nextReady}
-          onPin={setPendingPin}
-          onConfirm={() => s.answerPin(pendingPin)}
+          onPin={(p) => {
+            // Getimte Modi: ein Tap ist die Antwort (P5, DESIGN-PIN-UX.md) —
+            // kein zweiter „Bestätigen"-Schritt mehr. pendingPin bleibt als
+            // reine Anzeige-State für den Guess-Marker während des Feedbacks.
+            setPendingPin(p)
+            s.answerPin(p)
+          }}
           onNext={s.next}
           onExit={onExit}
         />
@@ -350,7 +355,6 @@ function ArcadePinView({
   feedback,
   nextReady,
   onPin,
-  onConfirm,
   onNext,
   onExit,
 }: {
@@ -361,7 +365,6 @@ function ArcadePinView({
   feedback: ArcadeAnswerFeedback | null
   nextReady: boolean
   onPin: (p: PinAnswer) => void
-  onConfirm: () => void
   onNext: () => void
   onExit: () => void
 }) {
@@ -385,14 +388,6 @@ function ArcadePinView({
               Aufgeben
             </button>
             <div className="spacer" />
-            <button
-              type="button"
-              className="pixel-btn pixel-btn--primary"
-              disabled={!pendingPin}
-              onClick={onConfirm}
-            >
-              {pendingPin ? 'Bestätigen' : 'Setze einen Pin…'}
-            </button>
           </>
         ) : (
           <>

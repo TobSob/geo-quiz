@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import {
+  AttributionControl,
   MapContainer,
   Marker,
   Polyline,
@@ -90,6 +91,63 @@ function InvalidateOnResize() {
   return null
 }
 
+const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png'
+const TILE_SUBDOMAINS = ['a', 'b', 'c']
+// Leaflet's `{r}` always resolves to '@2x' on a retina display (regardless
+// of the TileLayer's `detectRetina` option — that option controls a
+// different half-size-tile trick). The live map on any modern phone
+// requests @2x tiles, so prefetching plain 1x URLs would warm the cache
+// for variants nothing ever asks for.
+const RETINA_SUFFIX = typeof window !== 'undefined' && window.devicePixelRatio > 1 ? '@2x' : ''
+/** Full-world prefetch range — covers the initial view (2) through the
+ * zoom level most players reach while scanning for a region (5), before
+ * the final close-in for precision where only a handful of new tiles are
+ * needed anyway. 2+3+4+5 = 16+64+256+1024 = 1360 tiles world-wide. */
+const PREFETCH_ZOOMS = [2, 3, 4, 5]
+
+let tilesPrefetched = false
+// A prefetch `Image` with no surviving reference is fair game for the GC,
+// which can abort the in-flight request before it loads — silently capping
+// real-world completions at a few hundred instead of the full 1360. Keeping
+// them all alive for the page's lifetime is what makes the prefetch actually
+// finish.
+const keepAlive: HTMLImageElement[] = []
+
+/** Warms the browser's HTTP cache for the entire world at the zoom levels
+ * players actually pan/zoom through while hunting for a region, so panning
+ * doesn't visibly re-fetch tiles. Runs once per page load, off the main
+ * interaction path. (Earlier version only prefetched 5 rough continent
+ * boxes at a single zoom — missed oceans, gaps between boxes, and the
+ * lower zoom levels players start at; see DESIGN-PIN-UX.md.) */
+function prefetchWorldTiles() {
+  if (tilesPrefetched) return
+  tilesPrefetched = true
+  const run = () => {
+    let sub = 0
+    for (const z of PREFETCH_ZOOMS) {
+      const n = 2 ** z
+      for (let x = 0; x < n; x++) {
+        for (let y = 0; y < n; y++) {
+          const s = TILE_SUBDOMAINS[sub++ % TILE_SUBDOMAINS.length]
+          const url = TILE_URL.replace('{s}', s)
+            .replace('{z}', String(z))
+            .replace('{x}', String(x))
+            .replace('{y}', String(y))
+            .replace('{r}', RETINA_SUFFIX)
+          const img = new Image()
+          img.src = url
+          keepAlive.push(img)
+        }
+      }
+    }
+  }
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(run, { timeout: 5000 })
+  } else {
+    setTimeout(run, 1000)
+  }
+}
+
 interface Props {
   resetKey: number
   guess: PinAnswer | null
@@ -108,6 +166,9 @@ const MAP_BOUNDS: [[number, number], [number, number]] = [
 ]
 
 export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: Props) {
+  useEffect(() => {
+    prefetchWorldTiles()
+  }, [])
   return (
     <div className="map-frame map-frame--pin">
       <MapContainer
@@ -119,7 +180,7 @@ export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: P
         maxBoundsViscosity={1.0}
         style={{ height: '100%', width: '100%' }}
         worldCopyJump
-        attributionControl
+        attributionControl={false}
         zoomControl={false}
       >
         {/* No-labels basemap: place names would give the answer away. */}
@@ -127,9 +188,13 @@ export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: P
           url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
-        {/* Bottom-left: the fullscreen mobile layout overlays a top bar
-            where the default control would sit. */}
+        {/* Both bottom-left, paired with zoom: the primary action button
+            (Bestätigen/Weiter) lives bottom-right in the floating mobile
+            action bar, and attribution's external link was getting fat-
+            fingered mid-game. "Aufgeben" (left) is tapped rarely, so any
+            stray taps land somewhere low-stakes instead. */}
         <ZoomControl position="bottomleft" />
+        <AttributionControl position="bottomleft" prefix={false} />
         <ClickCapture onPick={onPick} disabled={disabled} />
         <ResetView resetKey={resetKey} />
         <InvalidateOnResize />
