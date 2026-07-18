@@ -83,7 +83,7 @@ Laden auf den Standard-Avatar (`boy`) zurück.*
 
 | # | Punkt | Stand | Status |
 |---|---|---|---|
-| A1 | **Migration 0015 auf Live-DB einspielen** (`0015_beta_tester_avatar.sql`, auch in `apply_all.sql`) — 0010–0014 vom Nutzer bereits eingespielt (2026-07-16/18) | `apply_pending.sql` bereit | ⬜ |
+| A1 | Migrationen 0010–0015 auf Live-DB einspielen | ✅ | vom Nutzer eingespielt (2026-07-16/18) — `apply_pending.sql` gelöscht |
 | A3 | „Karten-Skins" (Rahmen/Hintergründe der Spielerkarte als Unlocks) | Ideen-Parkplatz | ⬜ |
 | A4 | Avatar-Namen (Sora/Riku/Mira/Cyra) ggf. vom Nutzer umbenennbar? | nicht besprochen | ⬜ |
 

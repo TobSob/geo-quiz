@@ -41,7 +41,7 @@ npx supabase db push
 | `0014_profile_featured_items.sql` | **Pokalregal (Phase I):** `profile_featured_items` (6 Slots je Spieler, Abzeichen & Pokale gemischt), Schreibzugriff nur über `set_featured_items(jsonb)` mit Ownership-Check; `get_gamification` (liefert jetzt auch `trophy_id` + `featured`) und `get_player_card` (liefert `featured`) neu erstellt — das kuratierte Regal erscheint auf der öffentlichen Spielerkarte |
 | `0015_beta_tester_avatar.sql` | **Beta-Tester-Avatar (Nutzer-Wunsch):** `player_stats.beta_tester` (Flag, gesetzt in `submit_score`/`submit_cup_run`, solange `now() <= 2026-08-31`); rückwirkender Backfill für alle Bestandsspieler. Zeitlich befristetes Dankeschön — Käfer-Avatar im Client, kein pg_cron nötig |
 
-> Live-DB-Stand: **0001–0014 eingespielt** (0001–0009 verifiziert 2026-07-14, 0010–0014 vom Nutzer 2026-07-18) — **0015 steht noch aus**: [`apply_pending.sql`](apply_pending.sql) im SQL-Editor ausführen, danach die Datei löschen und diesen Hinweis aktualisieren. Bis dahin bekommt niemand das Beta-Tester-Flag gesetzt (Avatar bleibt für alle gesperrt). `apply_all.sql` dient der Vollinstallation frischer Projekte — auf der bestehenden Live-DB nichts erneut ausführen (0005 löscht Scores, der 0008-Backfill würde XP doppeln!).
+> Live-DB-Stand: **0001–0015 vollständig eingespielt** (0001–0009 verifiziert 2026-07-14, 0010–0015 vom Nutzer 2026-07-16/18). `apply_pending.sql` gelöscht — nichts mehr ausstehend. `apply_all.sql` dient der Vollinstallation frischer Projekte — auf der bestehenden Live-DB nichts erneut ausführen (0005 löscht Scores, der 0008-Backfill würde XP doppeln!).
 
 ## Sicherheitsmodell
 
