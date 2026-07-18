@@ -89,6 +89,15 @@ Laden auf den Standard-Avatar (`boy`) zurück.*
 
 *Neueste Einträge oben.*
 
+- **2026-07-18 (Bug-Fix, Nutzer-Report):** Die eigene Spielerkarte zeigte bei
+  „Bestpunkte" viel kleinere Werte als die echte Bestleistung. Ursache:
+  `PlayerCard()` las ausschließlich den lokalen `progressStore` (nur auf
+  diesem Gerät gespielte Runden), während fremde Karten schon länger
+  korrekt über `get_player_card` (0012) die serverseitige, geräteübergreifende
+  Bestleistung zeigen — die eigene Karte wurde beim Bau dieser RPC nie
+  mitgezogen. Fix: registrierte Accounts laden ihre Bestpunkte jetzt über
+  dieselbe `fetchPlayerCard(displayName)`-RPC wie fremde Karten; Gäste
+  bleiben beim lokalen Stand (die RPC liefert für sie ohnehin nichts).
 - **2026-07-16 (R9, Bug-Fix):** Disziplinen in der aufgeklappten Cup-
   Bestenliste (0011) erschienen in zufälliger Reihenfolge. Ursache:
   `submitCupRun` schickt alle sechs Leg-Scores gleichzeitig

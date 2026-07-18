@@ -140,16 +140,24 @@ function PlayerCardView({
 /**
  * „Spielerkarte" (Feature-Idee R3): Avatar, Level, Erfolgs-Embleme und die
  * Bestpunkte des EIGENEN Accounts. Level/Abzeichen kommen aus der
- * Gamification (nur mit Account); die Bestpunkte sind lokal (dieses Gerät).
+ * Gamification (nur mit Account).
+ *
+ * Bestpunkte: registrierte Accounts laden sie serverseitig über dieselbe
+ * `get_player_card`-RPC wie für fremde Karten (Bug-Fix 2026-07-18 — vorher
+ * kam hier ausschließlich der lokale `progressStore` zum Zug, der nur die auf
+ * DIESEM Gerät gespielten Runden kennt und dadurch kleinere Werte zeigte als
+ * die echte, geräteübergreifende Bestleistung). Gäste bleiben beim lokalen
+ * Stand, weil `get_player_card` nur registrierte Accounts liefert.
  */
 export function PlayerCard() {
   const avatarId = useAvatarStore((s) => s.avatarId)
   const displayName = useUserStore((s) => s.displayName)
+  const isAnonymous = useUserStore((s) => s.isAnonymous)
   const xp = useGamificationStore((s) => s.xp)
   const badges = useGamificationStore((s) => s.badges)
   const status = useGamificationStore((s) => s.status)
   const featured = useGamificationStore((s) => s.featured)
-  const bests = useProgressStore((s) => s.bests)
+  const localBests = useProgressStore((s) => s.bests)
 
   const badgeTiers = useMemo(() => {
     const tiers = new Map<string, number>()
@@ -159,10 +167,35 @@ export function PlayerCard() {
     return tiers
   }, [badges])
 
-  const bestRows: BestRow[] = BEST_ORDER.flatMap((mode) => {
-    const top = bests[mode]?.[0]
-    return top ? [{ key: mode, score: top.score }] : []
-  })
+  const [serverCard, setServerCard] = useState<
+    Awaited<ReturnType<typeof fetchPlayerCard>>
+  >(null)
+
+  useEffect(() => {
+    if (isAnonymous || !displayName) {
+      setServerCard(null)
+      return
+    }
+    let stale = false
+    fetchPlayerCard(displayName).then((card) => {
+      if (!stale) setServerCard(card)
+    })
+    return () => {
+      stale = true
+    }
+  }, [displayName, isAnonymous])
+
+  const bestRows: BestRow[] = serverCard
+    ? [
+        ...serverCard.modeBests.map((m) => ({ key: m.mode, score: m.score })),
+        ...(serverCard.cupBestScore > 0
+          ? [{ key: 'cup', score: serverCard.cupBestScore }]
+          : []),
+      ]
+    : BEST_ORDER.flatMap((mode) => {
+        const top = localBests[mode]?.[0]
+        return top ? [{ key: mode, score: top.score }] : []
+      })
 
   const hasAccount = status === 'ready' && (xp > 0 || badges.length > 0)
 
