@@ -34,6 +34,8 @@ export interface PlayerStats {
   trophy_count: number
   play_days: number
   last_play_day: string | null
+  /** Beta-Tester-Dankeschön (Migration 0015): bis zum Stichtag gespielt. */
+  beta_tester: boolean
   mode_correct: Partial<Record<GameMode, number>>
   updated_at: string
 }

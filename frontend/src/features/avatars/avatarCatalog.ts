@@ -20,6 +20,10 @@ export type AvatarUnlock =
   | { kind: 'trophy' }
   /** Prestige: alle Abzeichen auf Diamant (Stufe 5). */
   | { kind: 'allDiamond' }
+  /** Zeitlich befristetes Dankeschön (Phase I-Folge, Nutzer-Wunsch): wer bis
+   *  zum Stichtag mindestens eine Runde/einen Cup gespielt hat, behält den
+   *  Avatar für immer (`player_stats.beta_tester`, Migration 0015). */
+  | { kind: 'betaTester' }
 
 export interface AvatarSpec {
   id: string
@@ -33,6 +37,7 @@ export interface UnlockContext {
   level: number
   badgeTiers: ReadonlyMap<string, number>
   trophyCount: number
+  isBetaTester: boolean
 }
 
 // --- Palette --------------------------------------------------------------
@@ -469,6 +474,28 @@ const DRAGON: string[] = [
   '................',
 ]
 
+// Käfer ("Bug"): Beta-Tester-Dankeschön — schwarzer Kopf mit Fühlern, runder
+// roter Rückenpanzer mit vier Punkten (ohne Mittelnaht, sonst wirkt es wie
+// ein Gesicht), kleine Beinchen die seitlich rausschauen.
+const BUG: string[] = [
+  '................',
+  '....0......0....',
+  '.....0....0.....',
+  '.....000000.....',
+  '....00000000....',
+  '...RRRRRRRRRR...',
+  '..RRRRRRRRRRRR..',
+  '.RR0RRRRRRRR0RR.',
+  '.RRRRRRRRRRRRRR.',
+  '.RR0RRRRRRRR0RR.',
+  '..RRRRRRRRRRRR..',
+  '...RRRRRRRRRR...',
+  '....RRRRRRRR....',
+  '..0..RRRRRR..0..',
+  '...0..RRRR..0...',
+  '................',
+]
+
 const GHOST: string[] = [
   '....wwwwwwww....',
   '..wwwwwwwwwwww..',
@@ -621,6 +648,12 @@ export const AVATARS: readonly AvatarSpec[] = [
     unlock: { kind: 'allDiamond' },
     body: human({ '#': '1', '%': '2', '@': 'o', '&': '4', H: 'B', h: 'b' }, HAIR_SHORT, HARDHAT),
   },
+  {
+    id: 'bug',
+    name: 'Bug',
+    unlock: { kind: 'betaTester' },
+    body: sprite(BUG),
+  },
 ] as const
 
 /**
@@ -640,6 +673,8 @@ function unlockKey(u: AvatarUnlock): number {
       return 20000
     case 'allDiamond':
       return 30000
+    case 'betaTester':
+      return 40000
   }
 }
 
@@ -678,6 +713,8 @@ export function isAvatarUnlocked(spec: AvatarSpec, ctx: UnlockContext): boolean 
       return ctx.trophyCount >= 1
     case 'allDiamond':
       return BADGES.every((b) => (ctx.badgeTiers.get(b.id) ?? 0) >= 5)
+    case 'betaTester':
+      return ctx.isBetaTester
   }
 }
 
@@ -693,5 +730,7 @@ export function unlockLabel(spec: AvatarSpec): string {
       return 'Mit einem Pokal'
     case 'allDiamond':
       return 'Alle Abzeichen auf Diamant'
+    case 'betaTester':
+      return 'Beta-Tester — gespielt bis 31.08.2026'
   }
 }

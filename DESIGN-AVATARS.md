@@ -27,7 +27,7 @@ Tiere/Roboter sind eigenständige Sprites.
 | Auswahl-Speicherung | lokal (`avatarStore`, localStorage) **und** am Server-Profil (`profiles.avatar_id`, Migration 0010) — folgt dem Account übers Gerät | ✅ |
 | Anzeige | Header (mit Verbindungsstatus-Punkt), Profil, Spielerkarte, jede Bestenlisten-Zeile | ✅ |
 
-## Katalog (Stand 2026-07-15, 21 Avatare)
+## Katalog (Stand 2026-07-18, 22 Avatare)
 
 **Starter (2):** Junge · Mädchen — die einzigen ohne Account nutzbaren Avatare.
 
@@ -54,6 +54,7 @@ Tiere/Roboter sind eigenständige Sprites.
 | Alien | Abzeichen „Weltenbummler" (Stufe 1) |
 | Champion | ein Pokal |
 | **Geologe** (Bauhelm) | **alle 16 Abzeichen auf Diamant** (Prestige, `allDiamond`) |
+| **Bug** (Marienkäfer) | **Beta-Tester:** bis 31.08.2026 mindestens eine Runde/einen Cup gespielt (zeitlich befristet, `betaTester`) |
 
 *Historie: In R3–R5 waren Junge, Mädchen, Sora, Riku, Punk, Cool, Mira und
 Superheld Starter (8 Stück). R6 (2026-07-15, Nutzer-Entscheid) baute das zu
@@ -76,18 +77,31 @@ Laden auf den Standard-Avatar (`boy`) zurück.*
 | V8 | Starter-Umfang (R6) | Nur 2 Starter statt 8 — mehr Fortschrittsgefühl über eine durchgehende Level-Kurve (3–40); Picker sortiert entsprechend | ✅ |
 | V9 | Cup-Punkte je Disziplin — global (R7) | Nutzer-Wunsch: das Gleiche wie V7, aber für die **globale** Cup-Bestenliste (fremde Läufe). Klick statt Hover (Touch-tauglich). Daten lagen schon in `score_entries.cup_run_id` — neue Nur-Lese-RPC `get_cup_run_legs`, keine zusätzliche Preisgabe (Score+Name sind ohnehin schon öffentlich) | ✅ |
 | V10 | Fremde Spielerkarten (R8, löst A2) | Bug-Report des Nutzers: Klick auf eine fremde Bestenlisten-Zeile zeigte die eigene Karte. Fix: `PlayerCard` in eine reine `PlayerCardView` (Anzeige) + Datenquelle aufgeteilt; neue name-basierte RPC `get_player_card` liefert XP/Abzeichen/Bestpunkte je Modus + Cup-Bestwert für JEDEN registrierten Account. Jede Bestenlisten-Zeile ist jetzt klickbar (vorher nur die eigene) und öffnet die Karte genau dieser Person | ✅ |
+| V11 | Beta-Tester-Avatar „Bug" (Nutzer-Wunsch 2026-07-18) | Zeitlich befristetes Dankeschön für alle, die bis zum 31.08.2026 mitgespielt haben (nicht nach Level/Erfolg, sondern nach Spieldatum). Neuer `AvatarUnlock`-Kind `betaTester` + `UnlockContext.isBetaTester`, serverseitig `player_stats.beta_tester` (Migration 0015, gesetzt in `submit_score`/`submit_cup_run`, solange `now() <= Stichtag`, rückwirkender Backfill für Bestandsspieler). Motiv: Marienkäfer-Sprite (Nutzer-Entscheid: Käfer/Bug-Motiv statt großem „B") — erste Fassung mit durchgehender Mittelnaht sah wie ein Gesicht aus, zweite Fassung (durchgehender roter Rundkörper ohne Naht, Punkte von der Mitte weg versetzt, Beinchen seitlich statt darunter) im Browser per Canvas-Render bestätigt | ✅ |
 
 ## Offene Punkte
 
 | # | Punkt | Stand | Status |
 |---|---|---|---|
-| A1 | **Migrationen 0010–0013 auf Live-DB einspielen** (`0010_profile_avatars.sql`, `0011_cup_leg_breakdown.sql`, `0012_player_card.sql`, `0013_cup_leg_order.sql`, alle auch in `apply_all.sql`) — 0010–0012 vom Nutzer bereits eingespielt (2026-07-16); 0013 (Reihenfolge-Fix) folgt danach | 0010–0012 live, 0013 ausstehend | ⬜ |
+| A1 | **Migration 0015 auf Live-DB einspielen** (`0015_beta_tester_avatar.sql`, auch in `apply_all.sql`) — 0010–0014 vom Nutzer bereits eingespielt (2026-07-16/18) | `apply_pending.sql` bereit | ⬜ |
 | A3 | „Karten-Skins" (Rahmen/Hintergründe der Spielerkarte als Unlocks) | Ideen-Parkplatz | ⬜ |
 | A4 | Avatar-Namen (Sora/Riku/Mira/Cyra) ggf. vom Nutzer umbenennbar? | nicht besprochen | ⬜ |
 
 ## Umsetzungs-Log
 
 *Neueste Einträge oben.*
+
+- **2026-07-18 (Beta-Tester-Avatar, Nutzer-Wunsch):** Käfer-Avatar „Bug" als
+  zeitlich befristetes Dankeschön — freigeschaltet, wer bis 31.08.2026
+  mindestens eine Runde/einen Cup gespielt hat. Migration
+  `0015_beta_tester_avatar.sql` (`player_stats.beta_tester`, gesetzt in
+  `submit_score`/`submit_cup_run`, rückwirkender Backfill), neuer
+  `AvatarUnlock`-Kind `betaTester`. Sprite in zwei Anläufen: erste Fassung
+  mit durchgehender schwarzer Mittelnaht sah beim Rendern wie ein Gesicht
+  mit Augen aus, zweite Fassung (Naht raus, Punkte weiter außen, Beinchen
+  seitlich) im Browser als klar erkennbarer Marienkäfer bestätigt
+  (Canvas-Render, PixelAvatar-Komponente). tsc/113 Tests/Lint grün,
+  Picker zeigt den neuen Avatar korrekt gesperrt für Gäste.
 
 - **2026-07-18 (Bug-Fix, Nutzer-Report):** Die eigene Spielerkarte zeigte bei
   „Bestpunkte" viel kleinere Werte als die echte Bestleistung. Ursache:
