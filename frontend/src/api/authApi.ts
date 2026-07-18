@@ -1,4 +1,11 @@
 import { supabase } from './supabaseClient'
+import {
+  parseOAuthRedirectError,
+  type OAuthRedirectOutcome,
+} from '../features/auth/oauthRedirect'
+
+export { parseOAuthRedirectError }
+export type { OAuthRedirectOutcome }
 
 const ADJECTIVES = [
   'PIXEL', 'NEON', 'TURBO', 'RETRO', 'HYPER', 'MEGA', 'ULTRA', 'CYBER',
@@ -88,6 +95,9 @@ function translateAuthError(message: string): string {
     [/email rate limit exceeded/i, 'Zu viele Versuche — bitte kurz warten und erneut probieren.'],
     [/unable to validate email address/i, 'Das ist keine gültige E-Mail-Adresse.'],
     [/email not confirmed/i, 'E-Mail noch nicht bestätigt — bitte den Link in deinem Postfach anklicken.'],
+    [/provider is not enabled|unsupported provider/i, 'Diese Anmeldung ist serverseitig noch nicht freigeschaltet.'],
+    [/manual linking is disabled/i, 'Konto-Verknüpfung ist serverseitig deaktiviert.'],
+    [/identity is already linked/i, 'Dieses Konto ist bereits mit einem anderen Spieler verknüpft.'],
     [/network/i, 'Keine Verbindung zum Server — bitte Internetverbindung prüfen.'],
   ]
   for (const [pattern, german] of known) {
@@ -116,6 +126,114 @@ export async function upgradeToAccount(
       ? 'Fast geschafft! Bestätige den Link in deiner E-Mail, dann ist der Account dauerhaft.'
       : 'Account erstellt — dein Fortschritt ist jetzt dauerhaft gesichert.',
   }
+}
+
+export type OAuthProvider = 'google' | 'github'
+
+export const OAUTH_PROVIDER_LABELS: Record<OAuthProvider, string> = {
+  google: 'Google',
+  github: 'GitHub',
+}
+
+/**
+ * OAuth-Rücksprungziel (Phase J, DESIGN-AUTH.md): die App-Root ohne Hash —
+ * supabase-js (detectSessionInUrl) liest das Token-Fragment nach dem
+ * Provider-Roundtrip und räumt die URL auf, bevor der HashRouter greift.
+ */
+function oauthRedirectTo(): string {
+  return window.location.origin + window.location.pathname
+}
+
+/**
+ * Gast → Account per Google/GitHub: linkIdentity verknüpft die OAuth-Identität
+ * mit der BESTEHENDEN (anonymen) User-ID — Fortschritt und Retro-Name bleiben,
+ * wie beim E-Mail-Upgrade. Bei Erfolg verlässt der Browser die App Richtung
+ * Provider; zurück kommt er auf der App-Root mit fertiger Session.
+ * Voraussetzung: Provider im Supabase-Dashboard aktiviert + „Allow manual
+ * linking" eingeschaltet.
+ */
+export async function linkProvider(provider: OAuthProvider): Promise<AuthActionResult> {
+  if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
+  const { error } = await supabase.auth.linkIdentity({
+    provider,
+    options: { redirectTo: oauthRedirectTo() },
+  })
+  if (error) return { ok: false, message: translateAuthError(error.message) }
+  return { ok: true, message: `Weiter bei ${OAUTH_PROVIDER_LABELS[provider]}…` }
+}
+
+/**
+ * Anmeldung mit bestehendem Google/GitHub-Account (z. B. Zweitgerät) —
+ * ersetzt die anonyme Session, wie signInWithEmail.
+ */
+export async function signInWithProvider(
+  provider: OAuthProvider,
+): Promise<AuthActionResult> {
+  if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: oauthRedirectTo() },
+  })
+  if (error) return { ok: false, message: translateAuthError(error.message) }
+  return { ok: true, message: `Weiter bei ${OAUTH_PROVIDER_LABELS[provider]}…` }
+}
+
+const PENDING_PROVIDER_KEY = 'geoquiz-oauth-pending-provider'
+const OAUTH_MESSAGE_KEY = 'geoquiz-oauth-message'
+
+/**
+ * Einziger OAuth-Button für Gäste (Nutzer-Entscheid 2026-07-18: EIN „Mit
+ * Google/GitHub" statt getrennter Sichern-/Anmelden-Varianten). Versucht
+ * immer zuerst linkIdentity (Fortschritt bleibt erhalten, falls die Identität
+ * neu ist); merkt sich den Provider, damit resolveOAuthRedirectError() nach
+ * dem Rücksprung weiß, mit wem es bei einem Konflikt weitermachen soll.
+ */
+export async function continueWithProvider(
+  provider: OAuthProvider,
+): Promise<AuthActionResult> {
+  sessionStorage.setItem(PENDING_PROVIDER_KEY, provider)
+  const result = await linkProvider(provider)
+  if (!result.ok) sessionStorage.removeItem(PENDING_PROVIDER_KEY)
+  return result
+}
+
+/**
+ * Räumt einen OAuth-Fehler-Redirect auf, BEVOR der HashRouter mountet — sonst
+ * interpretiert er z. B. „#error=identity_already_exists&…" als ungültigen
+ * Routen-Pfad (leere Seite). Muss synchron vor dem ersten Render laufen
+ * (main.tsx). Erfolgs-Redirects (Token/Code) bleiben unangetastet, die
+ * verarbeitet supabase-js selbst über detectSessionInUrl.
+ *
+ * identity_already_exists: das gewählte Google/GitHub-Konto gehört schon
+ * einem ANDEREN Spieler (typischer Fall: neues Gerät, Nutzer hat den Account
+ * hier schon mal über den Anmelden-Button verknüpft). Statt einer Fehlermeldung
+ * folgt automatisch ein normaler Zweitgerät-Login mit demselben Provider —
+ * vom Umweg merkt der Nutzer nichts außer einem zweiten kurzen Redirect.
+ */
+export function resolveOAuthRedirectError(): void {
+  if (typeof window === 'undefined') return
+  const outcome = parseOAuthRedirectError(window.location.hash, window.location.search)
+  if (!outcome.hasError) return
+
+  const pendingProvider = sessionStorage.getItem(PENDING_PROVIDER_KEY) as OAuthProvider | null
+  sessionStorage.removeItem(PENDING_PROVIDER_KEY)
+  window.history.replaceState(null, '', window.location.pathname + '#/profile')
+
+  if (outcome.errorCode === 'identity_already_exists' && pendingProvider) {
+    void signInWithProvider(pendingProvider)
+  } else {
+    sessionStorage.setItem(
+      OAUTH_MESSAGE_KEY,
+      translateAuthError(outcome.errorDescription ?? outcome.errorCode ?? 'oauth error'),
+    )
+  }
+}
+
+/** Einmalige Meldung aus einem vorherigen OAuth-Redirect abholen (LoginPanel). */
+export function consumePendingOAuthMessage(): string | null {
+  const msg = sessionStorage.getItem(OAUTH_MESSAGE_KEY)
+  if (msg) sessionStorage.removeItem(OAUTH_MESSAGE_KEY)
+  return msg
 }
 
 /** Sign in with an existing account (e.g. on a second device). */

@@ -157,6 +157,38 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 ---
 
+## Phase I — Pokal-Ausbau 🏆
+
+*Ziel: Perioden-Navigation (◀/▶ durch Wochen/Monate/Jahre) in Pokale/Hall of Fame, eigene Pixel-Pokal-Icons für Monats-/Jahrespokale (statt Medaillen für alle Perioden), und ein Pokalregal mit 6 festen Slots, das auf der öffentlichen Spielerkarte erscheint. Vollständiges Konzept in [DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md#pokal-ausbau-phase-i-in-diskussion--periodennavigation-pokal-icons-pokalregal).*
+
+| # | Schritt | Status | Notiz |
+|---|---|---|---|
+| I1 | Perioden-Navigation ◀/▶ in der Hall of Fame | ✅ | Filter-Chip (Woche/Monat/Jahr) → eine Periode auf einmal, ◀/▶ blättert; rein clientseitig (`trophyPeriods.ts` mit Tests) |
+| I2 | Pixel-Pokal-Icons für Monat (klein, 26 px) / Jahr (groß, 36 px), 3 Rang-Farben | ✅ | `TrophyIcon.tsx` (16×16-Raster wie Avatare); Woche bleibt 🥇/🥈/🥉. Canvas-render-verifiziert |
+| I3 | Migration `0014_profile_featured_items.sql`: `profile_featured_items` (6 Slots, gemischt, frei angeordnet), RPC `set_featured_items()` | ✅ (Code) | Ownership-Check serverseitig; **auf Live-DB noch einspielen (I6)** |
+| I4 | `get_player_card`/`get_gamification` um aufgelöste Featured-Slots erweitern | ✅ (Code) | gemeinsamer Baustein `featured_items_json()`; `get_gamification` liefert Pokalen jetzt ihre `trophy_id` mit |
+| I5 | Editor-UI „Pokalregal" (Slots antippen → Auswahl), Fallback auf Top-Abzeichen ohne Kuration | ✅ | `TrophyShelf.tsx` (Anzeige + Editor im Profil); graceful ohne Migration |
+| I6 | `apply_pending.sql` (0013 + 0014) auf Live-DB einspielen | ✅ | vom Nutzer bestätigt (2026-07-18). **Account-E2E steht noch aus** (Regal bestücken, fremde Karte, Perioden-Navigation mit echten Pokalen) |
+
+**Fertig-Kriterium:** Man kann in der Pokale-Ansicht durch vergangene Perioden blättern, Monats-/Jahrespokale sehen anders aus als Wochen-Medaillen, und jeder Spieler kann 6 Abzeichen/Pokale seiner Wahl auf seiner öffentlichen Spielerkarte präsentieren.
+
+---
+
+## Phase J — Social Login (Google/GitHub) 🔑
+
+*Ziel: Google- und GitHub-Anmeldung als EIN Button pro Provider — versucht immer zuerst Gast-Upgrade per `linkIdentity` (behält die User-ID), fällt bei Konflikt automatisch auf normalen Login per `signInWithOAuth` zurück. E-Mail/Passwort bleibt als Alternative bestehen. Vollständiges Konzept in [DESIGN-AUTH.md](DESIGN-AUTH.md).*
+
+| # | Schritt | Status | Notiz |
+|---|---|---|---|
+| J1 | **Voraussetzung (manuell):** Google-OAuth-Client + GitHub-OAuth-App anlegen, in Supabase-Dashboard eintragen + **„Allow manual linking" aktivieren** | ✅ | vom Nutzer eingerichtet (2026-07-18); erster Live-Test deckte den fehlenden Manual-Linking-Toggle auf, danach behoben |
+| J2 | `authApi.ts`: `continueWithProvider(provider)` (immer erst linkIdentity, merkt Provider in sessionStorage), `resolveOAuthRedirectError()` (Konflikt-Fallback, parst Hash+Query vor dem ersten Render) | ✅ | Parsing-Logik ausgelagert (`features/auth/oauthRedirect.ts`) — testbar ohne echten Supabase-Client |
+| J3 | UI: „Mit Google"/„Mit GitHub" mit offiziellen Icons im standardmäßig offenen `LoginPanel`; `RegisterPanel` (E-Mail/Passwort) aufklappbar, ohne OAuth | ✅ | Panels getauscht (Nutzer-Wunsch R2): Anmelden ist jetzt Standard statt Registrieren |
+| J4 | Redirect-Roundtrip im Browser verifiziert (HashRouter + Auth-Fragment) | ✅ | Catch-all-Route in `App.tsx` + synchrones URL-Cleanup in `main.tsx`; Login-Redirect zu Google/GitHub im Dev-Server bestätigt (korrekte Client-ID/Callback-URL) |
+
+**Fertig-Kriterium:** Ein Gast kann seinen Account per Google oder GitHub dauerhaft machen, ein registrierter Spieler kann sich auf einem neuen Gerät per Google/GitHub anmelden — beides verifiziert auf der Live-Domain.
+
+---
+
 ## Ideen-Parkplatz (unpriorisiert)
 
 - Duell-Modus (asynchron: gleicher Fragen-Seed, Ergebnis vergleichen)
@@ -173,6 +205,9 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-18 | I6 + J1 vom Nutzer erledigt: Migration 0013+0014 live eingespielt, Google/GitHub-OAuth-Apps + Supabase-Provider eingerichtet. Live-Test deckte Bug auf ("Konto-Verknüpfung ist serverseitig deaktiviert" beim Registrieren) — Ursache: "Allow manual linking" fehlte. Im selben Zug (Nutzer-Wunsch, Runde 2) Auth-UI umgebaut: EIN Button je Provider statt getrennter Sichern-/Anmelden-Pfade (`continueWithProvider`, erst linkIdentity, bei Konflikt automatischer Fallback via `resolveOAuthRedirectError()`), Panels getauscht (Anmelden jetzt Standard, Registrieren aufklappbar und ohne OAuth), offizielle Google/GitHub-Icons. Catch-all-Route gegen HashRouter-Blankscreen bei Redirects. Tests 113/113, tsc/lint/Build grün, Browser-verifiziert (Panel-Tausch, Login-Redirect zu Google/GitHub mit korrekter Client-ID bestätigt) |
+| 2026-07-18 | Phasen I + J umgesetzt (Code komplett, Details in den Umsetzungs-Logs von [DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md) und [DESIGN-AUTH.md](DESIGN-AUTH.md)): Perioden-Navigation, Pixel-Pokal-Icons (Canvas-render-verifiziert), Pokalregal (Migration 0014, Editor im Profil, Anzeige auf eigener + fremder Spielerkarte, graceful ohne Migration), Google/GitHub-Buttons in beiden Auth-Panels. Tests 109/109, tsc/lint/Build grün, Gast-Sichten im Browser verifiziert. **Offen: I6 (`apply_pending.sql` 0013+0014 auf Live-DB + Account-E2E), J1 (OAuth-Apps + Dashboard, manuell), J4 (Redirect-Test nach J1), Redeploy (`npm run deploy`)** |
+| 2026-07-18 | Zwei neue Phasen geplant (Design-Chats): **Phase I „Pokal-Ausbau"** ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) — Perioden-Navigation ◀/▶, Pixel-Pokal-Icons für Monat/Jahr statt Medaillen, Pokalregal mit 6 festen Slots auf der öffentlichen Spielerkarte; **Phase J „Social Login"** ([DESIGN-AUTH.md](DESIGN-AUTH.md)) — Google/GitHub-Anmeldung ergänzt den anonym-first-Flow, HashRouter-Redirect als offenes technisches Risiko markiert. Nachentscheide: Regal frei anordenbar, Abzeichen+Pokale gemischt |
 | 2026-07-17 | Pin-Mode-UX dritte Runde nach Handy-Test: Kontinent-Sprung-Buttons wieder entfernt (Nutzer-Feedback "unnötig"); Ein-Tap-Antwort in Arcade/Cup bestätigt ("macht es schon besser"). Tile-Preload komplett neu gebaut, weil seitliches Pannen auf dem Handy weiter sichtbar nachlud: zwei echte Bugs gefunden — Preload lud die falsche Kachel-Auflösung (Leaflets `{r}`-Platzhalter löst auf jedem Retina-Handy zu `@2x` auf, Preload lud bisher 1x) und referenzlose `Image()`-Objekte waren GC-gefährdet. Preload deckt jetzt die komplette Welt bei Zoom 2–5 ab (1360 Kacheln) statt nur grober Kontinent-Kästen. Details: [DESIGN-PIN-UX.md](DESIGN-PIN-UX.md) |
 | 2026-07-17 | Pin-Mode-UX zweite Runde (Arcade/Cup, seitdem teilweise revidiert — siehe Eintrag oben): 5 Kontinent-Sprung-Buttons (`flyToBounds`) ersetzen den zweiten „Bestätigen"-Tap — ein Kartenklick beantwortet die Frage direkt; Training behält bewusst den zweistufigen Flow. Details/Begründung: [DESIGN-PIN-UX.md](DESIGN-PIN-UX.md) |
 | 2026-07-17 | Pin-Mode-UX-Bug gefixt: OSM/CARTO-Attribution saß unten-rechts direkt über dem „Weiter"/„Bestätigen"-Button und wurde beim Antippen versehentlich mitgetroffen. Attribution jetzt eigenes `<AttributionControl position="bottomleft">` neben dem Zoom-Control (Details: [DESIGN-PIN-UX.md](DESIGN-PIN-UX.md)) |

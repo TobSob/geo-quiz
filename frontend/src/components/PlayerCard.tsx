@@ -3,7 +3,8 @@ import { useAvatarStore } from '../state/avatarStore'
 import { useUserStore } from '../state/userStore'
 import { useGamificationStore } from '../state/gamificationStore'
 import { useProgressStore } from '../state/progressStore'
-import { fetchPlayerCard } from '../api/gamificationApi'
+import { fetchPlayerCard, type FeaturedItem } from '../api/gamificationApi'
+import { TrophyShelf } from './TrophyShelf'
 import { levelProgress } from '../features/gamification/levels'
 import {
   BADGE_BY_ID,
@@ -52,6 +53,7 @@ function PlayerCardView({
   bestRows,
   badgesEmptyText,
   bestsEmptyText,
+  featured,
 }: {
   avatarId: string
   displayName: string
@@ -60,9 +62,12 @@ function PlayerCardView({
   bestRows: BestRow[]
   badgesEmptyText: string
   bestsEmptyText: string
+  /** Kuratierte Regal-Slots (Phase I); leer/undefined → Top-Abzeichen wie bisher. */
+  featured?: FeaturedItem[]
 }) {
   const p = levelProgress(xp)
   const emblems = useMemo(() => emblemsFromTiers(badgeTiers), [badgeTiers])
+  const hasShelf = featured !== undefined && featured.length > 0
 
   return (
     <div className="player-card">
@@ -85,9 +90,11 @@ function PlayerCardView({
 
       <div className="stack" style={{ gap: 8 }}>
         <span className="display glow-green" style={{ fontSize: 10 }}>
-          ERFOLGE
+          {hasShelf ? 'POKALREGAL' : 'ERFOLGE'}
         </span>
-        {emblems.length === 0 ? (
+        {hasShelf ? (
+          <TrophyShelf featured={featured} />
+        ) : emblems.length === 0 ? (
           <p className="dim" style={{ margin: 0, fontSize: 16 }}>
             {badgesEmptyText}
           </p>
@@ -141,6 +148,7 @@ export function PlayerCard() {
   const xp = useGamificationStore((s) => s.xp)
   const badges = useGamificationStore((s) => s.badges)
   const status = useGamificationStore((s) => s.status)
+  const featured = useGamificationStore((s) => s.featured)
   const bests = useProgressStore((s) => s.bests)
 
   const badgeTiers = useMemo(() => {
@@ -171,6 +179,7 @@ export function PlayerCard() {
           : 'Mit Account gibt es hier Level & Abzeichen.'
       }
       bestsEmptyText="Noch keine Rekorde — leg los!"
+      featured={featured}
     />
   )
 }
@@ -241,6 +250,7 @@ function OtherPlayerCardBody({
       bestRows={bestRows}
       badgesEmptyText="Noch keine Abzeichen."
       bestsEmptyText="Noch keine Rekorde."
+      featured={card.featured}
     />
   )
 }

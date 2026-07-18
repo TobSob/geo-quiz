@@ -223,9 +223,76 @@ Hall of Fame) — bis dahin liefern die submit-RPCs keine Payload.
 
 ---
 
+## Pokal-Ausbau (Phase I, umgesetzt 2026-07-18) — Periodennavigation, Pokal-Icons, Pokalregal
+
+> Design-Chat + Umsetzung 2026-07-18. Läuft als **Phase I** in der [ROADMAP.md](ROADMAP.md).
+> Legende wie oben: ✅ entschieden/umgesetzt · 💬 in Diskussion · ⬜ noch nicht besprochen
+
+### I1 — Perioden-Navigation (◀ / ▶ durch Wochen/Monate/Jahre)
+
+| Regel | Wert | Status |
+|---|---|---|
+| Datenquelle | Kein neuer Endpunkt: `get_cup_trophies()` liefert die Hall of Fame (Limit 100, max. 300), Navigation gruppiert clientseitig nach `(period_type, period_start)` (`trophyPeriods.ts`, mit Tests) | ✅ |
+| Bedienung | Filter-Chip Woche/Monat/Jahr wählen → ◀/▶ blättert durch Perioden mit Pokalen (eine Periode auf einmal, neueste zuerst); deaktiviert am Rand. „Alle" bleibt Gesamttabelle | ✅ |
+| Laufende Periode | bleibt wie bisher ausgeblendet (Hinweis auf die Bestenliste) | ✅ |
+| Bekannte Grenze | Sobald die Hall of Fame über das 300er-Limit von `get_cup_trophies` wächst, braucht die RPC einen Perioden-Parameter statt "alles auf einmal" — Backlog | 💬 |
+
+### I2 — Monat = kleiner Pokal, Jahr = großer Pokal (statt Medaillen für alle Perioden)
+
+| Regel | Wert | Status |
+|---|---|---|
+| Woche | bleibt bei Medaillen-Emoji 🥇/🥈/🥉 (22 px) | ✅ |
+| Monat/Jahr | eigenes **Pixel-Sprite** (Nutzer-Entscheid 2026-07-18): 16×16-Pokal-Raster wie der Avatar-Katalog (`TrophyIcon.tsx`), Monat 26 px, Jahr 36 px, je 3 Rang-Paletten (Gold/Silber/Bronze) | ✅ |
+| XP-Staffel | unverändert, Rang bestimmt weiterhin nur die XP-Höhe, nicht das Icon-Set | ✅ |
+| Umsetzung | rein Frontend (`TrophyIcon.tsx` + `AchievementsScreen.tsx`), keine Migration | ✅ |
+
+### I3 — Pokalregal auf der öffentlichen Spielerkarte
+
+`PlayerCard` ([PlayerCard.tsx](frontend/src/components/PlayerCard.tsx)) ist bereits öffentlich einsehbar — jede Bestenlisten-Zeile ist klickbar und lädt fremde Karten über `get_player_card`. Das Regal ist Teil dieser Karte.
+
+| Regel | Wert | Status |
+|---|---|---|
+| Slot-Anzahl | **Fest, 6 Plätze** (Nutzer-Entscheid 2026-07-18) | ✅ |
+| Anordnung/Mischung | **Frei anordenbar, Abzeichen + Pokale gemischt** in denselben 6 Slots (Nutzer-Entscheid 2026-07-18); dasselbe Item kann nur einmal im Regal stehen (Client entfernt es beim Neuzuweisen aus dem alten Slot) | ✅ |
+| Datenmodell | `profile_featured_items(user_id, slot 1–6, item_type, badge_id+badge_tier ODER trophy_id)`, PK (user_id, slot), Check-Constraints je Typ | ✅ |
+| Schreibzugriff | nur RPC `set_featured_items(jsonb)` (security definer): ersetzt das ganze Regal atomar, prüft Ownership je Item (`player_badges` bzw. `cup_trophies.user_id`) — kein Fremd-Pokal einbaubar | ✅ |
+| Lesezugriff | `get_gamification` (liefert jetzt auch `trophy_id` je Pokal + `featured`) und `get_player_card` (`featured`) über gemeinsamen SQL-Baustein `featured_items_json(uuid)`; Pokal-Slots kommen fertig aufgelöst (Periode/Rang/Score) | ✅ |
+| Editor-UI | `TrophyShelfEditor` im Profil: Slot antippen → Auswahl aus eigenen Abzeichen (höchste Stufe) und Pokalen, „Leeren", Muster wie Avatar-Picker | ✅ |
+| Fallback ohne Kuration | Karte zeigt weiter die Top-Abzeichen („ERFOLGE"); erst mit belegten Slots erscheint „POKALREGAL" — nie leer | ✅ |
+| Graceful ohne Migration | `featured` fehlt in den RPC-Antworten → Parsing liefert `[]`, Anzeige fällt auf Abzeichen zurück; Speichern meldet einen Fehler statt zu crashen | ✅ |
+| Migration | `0014_profile_featured_items.sql` (auch in `apply_all.sql`; für die Live-DB zusammen mit 0013 in `supabase/apply_pending.sql`) | ✅ |
+
+### Umsetzungs-Log Phase I
+
+**I1–I5 ✅ (Code) — 2026-07-18**
+
+- **Migration `0014_profile_featured_items.sql`**: Tabelle + `set_featured_items()`
+  (Ownership-Check, max. 6, alles-oder-nichts), Helfer `featured_items_json()`,
+  `get_gamification`/`get_player_card` neu erstellt (liefern `featured`;
+  `get_gamification` gibt Pokalen jetzt ihre `trophy_id` mit — der Client
+  braucht sie als Regal-Referenz). `apply_pending.sql` neu (0013 + 0014).
+- **Frontend**: `TrophyIcon.tsx` (Pixel-Pokal, `TrophySymbol` wählt Emoji/Sprite
+  nach Periode), `trophyPeriods.ts` + `featuredItems.ts` (pure Module mit
+  Tests: Perioden-Liste, Featured-Parsing), `TrophyShelf.tsx` (Anzeige +
+  Editor), `gamificationApi` (`featured` in beiden Karten-Typen,
+  `saveFeaturedItems`), `gamificationStore.featured`, `PlayerCardView` mit
+  `featured`-Prop (eigene + fremde Karte), Editor im Profil unter der Karte,
+  Perioden-Navigation im Pokale-Tab, Regal-CSS (`shelf-*`).
+- **Verifiziert**: Tests 109/109 (6 neue), tsc/oxlint/Build sauber (nur die
+  vorbestehende PlayScreen-Warnung); Browser: Pokal-Sprites via Canvas→PNG
+  render-verifiziert (Gold/Silber/Bronze, 26/36 px), Gast-Sichten korrekt
+  (Erfolge-Teaser, kein Regal-Editor), Konsole sauber.
+- **Offen**: `apply_pending.sql` auf der Live-DB, danach E2E mit registriertem
+  Account (Regal bestücken, fremde Karte, Perioden-Navigation mit echten
+  Pokalen) — bis dahin greift überall der Fallback.
+
+---
+
 ## Verlauf
 
 | Datum | Eintrag |
 |---|---|
+| 2026-07-18 | Phase I komplett umgesetzt (Code, siehe Umsetzungs-Log): Perioden-Navigation, Pixel-Pokal-Icons (Canvas-render-verifiziert), Pokalregal (Migration 0014 + Editor). Nutzer-Entscheide: Pixel-Sprite statt Emoji, 6 feste Slots, frei anordenbar, Abzeichen+Pokale gemischt. **Offen: `apply_pending.sql` (0013+0014) auf Live-DB + Account-E2E** |
+| 2026-07-18 | Pokal-Ausbau als Phase I geplant (Design-Chat): Perioden-Navigation ◀/▶ (rein clientseitig, Daten schon vorhanden), Monat/Jahr bekommen eigene Pixel-Pokal-Icons statt Medaillen (Nutzer-Entscheid: Pixel-Sprite statt Emoji), Pokalregal mit 6 festen Slots auf der öffentlichen Spielerkarte (Nutzer-Entscheid: feste Anzahl statt frei) — Datenmodell/RPC-Details noch offen |
 | 2026-07-14 | Pokale auf **Top 3** umgestellt (Migration 0009, Nutzer-Entscheid nach Live-Test): 🥇/🥈/🥉 je Periode mit XP-Staffel, Nachvergabe für alte Perioden. Live-Verifikation von 0007+0008 davor abgeschlossen: Backfill (LV 6, 8/16 Badges, Wochen-Pokal KW 28), Unlock-Panel mit LEVEL UP im Browser bestätigt; Test-Bot-Runde per `revert_bot_round.sql` rückstandslos entfernt |
 | 2026-07-13 | Dokument angelegt; alle Punkte im Design-Chat entschieden: Speicherung nur Server (account-gebunden), Pokale nur für den Cup-Modus (Wochen-/Monats-/Jahresbester, Kalenderperioden Europe/Berlin, lazy finalisiert — kein pg_cron), eigener Erfolge-Screen, rückwirkender Backfill, eigene Untertitel je Badge-Stufe, Level-Bestenliste global + Gruppen. Als Phase G in die Roadmap übernommen |

@@ -23,7 +23,8 @@ Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Alle
 
 - 🎭 **Pixel-Avatare** — 21 handgepixelte 16×16-Sprites (2 Starter, Rest über eine Level-Kurve 3–40 sowie Erfolge/Pokal/Prestige freischaltbar, [Katalog & Regeln](DESIGN-AVATARS.md))
 - 🏅 **Erfolge** — 16 Abzeichen in 5 Stufen (Normal→Diamant) mit eigenem Spruch je Stufe, XP + Level (Cap 99)
-- 🏆 **Pokale & Hall of Fame** — Wochen-/Monats-/Jahresbeste im Cup (Top 3)
+- 🏆 **Pokale & Hall of Fame** — Wochen-/Monats-/Jahresbeste im Cup (Top 3), blätterbar je Periode; Monats-/Jahrespokale als eigene Pixel-Sprites
+- 🗄️ **Pokalregal** — 6 frei bestückbare Plätze (Abzeichen & Pokale gemischt) auf der öffentlichen Spielerkarte
 - 👥 **Freundesgruppen** — per Beitrittscode (z. B. `TURBO-YETI-83`), eigene Gruppen-Bestenlisten
 - 🥇 **Bestenlisten** — lokal („Meine Rekorde", Allzeit-Top-10 je Kategorie) und global (Bestleistung pro Spieler, Zeitfilter, mit Avataren)
 
@@ -125,6 +126,8 @@ Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementie
 - [x] Phase E: Arcade-Umbau (zeitbasierte Modi, neues Scoring) + Playtest-Balancing
 - [x] Phase F: Freundesgruppen · Phase G: Gamification (Abzeichen, Pokale, Level)
 - [x] Phase H: Avatare & Spielerkarten (Client fertig; Migration 0010 fürs Avatar-Sync noch einspielen)
+- [x] Phase I: Pokal-Ausbau — Perioden-Navigation, Pixel-Pokale, Pokalregal (Client fertig; Migration 0014 noch einspielen)
+- [ ] Phase J: Social Login Google/GitHub (Code fertig; OAuth-Apps + Supabase-Provider-Setup offen)
 - [ ] Phase B: Android-App mit Capacitor (Toolchain steht, Gerätetest offen)
 - [ ] Phase C: Polish (Code-Splitting, PWA, Haptics — Sounds ✅)
 - [ ] Phase D: Anti-Cheat Stufe 2 (server-autoritatives Scoring; Stufe 1 ✅)

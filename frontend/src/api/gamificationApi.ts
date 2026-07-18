@@ -4,7 +4,14 @@ import type {
   TrophyPeriod,
   TrophyRank,
 } from '../features/gamification/badgeCatalog'
+import {
+  parseFeaturedItems,
+  type FeaturedItem,
+} from '../features/gamification/featuredItems'
 import { supabase } from './supabaseClient'
+
+export { parseFeaturedItems }
+export type { FeaturedItem }
 
 /**
  * Gamification-RPCs (Migration 0008): eigener Stand (get_gamification),
@@ -38,6 +45,8 @@ export interface OwnedBadge {
 }
 
 export interface OwnedTrophy {
+  /** Server-ID (0014) — null, solange die Migration auf der DB fehlt. */
+  trophyId: number | null
   periodType: TrophyPeriod
   periodStart: string
   rank: TrophyRank
@@ -49,6 +58,8 @@ export interface GamificationData {
   stats: PlayerStats
   badges: OwnedBadge[]
   trophies: OwnedTrophy[]
+  /** Pokalregal-Slots; leer ohne Kuration oder ohne Migration 0014. */
+  featured: FeaturedItem[]
 }
 
 export interface NewBadge {
@@ -87,6 +98,8 @@ export interface OtherPlayerCard {
   cupBestScore: number
   badges: { badgeId: string; tier: BadgeTier }[]
   modeBests: { mode: GameMode; score: number }[]
+  /** Pokalregal-Slots; leer ohne Kuration oder ohne Migration 0014. */
+  featured: FeaturedItem[]
 }
 
 type Json = Record<string, unknown>
@@ -162,13 +175,30 @@ export async function fetchGamification(): Promise<GamificationData | null> {
       awardedAt: String(b.awarded_at),
     })),
     trophies: asArray(d.trophies).map((t) => ({
+      trophyId: typeof t.trophy_id === 'number' ? t.trophy_id : null,
       periodType: t.period_type as TrophyPeriod,
       periodStart: String(t.period_start),
       rank: (Number(t.rank) || 1) as TrophyRank,
       totalScore: Number(t.total_score) || 0,
       awardedAt: String(t.awarded_at),
     })),
+    featured: parseFeaturedItems(d.featured),
   }
+}
+
+/**
+ * Pokalregal speichern (RPC set_featured_items, 0014) — ersetzt alle Slots
+ * auf einmal. False bei Gast/offline oder wenn die Migration noch fehlt.
+ */
+export async function saveFeaturedItems(items: FeaturedItem[]): Promise<boolean> {
+  if (!supabase) return false
+  const payload = items.map((i) =>
+    i.itemType === 'badge'
+      ? { slot: i.slot, item_type: 'badge', badge_id: i.badgeId, tier: i.tier }
+      : { slot: i.slot, item_type: 'trophy', trophy_id: i.trophyId },
+  )
+  const { error } = await supabase.rpc('set_featured_items', { p_items: payload })
+  return !error
 }
 
 /** Hall of Fame: alle vergebenen Cup-Pokale (Name + Punkte, nie user_id). */
@@ -218,6 +248,7 @@ export async function fetchPlayerCard(displayName: string): Promise<OtherPlayerC
       mode: String(m.mode) as GameMode,
       score: Number(m.score) || 0,
     })),
+    featured: parseFeaturedItems(d.featured),
   }
 }
 

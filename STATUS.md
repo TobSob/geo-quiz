@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-15
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-18
 
 ## Gesamtfortschritt
 
@@ -20,6 +20,8 @@
 | F | Freundesgruppen ([DESIGN-SOCIAL.md](DESIGN-SOCIAL.md)) | ✅ Fertig (Zwei-Account-E2E 2026-07-12) |
 | G | Gamification: Abzeichen, Pokale Top 3, XP/Level ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | ✅ Fertig (Live-DB 0007–0009, E2E 2026-07-14) |
 | H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (21 Avatare, Karte für jeden Spieler, Bestenlisten-Avatare, Cup-Punkte-Aufklappen) — **0010–0012 live, 0013 (Reihenfolge-Fix) noch auf Live-DB** |
+| I | Pokal-Ausbau: Perioden-Navigation, Pixel-Pokale, Pokalregal ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | 🔄 Client + Migration 0014 fertig (Tests 109/109) — **`apply_pending.sql` (0013+0014) noch auf Live-DB, dann Account-E2E** |
+| J | Social Login Google/GitHub ([DESIGN-AUTH.md](DESIGN-AUTH.md)) | 🔄 Code fertig (linkIdentity/signInWithOAuth, Buttons in beiden Auth-Panels) — **OAuth-Apps + Supabase-Provider-Setup (manuell) + Redirect-Test offen** |
 | B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Projekt-Setup fertig, Geräte-Test offen) |
 | C | Polish (Sounds ✅, Code-Splitting/PWA/Haptics offen) | 🔄 |
 | D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |

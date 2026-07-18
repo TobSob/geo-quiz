@@ -5,7 +5,6 @@ import {
   badgeMetricValue,
   CUP_FINISH_XP,
   formatTrophyPeriod,
-  RANK_EMOJI,
   TIER_COLORS,
   TIER_NAMES,
   tierForValue,
@@ -15,6 +14,8 @@ import {
   type BadgeSpec,
   type TrophyPeriod,
 } from '../features/gamification/badgeCatalog'
+import { listPeriodStarts } from '../features/gamification/trophyPeriods'
+import { TrophySymbol } from '../components/TrophyIcon'
 import {
   LEVEL_CAP,
   levelProgress,
@@ -182,6 +183,8 @@ function TrophiesTab() {
   const status = useGamificationStore((s) => s.status)
   const [hall, setHall] = useState<HallOfFameEntry[] | null | 'loading'>('loading')
   const [filter, setFilter] = useState<TrophyPeriod | 'all'>('all')
+  // Blätter-Index in die Perioden-Liste des gewählten Typs (0 = neueste).
+  const [periodIdx, setPeriodIdx] = useState(0)
 
   useEffect(() => {
     let stale = false
@@ -193,12 +196,28 @@ function TrophiesTab() {
     }
   }, [])
 
+  const periodStarts = useMemo(
+    () =>
+      hall !== 'loading' && hall !== null && filter !== 'all'
+        ? listPeriodStarts(hall, filter)
+        : [],
+    [hall, filter],
+  )
+
   if (status !== 'ready') return <p className="dim center blink">LADE…</p>
+
+  // Beim Datenwechsel nie über das Perioden-Ende hinaus zeigen.
+  const idx = Math.min(periodIdx, Math.max(0, periodStarts.length - 1))
+  const currentPeriod = filter !== 'all' ? periodStarts[idx] : undefined
 
   const hallRows =
     hall === 'loading' || hall === null
       ? hall
-      : hall.filter((h) => filter === 'all' || h.periodType === filter)
+      : hall.filter(
+          (h) =>
+            filter === 'all' ||
+            (h.periodType === filter && h.periodStart === currentPeriod),
+        )
 
   return (
     <div className="stack" style={{ gap: 20 }}>
@@ -214,8 +233,12 @@ function TrophiesTab() {
         ) : (
           <div className="stack" style={{ gap: 6 }}>
             {trophies.map((t) => (
-              <div key={`${t.periodType}-${t.periodStart}`} className="row" style={{ gap: 10 }}>
-                <span style={{ fontSize: 22 }}>{RANK_EMOJI[t.rank - 1]}</span>
+              <div
+                key={`${t.periodType}-${t.periodStart}`}
+                className="row"
+                style={{ gap: 10, alignItems: 'center' }}
+              >
+                <TrophySymbol period={t.periodType} rank={t.rank} />
                 <span className="display" style={{ fontSize: 10 }}>
                   {trophyTitle(t.periodType, t.rank)}
                 </span>
@@ -244,12 +267,47 @@ function TrophiesTab() {
               key={f}
               type="button"
               className={`pixel-btn pixel-btn--small${filter === f ? ' pixel-btn--cyan' : ''}`}
-              onClick={() => setFilter(f)}
+              onClick={() => {
+                setFilter(f)
+                setPeriodIdx(0)
+              }}
             >
               {f === 'all' ? 'Alle' : TROPHY_PERIOD_LABELS[f]}
             </button>
           ))}
         </div>
+
+        {filter !== 'all' && currentPeriod !== undefined && (
+          <div
+            className="row"
+            style={{ justifyContent: 'center', alignItems: 'center', gap: 12 }}
+          >
+            <button
+              type="button"
+              className="pixel-btn pixel-btn--small"
+              aria-label="Ältere Periode"
+              disabled={idx >= periodStarts.length - 1}
+              onClick={() => setPeriodIdx(idx + 1)}
+            >
+              ◀
+            </button>
+            <span
+              className="display glow-yellow"
+              style={{ fontSize: 11, minWidth: 150, textAlign: 'center' }}
+            >
+              {formatTrophyPeriod(filter, currentPeriod)}
+            </span>
+            <button
+              type="button"
+              className="pixel-btn pixel-btn--small"
+              aria-label="Neuere Periode"
+              disabled={idx <= 0}
+              onClick={() => setPeriodIdx(idx - 1)}
+            >
+              ▶
+            </button>
+          </div>
+        )}
 
         {hallRows === 'loading' ? (
           <p className="dim center blink">LADE…</p>
@@ -274,7 +332,16 @@ function TrophiesTab() {
               {hallRows.map((h) => (
                 <tr key={`${h.periodType}-${h.periodStart}-${h.rank}`}>
                   <td>
-                    {RANK_EMOJI[h.rank - 1]} {trophyTitle(h.periodType, h.rank)}
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      <TrophySymbol period={h.periodType} rank={h.rank} />
+                      {trophyTitle(h.periodType, h.rank)}
+                    </span>
                   </td>
                   <td className="dim">{formatTrophyPeriod(h.periodType, h.periodStart)}</td>
                   <td className="glow-cyan">{h.displayName}</td>

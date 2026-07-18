@@ -757,6 +757,12 @@ html {
   background: var(--ink-dim);
 }
 
+.oauth-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .avatar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
@@ -849,6 +855,72 @@ html {
   height: 40px;
   background: var(--bg-deep);
   border: 3px solid var(--shadow);
+}
+
+/* Pokalregal (Phase I): 6 feste Plätze auf der Spielerkarte + Editor im Profil */
+.shelf-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shelf-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--bg-deep);
+  border: 3px solid var(--shadow);
+}
+
+.shelf-slot--empty {
+  border-style: dashed;
+  opacity: 0.6;
+}
+
+.shelf-slot--btn {
+  cursor: pointer;
+  padding: 0;
+}
+
+.shelf-slot--btn:hover:not(:disabled) {
+  background: var(--panel);
+}
+
+.shelf-slot--active {
+  border-color: var(--cyan);
+  border-style: solid;
+  box-shadow: 3px 3px 0 0 var(--cyan);
+  opacity: 1;
+}
+
+.shelf-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.shelf-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--bg-deep);
+  border: 3px solid var(--shadow);
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  text-align: left;
+}
+
+.shelf-option:hover:not(:disabled) {
+  background: var(--panel);
+}
+
+.shelf-option-name {
+  line-height: 1.2;
 }
 
 .player-card-bests {

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import {
   fetchGamification,
+  type FeaturedItem,
   type GamificationData,
   type OwnedBadge,
   type OwnedTrophy,
@@ -24,8 +25,12 @@ interface GamificationState {
   stats: PlayerStats | null
   badges: OwnedBadge[]
   trophies: OwnedTrophy[]
+  /** Pokalregal-Slots (Phase I); leer ohne Kuration. */
+  featured: FeaturedItem[]
   load: () => Promise<void>
   applyUnlock: (payload: UnlockPayload) => void
+  /** Nach erfolgreichem saveFeaturedItems() den lokalen Stand nachziehen. */
+  setFeatured: (items: FeaturedItem[]) => void
   reset: () => void
 }
 
@@ -37,6 +42,7 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
   stats: null,
   badges: [],
   trophies: [],
+  featured: [],
 
   load: async () => {
     if (get().status === 'loading') return
@@ -51,10 +57,18 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
         stats: data.stats,
         badges: data.badges,
         trophies: data.trophies,
+        featured: data.featured,
       })
     } else {
       // Gast, offline oder frischer Account ohne Stats-Zeile: leerer Stand.
-      set({ status: 'ready', xp: 0, stats: null, badges: [], trophies: [] })
+      set({
+        status: 'ready',
+        xp: 0,
+        stats: null,
+        badges: [],
+        trophies: [],
+        featured: [],
+      })
     }
   },
 
@@ -71,6 +85,15 @@ export const useGamificationStore = create<GamificationState>((set, get) => ({
     })
   },
 
+  setFeatured: (items) => set({ featured: items }),
+
   reset: () =>
-    set({ status: 'idle', xp: 0, stats: null, badges: [], trophies: [] }),
+    set({
+      status: 'idle',
+      xp: 0,
+      stats: null,
+      badges: [],
+      trophies: [],
+      featured: [],
+    }),
 }))

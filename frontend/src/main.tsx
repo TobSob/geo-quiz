@@ -7,6 +7,12 @@ import 'flag-icons/css/flag-icons.min.css'
 import 'leaflet/dist/leaflet.css'
 import './index.css'
 import App from './App.tsx'
+import { resolveOAuthRedirectError } from './api/authApi'
+
+// Muss VOR dem ersten Render laufen: räumt einen OAuth-Fehler-Redirect
+// (z. B. "#error=identity_already_exists&...") auf, bevor der HashRouter
+// darin einen (ungültigen) Routen-Pfad sieht und eine leere Seite rendert.
+resolveOAuthRedirectError()
 
 // HashRouter: works identically on static hosting and inside the Capacitor
 // WebView (no server-side rewrites needed).

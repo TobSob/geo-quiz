@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { HomeScreen } from './routes/HomeScreen'
 import { PlayScreen } from './routes/PlayScreen'
 import { CupScreen } from './routes/CupScreen'
@@ -130,6 +130,10 @@ function App() {
         <Route path="/scores" element={<ScoresScreen />} />
         <Route path="/achievements" element={<AchievementsScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
+        {/* Fängt u. a. den kurzen Moment ab, bevor supabase-js einen
+            OAuth-Erfolgs-Redirect (#access_token=…) aus der URL entfernt —
+            sonst würde der HashRouter das als unbekannten Pfad leer rendern. */}
+        <Route path="*" element={<Navigate to="/profile" replace />} />
       </Routes>
     </div>
   )
