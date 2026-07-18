@@ -152,11 +152,14 @@ export function ArcadeQuizView({
               <span className="glow-yellow">{s.score}</span>
             </div>
             {/* Slot bleibt immer belegt, damit das HUD beim Erscheinen der
-                Serie nicht springt (Layout-Stabilität). */}
+                Serie nicht springt (Layout-Stabilität). Schwelle ist > 0
+                statt >= 1: Pin-Modi vergeben Bruchteil-Streaks (0,1/0,5 für
+                Knapp/Stark-Treffer, arcadeScoring.ts), die sonst bis zur
+                ersten vollen Streak unsichtbar blieben. */}
             <span
               className={`streak-badge${s.streak >= 5 ? ' streak-badge--hot' : ''}`}
-              style={s.streak < 1 ? { visibility: 'hidden' } : undefined}
-              aria-hidden={s.streak < 1}
+              style={s.streak <= 0 ? { visibility: 'hidden' } : undefined}
+              aria-hidden={s.streak <= 0}
             >
               {s.streak >= 5 ? '🔥' : '⚡'} {formatStreak(s.streak)} ·{' '}
               {Math.round(s.multiplier * 100)}%
