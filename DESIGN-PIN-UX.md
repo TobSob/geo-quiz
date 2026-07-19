@@ -100,6 +100,19 @@ steht noch aus).
 
 ---
 
+## 2026-07-19 — Karten-Overlay-Kollision (verlagert)
+
+App-Feedback: Zoom-Control + Attribution (beide bottomleft seit dem
+Fehlklick-Fix vom 2026-07-17) verdeckten Aufgeben-Button bzw. Feedback-Text
+der Floating-Action-Bar. Lösung (Details in
+[DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md) #4): Zoom-Buttons mobil
+komplett ausgeblendet (Pinch-Zoom), Attribution als eigenes einklappbares
+ⓘ-Element unten rechts über der Action-Bar — Desktop zeigt den Text weiter
+dauerhaft. Damit sind beide historischen Probleme (Fehlklick UND Verdeckung)
+gleichzeitig gelöst.
+
+---
+
 ## Weitere Beobachtungen (unpriorisiert, aus der Diskussion)
 
 - Kein Zwischenfeedback beim Zielen (man erfährt erst nach dem Tap, wie

@@ -19,7 +19,7 @@ import {
   type FriendGroup,
 } from '../api/groupApi'
 import { isOnlineEnabled } from '../api/supabaseClient'
-import { flushProgress } from '../features/progress/progressSync'
+import { applyAuthSession } from '../features/auth/applySession'
 import { useUserStore } from '../state/userStore'
 import { PlayerCard } from '../components/PlayerCard'
 import { AvatarPicker } from '../components/AvatarPicker'
@@ -424,13 +424,15 @@ function LoginPanel() {
     setBusy(true)
     setMessage(null)
     const result = await signInWithEmail(email.trim(), password)
-    setBusy(false)
     if (result.ok) {
+      // Kompletter Zustand (Level/XP, Avatar, Progress-Queue) — nicht nur der
+      // Name (DESIGN-MOBILE-POLISH.md #2).
       const auth = await ensureSession()
-      if (auth) useUserStore.getState().setOnline(auth)
-      void flushProgress()
+      await applyAuthSession(auth)
+      setBusy(false)
       setMessage('Angemeldet — Fortschritt dieses Geräts wird deinem Account zugerechnet.')
     } else {
+      setBusy(false)
       setMessage(result.message)
     }
   }
@@ -504,7 +506,7 @@ function RegisterPanel({ onClose }: { onClose: () => void }) {
     setMessage(result.message)
     if (result.ok) {
       const auth = await ensureSession()
-      if (auth) useUserStore.getState().setOnline(auth)
+      await applyAuthSession(auth)
     }
   }
 
@@ -557,10 +559,10 @@ function LogoutPanel() {
   const logout = async () => {
     setBusy(true)
     await signOutUser()
-    // next ensureSession() call starts a fresh anonymous identity
+    // next ensureSession() call starts a fresh anonymous identity;
+    // applyAuthSession räumt dabei auch XP/Level des alten Accounts weg.
     const auth = await ensureSession()
-    if (auth) useUserStore.getState().setOnline(auth)
-    else useUserStore.getState().setOffline()
+    await applyAuthSession(auth)
     setBusy(false)
   }
 

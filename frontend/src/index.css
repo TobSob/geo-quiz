@@ -240,6 +240,10 @@ html {
   overflow-x: hidden;
 }
 
+.app-header {
+  margin-bottom: 28px;
+}
+
 /* --- segmented tab row (leaderboard / achievements) --- */
 .tab-row {
   display: flex;
@@ -357,6 +361,55 @@ html {
 
 .quiz-screen--choice .score-pop-slot {
   min-height: 20px;
+}
+
+/* Antwort-Grid der Choice-Modi (QuizView + ArcadeQuizView). */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+/* Handys: minmax(220px) würde einspaltig stapeln und die letzten Antworten
+   unter die Falz schieben (App-Feedback #3, DESIGN-MOBILE-POLISH.md).
+   Stattdessen fest 2×2 mit kompakten Buttons, Grafik zusätzlich per dvh
+   gedeckelt (robust gegen einfahrende Browser-Leisten) und alle Abstände
+   gestrafft — Ziel: 360×640 komplett ohne Scrollen. */
+@media (max-width: 600px) {
+  .app-header { margin-bottom: 14px; }
+  #root { padding-block: 12px 24px; }
+
+  .quiz-screen--choice { gap: 8px; }
+  .quiz-screen--choice .stack { gap: 8px; }
+  .quiz-screen--choice h2 { font-size: 12px; }
+  .quiz-screen--choice .hud-stat { font-size: 10px; }
+  .quiz-screen--choice .hud-stat .label { font-size: 7px; margin-bottom: 1px; }
+  .quiz-screen--choice .time-pop-slot { min-height: 14px; }
+  .quiz-screen--choice .time-pop { font-size: 14px; }
+  .quiz-screen--choice .score-pop-slot { min-height: 16px; }
+  .quiz-screen--choice .score-pop { font-size: 14px; }
+
+  .quiz-screen--choice .flag-frame .fi {
+    width: min(220px, 60vw, 28dvh);
+    height: min(165px, 45vw, 21dvh);
+  }
+
+  .quiz-screen--choice .map-frame {
+    width: min(300px, 80vw, 36dvh);
+  }
+
+  .choice-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .choice-grid .pixel-btn {
+    font-size: 9px;
+    padding: 10px 8px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 /* --- streak badge --- */
@@ -560,6 +613,45 @@ html {
   border: var(--px) solid var(--shadow);
   box-shadow: var(--px) var(--px) 0 0 var(--shadow);
   overflow: hidden;
+  /* Anker für .map-credits */
+  position: relative;
+}
+
+/* --- Karten-Attribution (eigenes Element, DESIGN-MOBILE-POLISH.md #4) --- */
+.map-credits {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  /* über den Leaflet-Panes (tiles 200 … popup 700) */
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.map-credits-panel {
+  background: rgba(7, 6, 19, 0.78);
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+
+.map-credits-panel a {
+  color: var(--ink-dim);
+}
+
+/* Desktop zeigt den Text dauerhaft — der Toggle existiert nur mobil. */
+.map-credits-toggle {
+  display: none;
+  background: rgba(7, 6, 19, 0.78);
+  color: var(--ink-dim);
+  border: none;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  cursor: pointer;
 }
 
 /* Leaflet needs an explicit container height (the outline mode's SVG map
@@ -699,10 +791,27 @@ html {
     padding: 6px 10px;
   }
 
-  /* Lift Leaflet's bottom corner controls (attribution, zoom) clear of the
-     floating action bar. */
-  .quiz-screen--pin .leaflet-bottom {
-    bottom: 58px;
+  /* Zoom-Buttons weg: Pinch-Zoom deckt das ab, und unten links verdeckten
+     sie Aufgeben-Button/Feedback-Text der Action-Bar (App-Feedback #4). */
+  .quiz-screen--pin .leaflet-control-zoom {
+    display: none;
+  }
+
+  /* Attribution eingeklappt hinter ⓘ, über der Action-Bar unten rechts. */
+  .quiz-screen--pin .map-credits {
+    bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .quiz-screen--pin .map-credits-toggle {
+    display: block;
+  }
+
+  .quiz-screen--pin .map-credits-panel {
+    display: none;
+  }
+
+  .quiz-screen--pin .map-credits--open .map-credits-panel {
+    display: inline-block;
   }
 }
 

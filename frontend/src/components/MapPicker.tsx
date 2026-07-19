@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  AttributionControl,
   MapContainer,
   Marker,
   Polyline,
@@ -183,18 +182,13 @@ export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: P
         attributionControl={false}
         zoomControl={false}
       >
-        {/* No-labels basemap: place names would give the answer away. */}
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        />
-        {/* Both bottom-left, paired with zoom: the primary action button
-            (Bestätigen/Weiter) lives bottom-right in the floating mobile
-            action bar, and attribution's external link was getting fat-
-            fingered mid-game. "Aufgeben" (left) is tapped rarely, so any
-            stray taps land somewhere low-stakes instead. */}
+        {/* No-labels basemap: place names would give the answer away.
+            Attribution rendert MapCredits unten (eigenes Element statt
+            Leaflet-Control, DESIGN-MOBILE-POLISH.md #4). */}
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
+        {/* Nur Desktop sichtbar — mobil verdeckten die Buttons die
+            Action-Bar unten links, und Pinch-Zoom deckt das ohnehin ab. */}
         <ZoomControl position="bottomleft" />
-        <AttributionControl position="bottomleft" prefix={false} />
         <ClickCapture onPick={onPick} disabled={disabled} />
         <ResetView resetKey={resetKey} />
         <InvalidateOnResize />
@@ -213,6 +207,42 @@ export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: P
         )}
         {revealTarget && <RevealView guess={guess} target={revealTarget} />}
       </MapContainer>
+      <MapCredits />
+    </div>
+  )
+}
+
+/**
+ * OSM/CARTO-Attribution als eigenes Element statt Leaflets Control
+ * (DESIGN-MOBILE-POLISH.md #4): Desktop zeigt den Text dauerhaft unten
+ * rechts, mobil klappt ihn ein ⓘ-Tap auf/zu — das alte Control saß unten
+ * links und verdeckte Aufgeben-Button bzw. Feedback-Text der Action-Bar.
+ * Liegt bewusst als Geschwister NEBEN dem Leaflet-Container: Taps hierauf
+ * setzen keinen Pin.
+ */
+function MapCredits() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className={`map-credits${open ? ' map-credits--open' : ''}`}>
+      <span className="map-credits-panel">
+        &copy;{' '}
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+          OpenStreetMap
+        </a>{' '}
+        &copy;{' '}
+        <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">
+          CARTO
+        </a>
+      </span>
+      <button
+        type="button"
+        className="map-credits-toggle"
+        aria-label="Kartenquellen anzeigen"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        &#9432;
+      </button>
     </div>
   )
 }

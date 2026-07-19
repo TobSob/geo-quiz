@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Capacitor } from '@capacitor/core'
+import { App as CapacitorApp } from '@capacitor/app'
 import { HomeScreen } from './routes/HomeScreen'
 import { PlayScreen } from './routes/PlayScreen'
 import { CupScreen } from './routes/CupScreen'
@@ -9,11 +11,10 @@ import { ProfileScreen } from './routes/ProfileScreen'
 import { AchievementsScreen } from './routes/AchievementsScreen'
 import { ensureSession } from './api/authApi'
 import { isOnlineEnabled } from './api/supabaseClient'
-import { flushProgress } from './features/progress/progressSync'
+import { applyAuthSession } from './features/auth/applySession'
 import { useUserStore } from './state/userStore'
 import { useSettingsStore } from './state/settingsStore'
 import { useAvatarStore } from './state/avatarStore'
-import { reconcileAvatar } from './api/avatarApi'
 import { PixelAvatar } from './components/PixelAvatar'
 import { useGamificationStore } from './state/gamificationStore'
 import { levelForXp } from './features/gamification/levels'
@@ -35,28 +36,28 @@ function App() {
     window.scrollTo(0, 0)
   }, [location.pathname])
 
-  // Anonymous sign-in on launch, then push any progress queued while offline.
+  // Android-System-Back: überall zurück ins Menü statt App schließen; nur auf
+  // dem Home-Screen behält er sein Systemverhalten (App beenden). Der Listener
+  // hängt genau einmal und liest die Route zur Event-Zeit aus dem Hash —
+  // die Hash-Zuweisung reicht dem HashRouter als Navigation.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const handle = CapacitorApp.addListener('backButton', () => {
+      const onHome = window.location.hash === '' || window.location.hash === '#/'
+      if (onHome) void CapacitorApp.exitApp()
+      else window.location.hash = '#/'
+    })
+    return () => {
+      void handle.then((h) => h.remove())
+    }
+  }, [])
+
+  // Anonymous sign-in on launch, then restore the full account state
+  // (progress queue, avatar, gamification) via the shared session helper.
   useEffect(() => {
     if (!isOnlineEnabled) return
-    const { setOnline, setOffline, setConnecting } = useUserStore.getState()
-    const gamification = useGamificationStore.getState()
-    setConnecting()
-    ensureSession().then((auth) => {
-      if (auth) {
-        setOnline(auth)
-        void flushProgress()
-        // Avatar mit dem Server abgleichen — folgt so dem Account übers Gerät.
-        void reconcileAvatar(useAvatarStore.getState().avatarId).then((server) => {
-          if (server) useAvatarStore.setState({ avatarId: server })
-        })
-        // XP/Badges/Pokale gibt es nur für registrierte Accounts (Phase G).
-        if (!auth.isAnonymous) void gamification.load()
-        else gamification.reset()
-      } else {
-        setOffline()
-        gamification.reset()
-      }
-    })
+    useUserStore.getState().setConnecting()
+    ensureSession().then((auth) => void applyAuthSession(auth))
   }, [])
 
   const showLevel =
@@ -65,7 +66,7 @@ function App() {
   return (
     <div className="crt">
       <div className="stars" />
-      <header className="row" style={{ marginBottom: 28 }}>
+      <header className="row app-header">
         <Link to="/" style={{ textDecoration: 'none' }}>
           <span className="display glow-green" style={{ fontSize: 18 }}>
             GEO<span className="glow-cyan">QUIZ</span>

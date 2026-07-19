@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-18
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-19
 
 ## Gesamtfortschritt
 
@@ -22,7 +22,7 @@
 | H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (21 Avatare, Karte für jeden Spieler, Bestenlisten-Avatare, Cup-Punkte-Aufklappen) — **0010–0012 live, 0013 (Reihenfolge-Fix) noch auf Live-DB** |
 | I | Pokal-Ausbau: Perioden-Navigation, Pixel-Pokale, Pokalregal ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | 🔄 Client + Migration 0014 fertig (Tests 109/109) — **`apply_pending.sql` (0013+0014) noch auf Live-DB, dann Account-E2E** |
 | J | Social Login Google/GitHub ([DESIGN-AUTH.md](DESIGN-AUTH.md)) | 🔄 Code fertig (linkIdentity/signInWithOAuth, Buttons in beiden Auth-Panels) — **OAuth-Apps + Supabase-Provider-Setup (manuell) + Redirect-Test offen** |
-| B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Projekt-Setup fertig, Geräte-Test offen) |
+| B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Setup fertig; Feedback-Runde 1 umgesetzt: [DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md); Geräte-Bestätigung offen) |
 | C | Polish (Sounds ✅, Code-Splitting/PWA/Haptics offen) | 🔄 |
 | D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |
 
@@ -100,6 +100,8 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 | Toolchain (JDK 21 + SDK CLI-only, `C:\Android\sdk`) | ✅ | Ohne Android Studio; `JAVA_HOME`/`ANDROID_HOME` persistent |
 | `npx cap add android` | ✅ | App-ID `de.tobsob.geoquiz`; Debug-APK baut (`gradlew assembleDebug`) |
 | Storage-Adapter für Auth-Session | ✅ | `@capacitor/preferences`; E2E: anonyme Identität überlebt force-stop |
+| System-Back-Button → Menü statt App-Exit | ✅ | `@capacitor/app`-Listener in `App.tsx` (Home beendet weiter); Geräte-Test offen ([DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md)) |
+| Mobile-Feedback-Runde 1 (Login-Sync, Choice-Skalierung, Pin-Overlay) | ✅ | Login lädt jetzt Level/XP/Avatar sofort (`applyAuthSession()`), Choice-Modi passen auf 360×640 ohne Scrollen, Pin-Karte ohne Zoom-Buttons + einklappbare Attribution — wirkt auch im Web |
 | Emulator-Test (AVD `geoquiz_pixel7`) | 🔄 | Flaggen + Profil + Online-Login OK; Karten-Modi (Pin-Präzision) offen |
 | On-Device-Test (Touch auf SVG-Karten) | ⬜ | |
 

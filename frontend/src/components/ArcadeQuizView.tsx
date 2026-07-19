@@ -313,14 +313,7 @@ function ArcadeChoiceView({
         )}
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 16,
-          width: '100%',
-        }}
-      >
+      <div className="choice-grid">
         {question.options.map((opt, i) => {
           let cls = 'pixel-btn'
           if (phase === 'feedback') {
