@@ -290,16 +290,19 @@ export function RequireAccount({
   return (
     <div className="stack center" style={{ gap: 16, padding: '24px 0' }}>
       <div style={{ fontSize: 40 }}>🔒</div>
-      <p className="dim" style={{ margin: 0, maxWidth: 480 }}>
+      {/* `margin: 0 auto` ist nötig, weil .stack eine Flex-Spalte ist: ohne das
+          klebt der auf 480 px begrenzte Absatz am linken Rand und nur sein
+          Innentext wäre zentriert. */}
+      <p className="dim" style={{ margin: '0 auto', maxWidth: 480 }}>
         {message ??
           'Die globalen Bestenlisten sind Spielern mit Account vorbehalten. ' +
             'Spielen kannst du jederzeit ohne — aber um dich einzutragen oder ' +
-            'die Rangliste zu sehen, sichere kurz deinen Account.'}
+            'die Rangliste zu sehen, brauchst du einen Account.'}
       </p>
       <div>
         <Link to="/profile">
           <button type="button" className="pixel-btn pixel-btn--primary">
-            Account sichern
+            Anmelden
           </button>
         </Link>
       </div>

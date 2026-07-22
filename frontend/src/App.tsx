@@ -16,12 +16,19 @@ import { useUserStore } from './state/userStore'
 import { useSettingsStore } from './state/settingsStore'
 import { useAvatarStore } from './state/avatarStore'
 import { PixelAvatar } from './components/PixelAvatar'
+import { Wordmark } from './components/Wordmark'
 import { useGamificationStore } from './state/gamificationStore'
 import { levelForXp } from './features/gamification/levels'
 
 function App() {
   const location = useLocation()
   const isHome = location.pathname === '/'
+  // Attract-Mode nur im Leerlauf: in einer laufenden Runde steht das Wordmark
+  // still, damit nichts neben der Frage um Aufmerksamkeit konkurriert.
+  const inRound =
+    location.pathname.startsWith('/play') ||
+    location.pathname === '/cup' ||
+    location.pathname === '/training'
   const status = useUserStore((s) => s.status)
   const isAnonymous = useUserStore((s) => s.isAnonymous)
   const muted = useSettingsStore((s) => s.muted)
@@ -68,9 +75,7 @@ function App() {
       <div className="stars" />
       <header className="row app-header">
         <Link to="/" style={{ textDecoration: 'none' }}>
-          <span className="display glow-green" style={{ fontSize: 18 }}>
-            GEO<span className="glow-cyan">QUIZ</span>
-          </span>
+          <Wordmark frozen={inRound} />
         </Link>
         <div className="spacer" />
         <button

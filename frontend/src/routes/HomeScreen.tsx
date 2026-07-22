@@ -51,9 +51,6 @@ export function HomeScreen() {
         <p className="dim" style={{ marginTop: 6, fontSize: 18 }}>
           ⏱ Du hast 60 Sekunden — schaff so viele Fragen, wie du kannst!
         </p>
-        <p className="display blink glow-yellow" style={{ fontSize: 11 }}>
-          ▼ WÄHLE EINEN MODUS ▼
-        </p>
       </div>
 
       <div className="mode-grid">

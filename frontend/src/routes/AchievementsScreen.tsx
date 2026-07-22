@@ -33,7 +33,7 @@ type Tab = 'badges' | 'trophies' | 'level'
 
 const TEASER =
   'Abzeichen, Pokale und Level hängen an deinem Account — so bleiben sie ' +
-  'auch beim Gerätewechsel erhalten. Sichere kurz deinen Account, dann ' +
+  'auch beim Gerätewechsel erhalten. Leg kurz einen Account an, dann ' +
   'füllt sich die Vitrine.'
 
 /**

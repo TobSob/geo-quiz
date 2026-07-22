@@ -149,11 +149,11 @@ function collectArtifacts() {
   // Nur ausdrücklich angeforderte Artefakte einsammeln — in outputs/ liegen
   // sonst auch alte Dateien früherer Läufe (z. B. eine Debug-APK von gestern).
   const sources = [
-    ['app/build/outputs/apk/release/app-release.apk', `GeoQuiz-${name}-${code}-${stamp}.apk`],
-    ['app/build/outputs/bundle/release/app-release.aab', `GeoQuiz-${name}-${code}-${stamp}.aab`],
+    ['app/build/outputs/apk/release/app-release.apk', `GeoQuizArcade-${name}-${code}-${stamp}.apk`],
+    ['app/build/outputs/bundle/release/app-release.aab', `GeoQuizArcade-${name}-${code}-${stamp}.aab`],
   ]
   if (has('--debug-apk')) {
-    sources.push(['app/build/outputs/apk/debug/app-debug.apk', `GeoQuiz-${stamp}-debug.apk`])
+    sources.push(['app/build/outputs/apk/debug/app-debug.apk', `GeoQuizArcade-${stamp}-debug.apk`])
   }
 
   const copied = []
@@ -194,7 +194,7 @@ if (doAndroid) steps.push('Android-Build')
 
 if (steps.length === 0) fail('Nichts zu tun — --web-only und --android-only schließen sich aus.')
 
-console.log(`\nGeoQuiz-Release: ${steps.join(' → ')}`)
+console.log(`\nGEOQUIZ-ARCADE-Release: ${steps.join(' → ')}`)
 if (doAndroid) checkAndroidToolchain()
 
 let n = 0

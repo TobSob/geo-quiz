@@ -175,7 +175,7 @@ function GroupsPanel() {
   }, [])
 
   const shareCode = async (g: FriendGroup) => {
-    const text = `Tritt meiner GeoQuiz-Gruppe „${g.name}" bei! Code: ${g.code}`
+    const text = `Tritt meiner GEOQUIZ-ARCADE-Gruppe „${g.name}" bei! Code: ${g.code}`
     if (navigator.share) {
       try {
         await navigator.share({ text })

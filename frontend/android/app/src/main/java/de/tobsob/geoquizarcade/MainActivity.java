@@ -1,4 +1,4 @@
-package de.tobsob.geoquiz;
+package de.tobsob.geoquizarcade;
 
 import com.getcapacitor.BridgeActivity;
 

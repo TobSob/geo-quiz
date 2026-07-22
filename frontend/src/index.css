@@ -217,6 +217,56 @@ a { color: var(--cyan); }
   to { visibility: hidden; }
 }
 
+/* --- Header-Wordmark: Attract-Mode (GEOQUIZ ⇄ ARCADE) --- */
+/* Beide Wörter teilen sich eine Grid-Zelle: das breitere (GEOQUIZ) bestimmt
+   die Breite, damit die Kopfzeile beim Wechsel nicht springt. */
+.wordmark {
+  display: inline-grid;
+  align-items: center;
+  justify-items: start;
+}
+
+.wordmark__word {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+
+/* 5 s Zyklus: ~2,5 s pro Wort, davon 0,4 s Blende. Beide Wörter laufen auf
+   derselben Kurve, ARCADE um die Hälfte versetzt. */
+.wordmark__word--title {
+  animation: wordmark-cycle 5s ease-in-out infinite;
+}
+
+.wordmark__word--sub {
+  animation: wordmark-cycle 5s ease-in-out -2.5s infinite;
+}
+
+@keyframes wordmark-cycle {
+  0%, 42% { opacity: 1; }
+  50%, 92% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Laufende Runde: eingefroren auf GEOQUIZ (siehe Wordmark.tsx). */
+.wordmark--frozen .wordmark__word {
+  animation: none;
+}
+
+.wordmark--frozen .wordmark__word--sub {
+  opacity: 0;
+}
+
+/* Dauerbewegung im Sichtfeld kann Kopfschmerz/Übelkeit auslösen — wer
+   reduzierte Bewegung eingestellt hat, sieht nur den Titel. */
+@media (prefers-reduced-motion: reduce) {
+  .wordmark__word {
+    animation: none;
+  }
+  .wordmark__word--sub {
+    opacity: 0;
+  }
+}
+
 /* --- neon glow text --- */
 .glow-green { color: var(--green); text-shadow: 0 0 8px #00e75688, 0 0 24px #00e75633; }
 .glow-cyan { color: var(--cyan); text-shadow: 0 0 8px #29adff88, 0 0 24px #29adff33; }

@@ -9,7 +9,8 @@
 //   npx @capacitor/assets generate --android
 //
 // Motiv: Pixel-Globus (Ozean = PICO-8-Blau wie "QUIZ", Land = PICO-8-Grün
-// wie "GEO") + GEOQUIZ-Wordmark im 5×7-Pixel-Font auf dunklem Navy.
+// wie "GEO") + zweizeiliges GEOQUIZ-ARCADE-Wordmark im 5×7-Pixel-Font auf
+// dunklem Navy.
 
 import { deflateSync } from 'node:zlib'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -153,7 +154,7 @@ function drawGrid(canvas, grid, cell, cx, cy) {
     }
 }
 
-// ---- 5×7-Pixel-Font (nur die Buchstaben des Wordmarks) ---------------------
+// ---- 5×7-Pixel-Font (nur die Buchstaben des Wordmarks: GEOQUIZ ARCADE) -----
 
 const FONT = {
   G: ['01110', '10001', '10000', '10111', '10001', '10001', '01110'],
@@ -163,6 +164,10 @@ const FONT = {
   U: ['10001', '10001', '10001', '10001', '10001', '10001', '01110'],
   I: ['11111', '00100', '00100', '00100', '00100', '00100', '11111'],
   Z: ['11111', '00001', '00010', '00100', '01000', '10000', '11111'],
+  A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
+  R: ['11110', '10001', '10001', '11110', '10100', '10010', '10001'],
+  C: ['01110', '10001', '10000', '10000', '10000', '10001', '01110'],
+  D: ['11110', '10001', '10001', '10001', '10001', '10001', '11110'],
 }
 
 /** Wordmark zeichnen; `parts` = [{text, color}], zentriert um (cx, cy). */
@@ -184,9 +189,19 @@ function drawText(canvas, parts, cell, cx, cy) {
   }
 }
 
+/** Mehrzeiliges Wordmark; `lines` = [[{text, color}], …], zentriert um (cx, cy). */
+function drawLines(canvas, lines, cell, cx, cy) {
+  const step = 9 * cell // 7 Glyphenhöhe + 2 Zellen Luft
+  const y0 = cy - ((lines.length - 1) * step) / 2
+  lines.forEach((parts, i) => drawText(canvas, parts, cell, cx, Math.round(y0 + i * step)))
+}
+
 const WORDMARK = [
-  { text: 'GEO', color: GREEN },
-  { text: 'QUIZ', color: CYAN },
+  [
+    { text: 'GEO', color: GREEN },
+    { text: 'QUIZ', color: CYAN },
+  ],
+  [{ text: 'ARCADE', color: WHITE }],
 ]
 
 // ---- Assets ----------------------------------------------------------------
@@ -217,7 +232,7 @@ const globe = globeGrid()
 {
   const c = new Canvas(2732, BG_DEEP)
   drawGrid(c, globe, 34, 1366, 1180)
-  drawText(c, WORDMARK, 16, 1366, 1690)
+  drawLines(c, WORDMARK, 16, 1366, 1690)
   const png = c.png()
   writeFileSync(join(OUT_DIR, 'splash.png'), png)
   // Das Spiel ist durchgehend dunkel — Dark-Variante identisch
