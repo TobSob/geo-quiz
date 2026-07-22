@@ -4,13 +4,21 @@ import { MODE_TITLES } from './PlayScreen'
 import {
   fetchCupRunLegs,
   fetchLeaderboardCups,
+  fetchLeaderboardFirstPlayed,
   fetchLeaderboardScores,
-  PERIOD_LABELS,
   type CupRunLeg,
   type LeaderboardCup,
-  type LeaderboardPeriod,
   type LeaderboardScore,
 } from '../api/leaderboardApi'
+import {
+  maxPeriodOffset,
+  periodStart,
+  PERIOD_LABELS,
+  PERIODS,
+  toIsoDate,
+  type LeaderboardPeriod,
+} from '../features/leaderboard/periods'
+import { formatTrophyPeriod } from '../features/gamification/badgeCatalog'
 import { isOnlineEnabled } from '../api/supabaseClient'
 import {
   fetchLeaderboardLevels,
@@ -34,7 +42,6 @@ const MODE_LABEL: Record<string, string> = {
 }
 
 const GAME_MODES = Object.keys(MODE_TITLES) as GameMode[]
-const PERIODS: LeaderboardPeriod[] = ['week', 'month', 'year', 'all']
 
 type Tab = 'local' | 'global' | 'cups' | 'level'
 
@@ -343,7 +350,11 @@ function ScopePicker({
   )
 }
 
-/** Zeitraum-Auswahl: rollierende Fenster (7/30/365 Tage) oder alles. */
+/**
+ * Zeitraum-Auswahl: Kalenderwoche/-monat/-jahr (Europe/Berlin, deckungsgleich
+ * mit den Pokal-Perioden) oder alles. Zeitraumwechsel springt zurück auf die
+ * laufende Periode (DESIGN-LEADERBOARD-PERIODS.md R4).
+ */
 function PeriodPicker({
   period,
   onChange,
@@ -365,6 +376,99 @@ function PeriodPicker({
       ))}
     </div>
   )
+}
+
+/**
+ * ◀ „KW 30 2026" ▶ — dieselbe Blätter-Bedienung wie im Pokale-Tab, inklusive
+ * gleicher Beschriftung. ▶ ist in der laufenden Periode gesperrt, ◀ an der
+ * ältesten Periode mit Einträgen.
+ */
+function PeriodNav({
+  period,
+  offset,
+  maxOffset,
+  onChange,
+}: {
+  period: LeaderboardPeriod
+  offset: number
+  maxOffset: number
+  onChange: (offset: number) => void
+}) {
+  if (period === 'all') return null
+  const label = formatTrophyPeriod(period, toIsoDate(periodStart(period, offset)))
+
+  return (
+    <div className="stack center" style={{ gap: 4 }}>
+      <div className="row" style={{ justifyContent: 'center', alignItems: 'center', gap: 12 }}>
+        <button
+          type="button"
+          className="pixel-btn pixel-btn--small"
+          aria-label={`Vorheriger Zeitraum (${PERIOD_LABELS[period]})`}
+          disabled={offset >= maxOffset}
+          onClick={() => onChange(offset + 1)}
+        >
+          ◀
+        </button>
+        <span
+          className="display glow-yellow"
+          style={{ fontSize: 11, minWidth: 150, textAlign: 'center' }}
+        >
+          {label}
+        </span>
+        <button
+          type="button"
+          className="pixel-btn pixel-btn--small"
+          aria-label={`Nächster Zeitraum (${PERIOD_LABELS[period]})`}
+          disabled={offset <= 0}
+          onClick={() => onChange(offset - 1)}
+        >
+          ▶
+        </button>
+      </div>
+      {offset === 0 && (
+        <span className="dim" style={{ fontSize: 16 }}>
+          läuft noch
+        </span>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Zeitraum + Blätter-Position als eine Einheit: jeder Wechsel von Zeitraum,
+ * Modus oder Gruppe landet wieder auf der laufenden Periode. `maxOffset` kommt
+ * aus dem ältesten Eintrag der Liste (ohne Migration 0016: 0 → kein Blättern).
+ */
+function usePeriodNav(mode: GameMode | null, groupId: number | null) {
+  const [period, setPeriodRaw] = useState<LeaderboardPeriod>('all')
+  const [offset, setOffset] = useState(0)
+  const [firstPlayed, setFirstPlayed] = useState<string | null>(null)
+
+  useEffect(() => {
+    let stale = false
+    setOffset(0)
+    setFirstPlayed(null)
+    fetchLeaderboardFirstPlayed(mode, groupId).then((ts) => {
+      if (!stale) setFirstPlayed(ts)
+    })
+    return () => {
+      stale = true
+    }
+  }, [mode, groupId])
+
+  const maxOffset = maxPeriodOffset(period, firstPlayed)
+  const clamped = Math.min(offset, maxOffset)
+
+  return {
+    period,
+    offset: clamped,
+    maxOffset,
+    setOffset,
+    setPeriod: (p: LeaderboardPeriod) => {
+      setPeriodRaw(p)
+      setOffset(0)
+    },
+  }
 }
 
 /** Lokal gespeicherte Modi inkl. Cup & Training — Reihenfolge der Filter-Chips. */
@@ -490,8 +594,8 @@ function LocalScores() {
 
 function GlobalScores() {
   const [mode, setMode] = useState<GameMode>('flags')
-  const [period, setPeriod] = useState<LeaderboardPeriod>('all')
   const [groupId, setGroupId] = useState<number | null>(null)
+  const { period, offset, maxOffset, setOffset, setPeriod } = usePeriodNav(mode, groupId)
   const groups = useMyGroups()
   const [rows, setRows] = useState<LeaderboardScore[] | null | 'loading'>('loading')
   const myName = useUserStore((s) => s.displayName)
@@ -502,13 +606,13 @@ function GlobalScores() {
   useEffect(() => {
     let stale = false
     setRows('loading')
-    fetchLeaderboardScores(mode, period, 25, groupId).then((r) => {
+    fetchLeaderboardScores(mode, period, offset, 25, groupId).then((r) => {
       if (!stale) setRows(r)
     })
     return () => {
       stale = true
     }
-  }, [mode, period, groupId])
+  }, [mode, period, offset, groupId])
 
   return (
     <div className="stack" style={{ gap: 16 }}>
@@ -526,6 +630,12 @@ function GlobalScores() {
         ))}
       </div>
       <PeriodPicker period={period} onChange={setPeriod} />
+      <PeriodNav
+        period={period}
+        offset={offset}
+        maxOffset={maxOffset}
+        onChange={setOffset}
+      />
 
       {rows === 'loading' ? (
         <p className="dim center blink">LADE…</p>
@@ -654,8 +764,9 @@ function LevelScores() {
 }
 
 function CupScores() {
-  const [period, setPeriod] = useState<LeaderboardPeriod>('all')
   const [groupId, setGroupId] = useState<number | null>(null)
+  // Modus null = Cup-Läufe (eigene Tabelle) für die Blätter-Untergrenze.
+  const { period, offset, maxOffset, setOffset, setPeriod } = usePeriodNav(null, groupId)
   const groups = useMyGroups()
   const [rows, setRows] = useState<LeaderboardCup[] | null | 'loading'>('loading')
   const myName = useUserStore((s) => s.displayName)
@@ -669,18 +780,24 @@ function CupScores() {
     let stale = false
     setRows('loading')
     setExpandedRunId(null)
-    fetchLeaderboardCups(period, 25, groupId).then((r) => {
+    fetchLeaderboardCups(period, offset, 25, groupId).then((r) => {
       if (!stale) setRows(r)
     })
     return () => {
       stale = true
     }
-  }, [period, groupId])
+  }, [period, offset, groupId])
 
   return (
     <div className="stack" style={{ gap: 16 }}>
       <ScopePicker groups={groups} groupId={groupId} onChange={setGroupId} />
       <PeriodPicker period={period} onChange={setPeriod} />
+      <PeriodNav
+        period={period}
+        offset={offset}
+        maxOffset={maxOffset}
+        onChange={setOffset}
+      />
 
       {rows === 'loading' ? (
         <p className="dim center blink">LADE…</p>
