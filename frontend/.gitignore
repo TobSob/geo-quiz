@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Release-Artefakte aus scripts/release.mjs (APK/AAB, teils signiert)
+release
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

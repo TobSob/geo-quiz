@@ -122,7 +122,7 @@ Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementie
 
 - [x] Phase 1–3: Alle Spielmodi, 8-Bit-Design, lokale Persistenz
 - [x] Phase 4: Supabase (anonyme Auth, Account-Upgrade, Progress-Sync, gegatete Leaderboards)
-- [x] Phase A: Web-Deployment ([geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev), `npm run deploy`)
+- [x] Phase A: Web-Deployment ([geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev)) — `npm run release` deployt Web und baut die signierte App in einem Lauf
 - [x] Phase E: Arcade-Umbau (zeitbasierte Modi, neues Scoring) + Playtest-Balancing
 - [x] Phase F: Freundesgruppen · Phase G: Gamification (Abzeichen, Pokale, Level)
 - [x] Phase H: Avatare & Spielerkarten (Client fertig; Migration 0010 fürs Avatar-Sync noch einspielen)

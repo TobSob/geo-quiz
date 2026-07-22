@@ -302,6 +302,30 @@ Bestehende Migrationsdateien nie nachträglich editieren.
 
 ## 11. Deployment
 
-**Web:** `npm run build` → `frontend/dist/` ist rein statisch (jeder Static-Host: Cloudflare Pages, Netlify, GitHub Pages …). Dank HashRouter keine Rewrite-Regeln nötig. Env-Variablen werden **zur Buildzeit** eingebacken — der Host braucht `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` als Build-Env.
+**Der Normalfall — beides auf einmal:**
 
-**Android (Phase 5, offen):** Capacitor — `npx cap init` + `npx cap add android`. Wichtigster vorbereiteter Punkt: die Supabase-Session muss dann statt in `localStorage` in einen Capacitor-Storage-Adapter (Preferences/Secure Storage), damit sie App-Neustarts zuverlässig überlebt. Stress-Test laut Plan: Touch-Präzision auf kleinen Ländern (Luxemburg) im WebView.
+```powershell
+npm run release
+```
+
+Läuft sowohl im Repo-Root als auch in `frontend/`: die Root-`package.json` ist eine reine Skript-Durchreiche (`cd frontend && …`), damit der naheliegende Aufruf nicht mit „package.json nicht gefunden" scheitert. Flags werden durchgereicht: `npm run release -- --no-deploy`.
+
+`scripts/release.mjs` fährt Tests + Lint → Vite-Build → Cloudflare Pages → `cap sync` → Gradle `assembleRelease` + `bundleRelease`. Entscheidend: **derselbe** `dist/`-Build geht ins Web und in die App — so können die beiden nicht auseinanderlaufen (genau das war vorher die Falle, weil `npm run deploy` nur das Web anfasste). Die fertigen Artefakte landen mit sprechendem Namen in `frontend/release/` (gitignored), die Signatur wird per `apksigner` bestätigt.
+
+| Befehl | Was passiert |
+|---|---|
+| `npm run release` | alles: Checks, Web-Deploy, signierte APK + AAB |
+| `npm run release:web` | nur Cloudflare Pages |
+| `npm run release:android` | nur die App (kein Upload) — baut `dist/` trotzdem neu |
+| `npm run release -- --no-deploy` | alles bauen, nichts hochladen (Trockenlauf) |
+| `npm run release -- --debug-apk` | zusätzlich die Debug-APK fürs schnelle Aufspielen |
+| `npm run release -- --skip-checks` | ohne Tests/Lint — nur für Notfall-Redeploys |
+| `npm run deploy` | Altbestand: Web-Build + Upload, ohne Checks und ohne App |
+
+**Voraussetzungen Android:** `JAVA_HOME` + `ANDROID_HOME` gesetzt (ROADMAP B1) und `android/keystore.properties` für die Signierung (Vorlage: `keystore.properties.example`). Fehlt die Keystore-Datei, baut Gradle unsigniert weiter — das Skript warnt vorher deutlich, denn eine unsignierte APK lässt sich weder installieren noch hochladen.
+
+**Stolperstein Versionsnummer:** `versionCode`/`versionName` stehen fest in `android/app/build.gradle` und werden **nicht** automatisch hochgezählt. Fürs Sideloading egal, für einen Play-Store-Upload muss `versionCode` vorher von Hand erhöht werden (sonst lehnt Google das Bundle ab).
+
+**Web-Details:** `frontend/dist/` ist rein statisch (jeder Static-Host: Cloudflare Pages, Netlify, GitHub Pages …). Dank HashRouter keine Rewrite-Regeln nötig. Env-Variablen werden **zur Buildzeit** eingebacken — beim gewählten Direct-Upload-Flow kommen sie aus `frontend/.env.local`, bei einem Git-Flow bräuchte der Host `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` als Build-Env.
+
+**Reihenfolge bei Schema-Änderungen:** erst die Migration auf der Live-DB (`supabase/apply_pending.sql`), dann `npm run release`. Andersherum sieht die bereits ausgelieferte App eine DB, die ihre RPC-Signatur noch nicht kennt.

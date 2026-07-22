@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-19
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-22
 
 ## Gesamtfortschritt
 
@@ -15,7 +15,7 @@
 | 2 | Karten-Modi: Outline, City-Pin, Landmark-Pin | ✅ Fertig |
 | 3 | Cup-Modus + Training-Modus + lokale Persistenz | ✅ Fertig (localStorage via zustand/persist) |
 | 4 | Supabase: Leaderboard + Sync + Account-Upgrade | ✅ Fertig (E2E verifiziert 2026-07-10) |
-| A | Web-Deployment (Cloudflare Pages) | ✅ Live: [geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev) (`npm run deploy`) |
+| A | Web-Deployment (Cloudflare Pages) | ✅ Live: [geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev) — Web **und** App in einem Lauf: `npm run release` |
 | E | Arcade-Umbau: zeitbasierte Modi + neues Scoring ([DESIGN-ARCADE.md](DESIGN-ARCADE.md)) | ✅ Fertig inkl. 3 Playtest-Balancing-Runden (2026-07-14/15) |
 | F | Freundesgruppen ([DESIGN-SOCIAL.md](DESIGN-SOCIAL.md)) | ✅ Fertig (Zwei-Account-E2E 2026-07-12) |
 | G | Gamification: Abzeichen, Pokale Top 3, XP/Level ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | ✅ Fertig (Live-DB 0007–0009, E2E 2026-07-14) |
@@ -73,7 +73,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | Landmark-Pin | ✅ | steilerer Falloff (R=90), zeigt Foto der Sehenswürdigkeit/des Ortes |
 | Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte je Disziplin einsehbar in „Meine Rekorde" (Hover) und globaler Cup-Bestenliste (Klick, live); Reihenfolge-Fix (Migration 0013) noch ausstehend |
 | Training (adaptiv, eigenständig) | ✅ | Setup: Kategorien + Endlos/10/25, ohne Zeitdruck, zählt nicht in Bestenliste |
-| Bestenliste | ✅ | Lokal „Meine Rekorde" (Allzeit-Top-10 je Kategorie) · Global/Cups/Level mit Zeitfilter, Gruppen-Umschalter und Avataren |
+| Bestenliste | ✅ | Lokal „Meine Rekorde" (Allzeit-Top-10 je Kategorie) · Global/Cups/Level mit Gruppen-Umschalter und Avataren; Zeitfilter sind **Kalenderperioden** (Woche Mo–So / Monat / Jahr, Europe/Berlin — wie die Pokale) und mit ◀/▶ blätterbar ([DESIGN-LEADERBOARD-PERIODS.md](DESIGN-LEADERBOARD-PERIODS.md)); Migration 0016 live seit 2026-07-22 |
 | Avatare & Spielerkarte | ✅ | 21 Pixel-Avatare, Picker, Karte für jede angeklickte Bestenlisten-Zeile (Migrationen 0010–0012 live) ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) |
 | Erfolge (Abzeichen/Pokale/Level) | ✅ | `/achievements`, Unlock-Panel am Rundenende, Level-Chip im Header |
 

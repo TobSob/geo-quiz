@@ -1,6 +1,11 @@
 # IDE
 .idea/
 
+# Root-package.json ist nur eine Skript-Durchreiche nach frontend/ —
+# ein `npm install` hier oben soll nichts hinterlassen.
+/node_modules
+/package-lock.json
+
 # local env / secrets (frontend/.gitignore covers *.local too — belt and braces)
 *.local
 .env

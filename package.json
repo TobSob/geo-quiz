@@ -1,0 +1,15 @@
+{
+  "name": "geo-quiz",
+  "private": true,
+  "description": "Durchreiche fürs Repo-Root — der eigentliche Code liegt in frontend/. Ohne diese Datei scheitert `npm run release` im Root mit ENOENT (package.json nicht gefunden), und genau dort steht man nach einem `git pull`.",
+  "scripts": {
+    "dev": "cd frontend && npm run dev --",
+    "build": "cd frontend && npm run build --",
+    "test": "cd frontend && npm run test --",
+    "lint": "cd frontend && npm run lint --",
+    "release": "cd frontend && npm run release --",
+    "release:web": "cd frontend && npm run release:web --",
+    "release:android": "cd frontend && npm run release:android --",
+    "deploy": "cd frontend && npm run deploy --"
+  }
+}
