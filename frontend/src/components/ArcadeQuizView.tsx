@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameMode, Question, SessionSummary } from '../features/quiz-engine/types'
 import type { ArcadeAnswerFeedback, ArcadeSummary } from '../features/quiz-engine/arcadeSession'
 import { useArcadeSession, toSessionSummary } from '../hooks/useArcadeSession'
@@ -53,7 +53,7 @@ export function ArcadeQuizView({
   onReplay,
 }: Props) {
   const s = useArcadeSession(mode, budgetMs)
-  const { phase, question, nextReady, questionKey, next, answerChoice, summary } = s
+  const { phase, question, nextReady, questionKey, next, answerChoice, answerPin, summary } = s
   const [pendingPin, setPendingPin] = useState<PinAnswer | null>(null)
   const [lastSummary, setLastSummary] = useState<ArcadeSummary | null>(null)
   const doneReported = useRef(false)
@@ -79,6 +79,19 @@ export function ArcadeQuizView({
   useEffect(() => {
     setPendingPin(null)
   }, [questionKey])
+
+  // Getimte Modi: ein Tap ist die Antwort (P5, DESIGN-PIN-UX.md) — kein
+  // zweiter „Bestätigen"-Schritt. pendingPin bleibt reiner Anzeige-State für
+  // den Guess-Marker während des Feedbacks.
+  // Stabile Identität ist Voraussetzung dafür, dass `memo` am MapPicker greift
+  // (DESIGN-PERF-MOBILE.md, Befund 3) — der Anzeige-Tick rendert 10×/s.
+  const handlePin = useCallback(
+    (p: PinAnswer) => {
+      setPendingPin(p)
+      answerPin(p)
+    },
+    [answerPin],
+  )
 
   // Tastatur 1–4 für Choice-Optionen.
   useEffect(() => {
@@ -217,13 +230,7 @@ export function ArcadeQuizView({
           pendingPin={pendingPin}
           feedback={s.feedback}
           nextReady={s.nextReady}
-          onPin={(p) => {
-            // Getimte Modi: ein Tap ist die Antwort (P5, DESIGN-PIN-UX.md) —
-            // kein zweiter „Bestätigen"-Schritt mehr. pendingPin bleibt als
-            // reine Anzeige-State für den Guess-Marker während des Feedbacks.
-            setPendingPin(p)
-            s.answerPin(p)
-          }}
+          onPin={handlePin}
           onNext={s.next}
           onExit={onExit}
         />

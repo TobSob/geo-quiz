@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "frontend", "--", "--host"],
       "port": 5173
+    },
+    {
+      "name": "geo-quiz-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--prefix", "frontend", "--", "--host", "--port", "4173"],
+      "port": 4173
     }
   ]
 }

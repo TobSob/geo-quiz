@@ -72,7 +72,10 @@ function App() {
 
   return (
     <div className="crt">
-      <div className="stars" />
+      {/* Steht in einer laufenden Runde still — spart auf dem Handy den
+          Compositor-Aufwand genau dann, wenn das Spiel ihn braucht
+          (DESIGN-PERF-MOBILE.md, Befund 1). */}
+      <div className={`stars${inRound ? ' stars--frozen' : ''}`} />
       <header className="row app-header">
         <Link to="/" style={{ textDecoration: 'none' }}>
           <Wordmark frozen={inRound} />

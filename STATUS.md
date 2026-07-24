@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-22
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-24
 
 ## Gesamtfortschritt
 
@@ -23,7 +23,7 @@
 | I | Pokal-Ausbau: Perioden-Navigation, Pixel-Pokale, Pokalregal ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | 🔄 Client + Migration 0014 fertig (Tests 109/109) — **`apply_pending.sql` (0013+0014) noch auf Live-DB, dann Account-E2E** |
 | J | Social Login Google/GitHub ([DESIGN-AUTH.md](DESIGN-AUTH.md)) | 🔄 Code fertig (linkIdentity/signInWithOAuth, Buttons in beiden Auth-Panels) — **OAuth-Apps + Supabase-Provider-Setup (manuell) + Redirect-Test offen** |
 | B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Setup fertig; Feedback-Runde 1 umgesetzt: [DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md); Geräte-Bestätigung offen) |
-| C | Polish (Sounds ✅, Code-Splitting/PWA/Haptics offen) | 🔄 |
+| C | Polish (Sounds ✅, Handy-Performance ✅ [DESIGN-PERF-MOBILE.md](DESIGN-PERF-MOBILE.md); Code-Splitting/PWA/Haptics offen) | 🔄 |
 | D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |
 
 **Training seit R3 (2026-07-15):** eigenständig ohne Arcade — Setup-Screen mit

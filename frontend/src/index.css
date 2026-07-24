@@ -51,11 +51,26 @@ body {
 }
 
 /* --- starfield --- */
+/* Die Drift läuft per transform auf einer eigenen Ebene, NICHT über
+   background-position: Letzteres ist eine Paint-Property und zwingt das Gerät
+   zu einem Vollbild-Repaint pro Frame — auf einem 120-Hz-Handy dauerhaft ~80 %
+   eines CPU-Kerns, auch im Leerlauf. Gemessen 2026-07-24 auf einem S24 Ultra:
+   93,5 % → 34,8 % allein durch diesen Wechsel (DESIGN-PERF-MOBILE.md). */
 .stars {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
+  overflow: hidden;
+}
+
+.stars::before {
+  content: '';
+  position: absolute;
+  /* Eine Kachel Reserve auf allen Seiten, damit beim Verschieben nie eine
+     Kante ins Bild läuft. Nur in Driftrichtung zu reservieren wurde gemessen
+     und bringt nichts — der Überstand wird ohnehin weggeschnitten. */
+  inset: -550px;
   background-image:
     radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent 51%),
     radial-gradient(1px 1px at 40% 70%, #9ad 50%, transparent 51%),
@@ -71,8 +86,22 @@ body {
 }
 
 @keyframes star-drift {
-  from { background-position: 0 0; }
-  to { background-position: -550px 550px; }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-550px, 550px, 0); }
+}
+
+/* Laufende Runde: der Himmel steht still — dieselbe Regel wie beim
+   Wordmark-Attract-Mode. Genau dann, wenn das Spiel den Compositor selbst
+   braucht, kostet die Kulisse nichts (Cup: ~119 % → ~38 % einer Kernlast). */
+.stars--frozen::before {
+  animation: none;
+}
+
+/* Dauerbewegung im Sichtfeld kann Kopfschmerz/Übelkeit auslösen. */
+@media (prefers-reduced-motion: reduce) {
+  .stars::before {
+    animation: none;
+  }
 }
 
 /* --- CRT scanlines + vignette overlay --- */

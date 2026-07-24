@@ -137,7 +137,7 @@ Detaillierter Plan zum Abhaken: **[ROADMAP.md](ROADMAP.md)** · Stand & Testprot
 ## Weiterführende Doku
 
 - 🛠️ **[Developer-Doku](docs/DEVELOPMENT.md)** — der komplette Stack erklärt: Architekturprinzipien, Quiz-Engine, Delta-Sync, Supabase-Schema & Sicherheitsmodell, Design-System, Erweiterungs-Kochbuch
-- 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md)
+- 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md) · [Handy-Performance](DESIGN-PERF-MOBILE.md)
 - 📋 [Architekturplan](docs/PLAN.md) — die ursprüngliche Planung (Tech-Entscheidungen, Datenmodell, Phasen)
 - ☁️ [Backend-Setup](supabase/README.md) — Migrations anwenden, Dashboard-Einstellungen
 

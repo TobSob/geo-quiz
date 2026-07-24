@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import {
   MapContainer,
   Marker,
@@ -104,13 +104,20 @@ const RETINA_SUFFIX = typeof window !== 'undefined' && window.devicePixelRatio >
  * needed anyway. 2+3+4+5 = 16+64+256+1024 = 1360 tiles world-wide. */
 const PREFETCH_ZOOMS = [2, 3, 4, 5]
 
+/** Gleichzeitig laufende Prefetch-Requests. Alle 1360 Kacheln auf einmal
+ * loszutreten erzeugte beim Mount des ersten Pin-Legs eine CPU-Spitze von
+ * 188 % einer Kernlast (DESIGN-PERF-MOBILE.md, Befund 4). Mit Warteschlange
+ * bleibt das Volumen gleich, die Spitze verschwindet. */
+const PREFETCH_CONCURRENCY = 6
+
 let tilesPrefetched = false
 // A prefetch `Image` with no surviving reference is fair game for the GC,
 // which can abort the in-flight request before it loads — silently capping
-// real-world completions at a few hundred instead of the full 1360. Keeping
-// them all alive for the page's lifetime is what makes the prefetch actually
-// finish.
-const keepAlive: HTMLImageElement[] = []
+// real-world completions at a few hundred instead of the full 1360. Die
+// Referenz muss aber nur bis `load`/`error` halten: danach steht die Kachel
+// im HTTP-Cache. (Früher blieben alle 1360 für die Lebensdauer der Seite
+// liegen und belegten unnötig Speicher.)
+const inFlight = new Set<HTMLImageElement>()
 
 /** Warms the browser's HTTP cache for the entire world at the zoom levels
  * players actually pan/zoom through while hunting for a region, so panning
@@ -122,23 +129,37 @@ function prefetchWorldTiles() {
   if (tilesPrefetched) return
   tilesPrefetched = true
   const run = () => {
+    const urls: string[] = []
     let sub = 0
     for (const z of PREFETCH_ZOOMS) {
       const n = 2 ** z
       for (let x = 0; x < n; x++) {
         for (let y = 0; y < n; y++) {
           const s = TILE_SUBDOMAINS[sub++ % TILE_SUBDOMAINS.length]
-          const url = TILE_URL.replace('{s}', s)
-            .replace('{z}', String(z))
-            .replace('{x}', String(x))
-            .replace('{y}', String(y))
-            .replace('{r}', RETINA_SUFFIX)
-          const img = new Image()
-          img.src = url
-          keepAlive.push(img)
+          urls.push(
+            TILE_URL.replace('{s}', s)
+              .replace('{z}', String(z))
+              .replace('{x}', String(x))
+              .replace('{y}', String(y))
+              .replace('{r}', RETINA_SUFFIX),
+          )
         }
       }
     }
+    let next = 0
+    const startOne = () => {
+      if (next >= urls.length) return
+      const img = new Image()
+      inFlight.add(img)
+      const done = () => {
+        inFlight.delete(img)
+        startOne() // Platz in der Warteschlange wird sofort nachbesetzt.
+      }
+      img.onload = done
+      img.onerror = done
+      img.src = urls[next++]
+    }
+    for (let i = 0; i < PREFETCH_CONCURRENCY; i++) startOne()
   }
   if ('requestIdleCallback' in window) {
     window.requestIdleCallback(run, { timeout: 5000 })
@@ -164,7 +185,19 @@ const MAP_BOUNDS: [[number, number], [number, number]] = [
   [85, 270],
 ]
 
-export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: Props) {
+/**
+ * `memo`, weil der Anzeige-Tick der Arcade-Session die Quiz-Ansicht 10×/s neu
+ * rendert (useArcadeSession) — ohne das würde der ganze Leaflet-Baum mitlaufen
+ * und `ClickCapture` seine Map-Handler 10×/s neu registrieren. Setzt voraus,
+ * dass `onPick` eine stabile Identität hat (DESIGN-PERF-MOBILE.md, Befund 3).
+ */
+export const MapPicker = memo(function MapPicker({
+  resetKey,
+  guess,
+  revealTarget,
+  disabled,
+  onPick,
+}: Props) {
   useEffect(() => {
     prefetchWorldTiles()
   }, [])
@@ -210,7 +243,7 @@ export function MapPicker({ resetKey, guess, revealTarget, disabled, onPick }: P
       <MapCredits />
     </div>
   )
-}
+})
 
 /**
  * OSM/CARTO-Attribution als eigenes Element statt Leaflets Control
