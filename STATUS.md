@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-24
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-26
 
 ## Gesamtfortschritt
 
@@ -111,6 +111,20 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 - ✅ `npm run lint` — nur 3 unkritische Warnungen (bewusste `runKey`-Re-Roll-Dependencies)
 - ✅ Im Browser durchgespielt: Flaggen-Runde 10/10 (Rang A, 1812 Pkt.), City-Pin Amsterdam (197 km → +34, deckt sich mit Plan-Tabelle), Umriss-Modus (Katar markiert), Cup Leg 1 → Interstitial (Zwischenstand 72/100), Bestenliste + localStorage-Persistenz bestätigt
 - 🐛 Gefixt dabei: Race-Condition Timeout-vs-Klick in `useQuizSession` (Ref-Lock), unreiner setState-Updater (StrictMode)
+
+## Pin-Datumsgrenze + Dev-Runde (2026-07-26)
+- 🐛 Gefixt: Beim Auflösen einer Pin-Frage nahm die Verbindungslinie (und der
+  fitBounds-Zoom) den langen Weg quer über die Weltkarte, wenn Tipp und Ziel
+  diesseits/jenseits der ±180°-Naht lagen (Bora Bora ↔ Australien). Ursache
+  `worldCopyJump` + Roh-Longituden; die Haversine-Distanz war stets korrekt.
+  Fix: Ziel-Longitude beim Auflösen auf die Weltkopie neben dem Tipp
+  normalisieren ([DESIGN-PIN-UX.md](DESIGN-PIN-UX.md)). Live verifiziert:
+  Ziel-Marker landet auf 208°-Kopie, Linie kurz, Distanz 6155 km.
+- 🛠️ Neu (nur Dev-Build): Dev-Runde unter `/dev` — Fragen aus selbst gewählten
+  Items zusammenstellen und als echte Arcade-Runde spielen, um Grenzfälle
+  reproduzierbar zu testen ([DESIGN-DEV-ROUND.md](DESIGN-DEV-ROUND.md)). Route
+  + Menü-Link hängen an `import.meta.env.DEV`, im Production-Bundle nicht
+  enthalten (Lazy-Import).
 
 ## Phase-4-E2E-Testprotokoll (2026-07-10)
 - ✅ Anonyme Anmeldung beim App-Start → `● ONLINE`, Retro-Name `RETRO_LYNX_10` generiert

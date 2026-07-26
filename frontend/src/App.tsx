@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Capacitor } from '@capacitor/core'
 import { App as CapacitorApp } from '@capacitor/app'
@@ -20,6 +20,12 @@ import { Wordmark } from './components/Wordmark'
 import { useGamificationStore } from './state/gamificationStore'
 import { levelForXp } from './features/gamification/levels'
 
+// Dev-Werkzeug (DESIGN-DEV-ROUND.md): Lazy-Import hinter `import.meta.env.DEV`,
+// damit die Route im Production-Build weder erreichbar noch im Bundle ist.
+const DevScreen = import.meta.env.DEV
+  ? lazy(() => import('./routes/DevScreen').then((m) => ({ default: m.DevScreen })))
+  : null
+
 function App() {
   const location = useLocation()
   const isHome = location.pathname === '/'
@@ -28,7 +34,8 @@ function App() {
   const inRound =
     location.pathname.startsWith('/play') ||
     location.pathname === '/cup' ||
-    location.pathname === '/training'
+    location.pathname === '/training' ||
+    location.pathname === '/dev'
   const status = useUserStore((s) => s.status)
   const isAnonymous = useUserStore((s) => s.isAnonymous)
   const muted = useSettingsStore((s) => s.muted)
@@ -139,6 +146,16 @@ function App() {
         <Route path="/scores" element={<ScoresScreen />} />
         <Route path="/achievements" element={<AchievementsScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
+        {DevScreen && (
+          <Route
+            path="/dev"
+            element={
+              <Suspense fallback={<p className="dim center blink">LADE…</p>}>
+                <DevScreen />
+              </Suspense>
+            }
+          />
+        )}
         {/* Fängt u. a. den kurzen Moment ab, bevor supabase-js einen
             OAuth-Erfolgs-Redirect (#access_token=…) aus der URL entfernt —
             sonst würde der HashRouter das als unbekannten Pfad leer rendern. */}

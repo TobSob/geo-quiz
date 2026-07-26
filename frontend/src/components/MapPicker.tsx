@@ -42,6 +42,18 @@ function ClickCapture({
   return null
 }
 
+/**
+ * Verschiebt `lng` um Vielfache von 360°, sodass es der Referenz-Longitude
+ * am nächsten liegt (max. 180° Abstand). Ohne das zeichnet Leaflet Linie
+ * und fitBounds beim Auflösen den *langen* Weg quer über die ganze Karte,
+ * wenn Tipp und Ziel zwar geografisch nah, aber diesseits/jenseits der
+ * ±180°-Naht liegen (z. B. Australien-Klick → Bora Bora): sah aus wie
+ * „einmal um die Welt", obwohl der kurze Weg über die Datumsgrenze gemeint
+ * ist. Die Haversine-Distanz war immer korrekt — nur die Darstellung nicht.
+ */
+const nearestLng = (lng: number, ref: number) =>
+  lng + 360 * Math.round((ref - lng) / 360)
+
 /** Fits guess + target into view once the answer is revealed. */
 function RevealView({
   guess,
@@ -54,8 +66,9 @@ function RevealView({
   useEffect(() => {
     if (!target) return
     if (guess) {
+      const targetLng = nearestLng(target.lng, guess.lng)
       map.fitBounds(
-        L.latLngBounds([guess.lat, guess.lng], [target.lat, target.lng]).pad(0.4),
+        L.latLngBounds([guess.lat, guess.lng], [target.lat, targetLng]).pad(0.4),
         { animate: true },
       )
     } else {
@@ -201,6 +214,12 @@ export const MapPicker = memo(function MapPicker({
   useEffect(() => {
     prefetchWorldTiles()
   }, [])
+  // Ziel auf die Weltkopie neben dem Tipp holen, damit Marker, Linie und
+  // Zoom beim Auflösen den kurzen Weg über die Datumsgrenze nehmen.
+  const revealTargetLng =
+    revealTarget && guess
+      ? nearestLng(revealTarget.lng, guess.lng)
+      : (revealTarget?.lng ?? 0)
   return (
     <div className="map-frame map-frame--pin">
       <MapContainer
@@ -227,13 +246,13 @@ export const MapPicker = memo(function MapPicker({
         <InvalidateOnResize />
         {guess && <Marker position={[guess.lat, guess.lng]} icon={guessIcon} />}
         {revealTarget && (
-          <Marker position={[revealTarget.lat, revealTarget.lng]} icon={targetIcon} />
+          <Marker position={[revealTarget.lat, revealTargetLng]} icon={targetIcon} />
         )}
         {guess && revealTarget && (
           <Polyline
             positions={[
               [guess.lat, guess.lng],
-              [revealTarget.lat, revealTarget.lng],
+              [revealTarget.lat, revealTargetLng],
             ]}
             pathOptions={{ color: '#ffec27', weight: 3, dashArray: '8 8' }}
           />

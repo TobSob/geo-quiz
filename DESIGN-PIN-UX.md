@@ -121,3 +121,20 @@ gleichzeitig gelöst.
   anfühlt, wäre ein Distanz-Ring oder Live-Indikator der nächste Kandidat.
 - Denkbar: kleiner visueller Zoom-Hinweis oder Anfangs-Zoomstufe je nach
   Zielgröße (Land vs. Stadt) — noch nicht besprochen.
+
+---
+
+## 2026-07-26 — Auflöse-Linie nahm den langen Weg über die Datumsgrenze
+
+App-Feedback (Bora Bora, lng −151,7): Klick nahe Australien → beim Auflösen
+wurde die gelbe Verbindungslinie und der fitBounds-Zoom quer über die *ganze*
+Weltkarte gezeichnet („4500 km einmal um die Welt"), obwohl der kurze Weg über
+die ±180°-Naht gemeint war. Ursache: `worldCopyJump` liefert Marker/Linie mit
+Roh-Longituden; liegen Tipp und Ziel diesseits/jenseits der Naht, verbindet
+Leaflet sie den langen Weg. Die **Haversine-Distanz war immer korrekt** (nimmt
+stets den kurzen Großkreisbogen) — nur die Darstellung nicht.
+
+Fix (`MapPicker.tsx`): Helper `nearestLng(lng, ref)` verschiebt die
+Ziel-Longitude beim Auflösen um Vielfache von 360° auf die Weltkopie neben dem
+Tipp. Marker, Polyline und `RevealView.fitBounds` nutzen diese normalisierte
+Longitude → kurzer Weg, Ziel erscheint direkt neben dem Tipp statt „drüben".

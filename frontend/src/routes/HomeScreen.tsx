@@ -124,6 +124,21 @@ export function HomeScreen() {
           <span className="mode-name">Profil</span>
           <span className="mode-desc">Name ändern, Account sichern, anmelden.</span>
         </button>
+
+        {/* Nur im Dev-Build (DESIGN-DEV-ROUND.md): erzwingbare Testrunde. */}
+        {import.meta.env.DEV && (
+          <button
+            type="button"
+            className="mode-card"
+            onClick={() => navigate('/dev')}
+          >
+            <span className="mode-icon">🛠️</span>
+            <span className="mode-name glow-cyan">DEV</span>
+            <span className="mode-desc">
+              Erzwungene Runde: gezielt Items &amp; Grenzfälle testen.
+            </span>
+          </button>
+        )}
       </div>
     </div>
   )

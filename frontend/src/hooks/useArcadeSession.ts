@@ -46,6 +46,13 @@ function preloadQuestion(q: Question | null): Promise<void> {
 export function useArcadeSession(
   mode: GameMode,
   budgetMs: number = SESSION_SECONDS * 1000,
+  /**
+   * Optionaler Fragenquellen-Override (Dev-Runde, DESIGN-DEV-ROUND.md). Ohne
+   * ihn läuft unverändert die zufällige `makeGeneratorSource`. Wird beim
+   * Session-Aufbau einmal eingefroren — bei einem Neustart muss die View
+   * (per `key`) neu mounten, dann greift die frische Quelle.
+   */
+  sourceOverride?: (usedIds: ReadonlySet<string>) => Question | null,
 ) {
   const recordAnswer = useProgressStore((s) => s.recordAnswer)
   const [session] = useState(
@@ -53,10 +60,12 @@ export function useArcadeSession(
       new ArcadeSession({
         mode,
         budgetMs,
-        nextQuestion: makeGeneratorSource(
-          mode,
-          mode === 'outline' ? outlineDataBundle : dataBundle,
-        ),
+        nextQuestion:
+          sourceOverride ??
+          makeGeneratorSource(
+            mode,
+            mode === 'outline' ? outlineDataBundle : dataBundle,
+          ),
       }),
   )
   const [, setTick] = useState(0)

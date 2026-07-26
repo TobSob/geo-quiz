@@ -312,3 +312,21 @@ export function makeGeneratorSource(
     return null
   }
 }
+
+/**
+ * Dev-Fragenquelle (DESIGN-DEV-ROUND.md): liefert Fragen zu einer festen Liste
+ * von Item-Schlüsseln (iso2 bzw. City-/Landmark-ID) der Reihe nach über
+ * `generateQuestion(..., forcedKey)`. Ignoriert `usedIds` bewusst, damit
+ * dasselbe Ziel mehrfach hintereinander gepinnt werden kann (Grenzfall-Test).
+ * Liste erschöpft → `null` → Runde endet wie bei leerem Pool. Nur im Dev-Build
+ * verdrahtet, nie im Production-Bundle.
+ */
+export function makeForcedSource(
+  mode: GameMode,
+  data: DataBundle,
+  keys: readonly string[],
+  rng: Rng = defaultRng,
+): (usedIds: ReadonlySet<string>) => Question | null {
+  let i = 0
+  return () => (i < keys.length ? generateQuestion(mode, data, rng, keys[i++]) : null)
+}

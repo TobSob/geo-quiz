@@ -36,6 +36,11 @@ interface Props {
   unlocks?: UnlockPayload | null
   onExit: () => void
   onReplay?: () => void
+  /**
+   * Nur Dev-Runde (DESIGN-DEV-ROUND.md): erzwungene Fragenquelle statt der
+   * zufälligen. Zum Neustart muss diese View per `key` neu gemountet werden.
+   */
+  sourceOverride?: (usedIds: ReadonlySet<string>) => Question | null
 }
 
 /**
@@ -51,8 +56,9 @@ export function ArcadeQuizView({
   unlocks = null,
   onExit,
   onReplay,
+  sourceOverride,
 }: Props) {
-  const s = useArcadeSession(mode, budgetMs)
+  const s = useArcadeSession(mode, budgetMs, sourceOverride)
   const { phase, question, nextReady, questionKey, next, answerChoice, answerPin, summary } = s
   const [pendingPin, setPendingPin] = useState<PinAnswer | null>(null)
   const [lastSummary, setLastSummary] = useState<ArcadeSummary | null>(null)
