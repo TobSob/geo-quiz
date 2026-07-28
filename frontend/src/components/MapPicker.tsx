@@ -54,6 +54,23 @@ function ClickCapture({
 const nearestLng = (lng: number, ref: number) =>
   lng + 360 * Math.round((ref - lng) / 360)
 
+/**
+ * Bringt Tipp- und Ziel-Longitude auf dieselbe Weltkopie (kurzer Weg über die
+ * Datumsgrenze) UND verschiebt beide gemeinsam so, dass ihr Mittelpunkt in
+ * (−180°, 180°] liegt. Ohne den zweiten Schritt ankerte das Ziel an der
+ * Roh-Longitude des Tipps und konnte bei einem „komplett daneben"-Tipp auf der
+ * Gegenseite jenseits der ±270°-`maxBounds` landen (z. B. Everest, Tipp in
+ * Amerika → Ziel bei −273°): Marker und Linie lagen dann hinter der
+ * unpannbaren Wand, der grüne Punkt war unerreichbar. Die Linienlänge hängt nur
+ * von der Differenz ab — der gemeinsame Offset ändert die Darstellung nicht,
+ * hält aber beide Enden im pannbaren Bereich (siehe DESIGN-MAP-FIXES.md #1).
+ */
+const revealLngs = (guessLng: number, targetLng: number) => {
+  const near = nearestLng(targetLng, guessLng)
+  const shift = -360 * Math.round((guessLng + near) / 2 / 360)
+  return { guessLng: guessLng + shift, targetLng: near + shift }
+}
+
 /** Fits guess + target into view once the answer is revealed. */
 function RevealView({
   guess,
@@ -66,10 +83,13 @@ function RevealView({
   useEffect(() => {
     if (!target) return
     if (guess) {
-      const targetLng = nearestLng(target.lng, guess.lng)
+      const lngs = revealLngs(guess.lng, target.lng)
       map.fitBounds(
-        L.latLngBounds([guess.lat, guess.lng], [target.lat, targetLng]).pad(0.4),
-        { animate: true },
+        L.latLngBounds([guess.lat, lngs.guessLng], [target.lat, lngs.targetLng]).pad(0.4),
+        // maxZoom deckelt den Auflöse-Zoom: ohne ihn zoomt fitBounds bei einem
+        // Treffer nah am Ziel bis maxZoom (Straßenebene) — der harte
+        // „Reinschieß"-Effekt (DESIGN-MAP-FIXES.md #3).
+        { animate: true, maxZoom: 5 },
       )
     } else {
       map.setView([target.lat, target.lng], 4, { animate: true })
@@ -214,12 +234,15 @@ export const MapPicker = memo(function MapPicker({
   useEffect(() => {
     prefetchWorldTiles()
   }, [])
-  // Ziel auf die Weltkopie neben dem Tipp holen, damit Marker, Linie und
-  // Zoom beim Auflösen den kurzen Weg über die Datumsgrenze nehmen.
-  const revealTargetLng =
-    revealTarget && guess
-      ? nearestLng(revealTarget.lng, guess.lng)
-      : (revealTarget?.lng ?? 0)
+  // Tipp und Ziel gemeinsam auf dieselbe, im pannbaren Bereich liegende
+  // Weltkopie holen (kurzer Weg über die Datumsgrenze, grüner Punkt erreichbar
+  // — DESIGN-MAP-FIXES.md #1). Nur während des Auflösens (Tipp + Ziel sichtbar);
+  // solange nur der blaue Tipp steht (Training vor „Bestätigen"), bleibt er an
+  // seiner Roh-Longitude.
+  const reveal =
+    guess && revealTarget ? revealLngs(guess.lng, revealTarget.lng) : null
+  const guessLng = reveal ? reveal.guessLng : (guess?.lng ?? 0)
+  const revealTargetLng = reveal ? reveal.targetLng : (revealTarget?.lng ?? 0)
   return (
     <div className="map-frame map-frame--pin">
       <MapContainer
@@ -244,14 +267,14 @@ export const MapPicker = memo(function MapPicker({
         <ClickCapture onPick={onPick} disabled={disabled} />
         <ResetView resetKey={resetKey} />
         <InvalidateOnResize />
-        {guess && <Marker position={[guess.lat, guess.lng]} icon={guessIcon} />}
+        {guess && <Marker position={[guess.lat, guessLng]} icon={guessIcon} />}
         {revealTarget && (
           <Marker position={[revealTarget.lat, revealTargetLng]} icon={targetIcon} />
         )}
         {guess && revealTarget && (
           <Polyline
             positions={[
-              [guess.lat, guess.lng],
+              [guess.lat, guessLng],
               [revealTarget.lat, revealTargetLng],
             ]}
             pathOptions={{ color: '#ffec27', weight: 3, dashArray: '8 8' }}

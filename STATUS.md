@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-26
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-27
 
 ## Gesamtfortschritt
 
@@ -125,6 +125,23 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
   reproduzierbar zu testen ([DESIGN-DEV-ROUND.md](DESIGN-DEV-ROUND.md)). Route
   + Menü-Link hängen an `import.meta.env.DEV`, im Production-Bundle nicht
   enthalten (Lazy-Import).
+
+## Karten-Fixes: Everest-Punkt, Umrisse, Pin-Zoom (2026-07-27)
+App-Feedback (2026-07-27), drei Punkte — Details in [DESIGN-MAP-FIXES.md](DESIGN-MAP-FIXES.md).
+- 🐛 Gefixt: Bei einem „komplett daneben"-Pin auf der Gegenseite (z. B. Everest,
+  Tipp in Amerika) landete der grüne Ziel-Marker jenseits der ±270°-`maxBounds`
+  bei lng −273° → unerreichbar, Linie lief in die Wand. Fix: Tipp **und** Ziel
+  gemeinsam auf eine im pannbaren Bereich liegende Weltkopie schieben
+  (`revealLngs`). Live verifiziert (Mount Rushmore, Tipp Südamerika): beide
+  Marker im sichtbaren Bereich, grüner Punkt links sichtbar.
+- 🐛 Gefixt: Umrisse wirkten verzerrt (flächentreue `geoEqualEarth` + grobe
+  Flächen-Zoom-Heuristik). Neu: pro Land eine auf den Schwerpunkt rotierte,
+  **winkeltreue `geoStereographic`** per `fitExtent` in den Rahmen gepasst —
+  keine Formverzerrung, selbstrahmend, Exklaven (Guyana/Alaska/Kanaren)
+  ausgeklammert, Datumsgrenze (Russland/Fidschi) sauber. Live an 2 Ländern
+  geprüft: Rahmen exakt gefüllt, keine Konsolenfehler.
+- 🐛 Gefixt: Pin-Auflöse-Zoom schoss bei gutem Treffer bis auf Straßenebene
+  (`fitBounds` ohne `maxZoom`). Fix: `maxZoom: 5` gedeckelt.
 
 ## Phase-4-E2E-Testprotokoll (2026-07-10)
 - ✅ Anonyme Anmeldung beim App-Start → `● ONLINE`, Retro-Name `RETRO_LYNX_10` generiert
