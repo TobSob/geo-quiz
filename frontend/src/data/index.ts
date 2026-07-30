@@ -1,7 +1,7 @@
 import countriesRaw from './countries.json'
 import citiesRaw from './cities.json'
 import landmarksRaw from './landmarks.json'
-import worldAtlas from './world-atlas-110m.json'
+import outlineIndex from './outline-index.json'
 import type { City, Country, Landmark } from '../features/quiz-engine/types'
 import type { DataBundle } from '../features/quiz-engine/questionGenerator'
 
@@ -18,22 +18,14 @@ export function countryByIso2(iso2: string): Country | undefined {
 }
 
 /**
- * world-atlas-110m is a low-resolution topojson chosen for bundle size (see
- * docs/DEVELOPMENT.md) — many microstates (Malta, Singapore, Monaco, ...)
- * have no shape in it at all, so the outline mode must not pick them or the
- * map renders empty. Restrict outline questions to countries the topojson
- * can actually draw.
+ * Nicht jedes Land hat eine Geometrie im Umriss-Topojson (Übersee-Gebiete wie
+ * GF, RE, YT, SJ, TV …) — für die bliebe die Karte leer. Der Umriss-Modus wird
+ * deshalb auf die zeichenbaren Länder eingeschränkt. Quelle ist der von
+ * scripts/build-outline-atlas.mjs gebaute Umkreis-Index (~7 KB); das Topojson
+ * selbst (~756 KB) lädt erst der Umriss-Modus selbst nach
+ * (DESIGN-OUTLINE-DETAIL.md).
  */
-const topoObjectKey = Object.keys(worldAtlas.objects)[0]
-const topoObjects = worldAtlas.objects as unknown as Record<
-  string,
-  { geometries: { id?: string }[] }
->
-const renderableCcn3 = new Set(
-  topoObjects[topoObjectKey].geometries
-    .filter((g) => g.id !== undefined)
-    .map((g) => String(g.id)),
-)
+const renderableCcn3 = new Set(Object.keys(outlineIndex))
 
 export const outlineRenderableIso2 = new Set(
   countries.filter((c) => c.ccn3 && renderableCcn3.has(c.ccn3)).map((c) => c.iso2),

@@ -36,7 +36,8 @@ bevorzugt Ungesehenes & oft Falsches.
 | Artefakt | Status | Notiz |
 |---|---|---|
 | `data/raw/countries-full.json` | ✅ | mledoze/countries, 250 Einträge, 770 KB |
-| `data/world-atlas-110m.json` | ✅ | Topojson für Outline-Modus |
+| `data/world-atlas-50m.json` | ✅ | Topojson für Outline-Modus, 756 KB, per `import()` nachgeladen |
+| `data/outline-index.json` | ✅ | Umkreis je Land (~7 KB) für Pruning + Outline-Pool, via `scripts/build-outline-atlas.mjs` |
 | `data/countries.json` (schlank) | ✅ | 245 Länder (194 UN), 84 KB, via `scripts/transform-countries.mjs` |
 | `data/cities.json` | ✅ | 141 Städte, alle Kontinente, Population + isCapital |
 | `data/landmarks.json` | ✅ | 129 Einträge (Bauwerke, Monumente, Naturwunder, bekannte Plätze), Kategorie + Difficulty 1–3 + Foto je Eintrag, generiert via `scripts/fetch-landmark-images.mjs` |
@@ -68,7 +69,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | Flags | ✅ | flag-icons SVGs, Same-Region-Distraktoren |
 | Countries (Hauptstadt→Land) | ✅ | |
 | Capitals (Land→Hauptstadt) | ✅ | |
-| Outline (markiertes Land erkennen) | ✅ | react-simple-maps @ React 18, MC-Antworten |
+| Outline (markiertes Land erkennen) | ✅ | 50m-Geometrie mit sichtbarer Umgebung, direkt per d3-geo gezeichnet, MC-Antworten; Pool 193 Länder |
 | City-Pin | ✅ | Leaflet + Haversine, Feedback mit Ziel-Marker + Distanzlinie |
 | Landmark-Pin | ✅ | steilerer Falloff (R=90), zeigt Foto der Sehenswürdigkeit/des Ortes |
 | Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte je Disziplin einsehbar in „Meine Rekorde" (Hover) und globaler Cup-Bestenliste (Klick, live); Reihenfolge-Fix (Migration 0013) noch ausstehend |
@@ -125,6 +126,22 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
   reproduzierbar zu testen ([DESIGN-DEV-ROUND.md](DESIGN-DEV-ROUND.md)). Route
   + Menü-Link hängen an `import.meta.env.DEV`, im Production-Bundle nicht
   enthalten (Lazy-Import).
+
+## Umriss-Modus: schärfer & verortet (2026-07-30)
+App-Feedback (2026-07-30): „Umrisse ziemlich ungenau … man erkennt kaum das
+drumherum." Details in [DESIGN-OUTLINE-DETAIL.md](DESIGN-OUTLINE-DETAIL.md).
+- 🎨 **Genauigkeit:** Topojson 110m → **50m**. Deutschland hatte 68 Stützpunkte,
+  jetzt 572; Niederlande 16 → 264. Der Umriss-Pool wächst von 165 auf 193 der
+  194 UN-Länder — Malta, Singapur, Monaco, Malediven & Co. kamen vorher nie dran,
+  weil 110m sie gar nicht kennt.
+- 🎨 **Verortung:** 19 % statt 4 % Rand ums Land, Nachbarn (`#39538a`) klar vom
+  Meer (`#071a3a`) abgesetzt, Zielland zuletzt gezeichnet + dunkler Trennsaum.
+- ⚡ **Kosten aufgefangen:** Atlas als eigener Chunk (nicht im Startbundle,
+  Prefetch im Menü) und Sichtbarkeits-Pruning über einen vorberechneten
+  Umkreis-Index — sonst 154 ms statt 24 ms pro Karte. In der App über 10 Fragen
+  gemessen: **keine einzige Longtask > 50 ms**.
+- 🧹 `react-simple-maps` entfällt (einzige Nutzung; kein Pruning, volle
+  Float-Präzision). React 18 ist damit nicht mehr an eine Peer-Dep gebunden.
 
 ## Karten-Fixes: Everest-Punkt, Umrisse, Pin-Zoom (2026-07-27)
 App-Feedback (2026-07-27), drei Punkte — Details in [DESIGN-MAP-FIXES.md](DESIGN-MAP-FIXES.md).

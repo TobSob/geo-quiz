@@ -39,10 +39,10 @@ Drei Entscheidungen prägen alles andere:
 | Baustein | Wahl | Warum |
 |---|---|---|
 | Build | Vite 8 (rolldown) + TypeScript 6 | Standard, schnell; `tsc -b` als Typecheck vor dem Build |
-| UI | React **18** (bewusst gepinnt) | `react-simple-maps@3` hat Peer-Deps bis React 18 — Upgrade auf 19 erst, wenn die Map-Lib gewechselt/geforkt wird |
+| UI | React **18** | War wegen `react-simple-maps@3` (Peer-Deps bis 18) gepinnt; die Lib ist seit DESIGN-OUTLINE-DETAIL.md raus, ein Upgrade auf 19 ist damit frei |
 | State | Zustand 5 (+ `persist`-Middleware) | Zwei kleine Stores statt Redux-Zeremonie; localStorage-Persistenz ist eine Zeile |
 | Routing | React Router 7, **HashRouter** | Hash-URLs funktionieren identisch auf statischem Hosting und im Capacitor-WebView — keine Server-Rewrites nötig |
-| Umriss-Karte | react-simple-maps + world-atlas `countries-110m` | SVG, klein (~100 KB), reicht für „erkenne das Land"; höhere Auflösung würde den First Paint auf Mobilgeräten spürbar bremsen |
+| Umriss-Karte | d3-geo direkt + world-atlas `countries-50m` | 110m war auf Länder-Zoom sichtbar kantig (Niederlande: 16 Stützpunkte). 50m wird als eigener Chunk nachgeladen und nur im sichtbaren Ausschnitt gezeichnet, kostet den First Paint also nichts (DESIGN-OUTLINE-DETAIL.md) |
 | Pin-Karte | Leaflet via react-leaflet 4 | Frei zoombare Rasterkarte für Distanz-Raten |
 | Tiles | Carto `dark_nolabels` | **Ohne Ortsnamen** (sonst verrät die Karte die Antwort) und konform mit Nutzungsrichtlinien — der offizielle OSM-Tileserver ist für gebündelte Apps tabu |
 | Fonts | @fontsource: Press Start 2P (Display) + VT323 (Fließtext) | Selbst gehostet → offlinefähig, kein Google-CDN |
@@ -215,11 +215,15 @@ src/data/countries.json   245 Länder, 84 KB (iso2/iso3/ccn3, Namen de/en, Haupt
                           `CAPITAL_DE_EXTRA` in transform-countries.mjs, sonst Fallback auf
                           `capital`. Bei neuen mledoze-Importen `capitalDe` gegenprüfen.
 src/data/cities.json      141 Städte, handkuratiert (Population für Schwierigkeits-Tiers)
-src/data/world-atlas-110m.json   Topojson für den Umriss-Modus (110m-Auflösung, ~100 KB —
-                          deckt nur 177 Länder ab; 29 Mikrostaaten fehlen und werden im
-                          Umriss-Pool über `outlineRenderableIso2`/`outlineDataBundle`
-                          (src/data/index.ts) ausgeschlossen, bleiben aber bei
-                          Flaggen/Hauptstädte/Länder normal spielbar)
+src/data/world-atlas-50m.json    Topojson für den Umriss-Modus (50m, 756 KB). Wird per
+                          `import()` nachgeladen (src/data/outlineAtlas.ts), nicht gebündelt.
+src/data/outline-index.json      Pro Land ein sphärischer Umkreis [lng, lat, radiusRad], ~7 KB.
+                          Zwei Aufgaben: (1) Sichtbarkeits-Pruning beim Zeichnen, (2) Quelle
+                          für `outlineRenderableIso2`/`outlineDataBundle` (src/data/index.ts) —
+                          193 der 194 UN-Länder haben eine Geometrie, der Rest (Übersee-
+                          Gebiete) ist im Umriss-Modus ausgeschlossen, bleibt aber bei
+                          Flaggen/Hauptstädte/Länder normal spielbar.
+                          Beide Dateien baut `scripts/build-outline-atlas.mjs`.
 ```
 
 Flaggen kommen **nicht** aus mledoze (dessen SVGs sind von der ODbL-Lizenz ausgenommen!), sondern aus dem MIT-lizenzierten `flag-icons`-Paket (CSS-Klassen `fi fi-de`).

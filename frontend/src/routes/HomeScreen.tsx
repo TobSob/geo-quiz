@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { prefetchOutlineAtlas } from '../data/outlineAtlas'
 
 const MODES = [
   {
@@ -41,6 +43,12 @@ const MODES = [
 
 export function HomeScreen() {
   const navigate = useNavigate()
+
+  // Der Umriss-Atlas ist ein eigener Chunk (~236 KB gzip). Im Menü steht die
+  // Leitung ohnehin still — dann lädt die erste Umriss-Frage nicht mehr nach.
+  useEffect(() => {
+    void prefetchOutlineAtlas()
+  }, [])
 
   return (
     <div className="stack" style={{ gap: 32 }}>

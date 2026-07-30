@@ -31,7 +31,7 @@ Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Alle
 ## Tech-Stack
 
 - **Frontend:** React 18 + TypeScript + Vite, Zustand (State), React Router (Hash-Routing, Capacitor-tauglich)
-- **Karten:** [react-simple-maps](https://www.react-simple-maps.io/) (Umriss-Modus, world-atlas Topojson) · [Leaflet](https://leafletjs.com/) via react-leaflet (Pin-Modi, Carto-Tiles ohne Labels)
+- **Karten:** [d3-geo](https://d3js.org/d3-geo) + world-atlas-Topojson (Umriss-Modus, SVG direkt gezeichnet) · [Leaflet](https://leafletjs.com/) via react-leaflet (Pin-Modi, Carto-Tiles ohne Labels)
 - **Design:** 8-Bit-Theme mit [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) + [VT323](https://fonts.google.com/specimen/VT323), CRT-Scanlines, Pixel-Borders — pures CSS, kein UI-Framework
 - **Backend:** [Supabase](https://supabase.com/) (Postgres + Auth + PostgREST) — es gibt **keinen eigenen Server-Code**, das gesamte Backend ist SQL unter [`supabase/migrations/`](supabase/)
 - **Tests:** Vitest (Quiz-Engine ist pures, framework-freies TypeScript)
@@ -114,7 +114,7 @@ Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementie
 
 - Länderdaten: [mledoze/countries](https://github.com/mledoze/countries) (ODbL) — transformiert via `frontend/scripts/transform-countries.mjs`
 - Flaggen: [flag-icons](https://github.com/lipis/flag-icons) (MIT)
-- Weltkarten-Topojson: [world-atlas](https://github.com/topojson/world-atlas) `countries-110m`
+- Weltkarten-Topojson: [world-atlas](https://github.com/topojson/world-atlas) `countries-50m` — via `frontend/scripts/build-outline-atlas.mjs`
 - Kartentiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)-Mitwirkende, © [CARTO](https://carto.com/attributions)
 - Städte- und Landmark-Datensätze: eigene Kuratierung
 
