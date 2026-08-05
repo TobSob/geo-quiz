@@ -26,6 +26,12 @@ const DevScreen = import.meta.env.DEV
   ? lazy(() => import('./routes/DevScreen').then((m) => ({ default: m.DevScreen })))
   : null
 
+// Bildnachweise (ROADMAP K15): lazy, weil die 129 Einträge nur hier gebraucht
+// werden und im Startbundle nichts verloren haben.
+const CreditsScreen = lazy(() =>
+  import('./routes/CreditsScreen').then((m) => ({ default: m.CreditsScreen })),
+)
+
 function App() {
   const location = useLocation()
   const isHome = location.pathname === '/'
@@ -146,6 +152,14 @@ function App() {
         <Route path="/scores" element={<ScoresScreen />} />
         <Route path="/achievements" element={<AchievementsScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />
+        <Route
+          path="/credits"
+          element={
+            <Suspense fallback={<p className="dim center blink">LADE…</p>}>
+              <CreditsScreen />
+            </Suspense>
+          }
+        />
         {DevScreen && (
           <Route
             path="/dev"

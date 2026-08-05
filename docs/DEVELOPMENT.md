@@ -324,11 +324,14 @@ Läuft sowohl im Repo-Root als auch in `frontend/`: die Root-`package.json` ist 
 | `npm run release -- --no-deploy` | alles bauen, nichts hochladen (Trockenlauf) |
 | `npm run release -- --debug-apk` | zusätzlich die Debug-APK fürs schnelle Aufspielen |
 | `npm run release -- --skip-checks` | ohne Tests/Lint — nur für Notfall-Redeploys |
+| `npm run release -- --no-bump` | `versionCode` stehen lassen (siehe unten) |
 | `npm run deploy` | Altbestand: Web-Build + Upload, ohne Checks und ohne App |
 
 **Voraussetzungen Android:** `JAVA_HOME` + `ANDROID_HOME` gesetzt (ROADMAP B1) und `android/keystore.properties` für die Signierung (Vorlage: `keystore.properties.example`). Fehlt die Keystore-Datei, baut Gradle unsigniert weiter — das Skript warnt vorher deutlich, denn eine unsignierte APK lässt sich weder installieren noch hochladen.
 
-**Stolperstein Versionsnummer:** `versionCode`/`versionName` stehen fest in `android/app/build.gradle` und werden **nicht** automatisch hochgezählt. Fürs Sideloading egal, für einen Play-Store-Upload muss `versionCode` vorher von Hand erhöht werden (sonst lehnt Google das Bundle ab).
+**Versionsnummern:** `versionCode` wird seit 2026-08-03 vor jedem Android-Release-Build automatisch um 1 erhöht und in `android/app/build.gradle` zurückgeschrieben (taucht also im `git diff` auf). Play verlangt bei jedem Upload einen höheren Wert, aber keine Lückenlosigkeit — ein „verschwendeter" Wert durch einen lokalen Testbau kostet nichts, eine vergessene Erhöhung dagegen einen abgelehnten Upload. `--no-bump` schaltet es ab. Der **`versionName`** („1.0") bleibt bewusst manuell: den soll eine Release-Entscheidung setzen, kein Build.
+
+**Rechtstexte-Sperre:** Stehen in `frontend/public/datenschutz/` oder `frontend/public/konto-loeschen/` noch Platzhalter (`TODO_ANBIETER_*`) für Name, Anschrift oder Kontakt des Anbieters, **bricht der Web-Upload ab** (bei `--no-deploy` bleibt es bei einer Warnung, damit man weiter Test-APKs bauen kann). Seit 2026-08-04 sind die Angaben eingetragen; die Sperre bleibt als Netz für künftige Textänderungen. Hintergrund: [DESIGN-PLAYSTORE.md](../DESIGN-PLAYSTORE.md).
 
 **Web-Details:** `frontend/dist/` ist rein statisch (jeder Static-Host: Cloudflare Pages, Netlify, GitHub Pages …). Dank HashRouter keine Rewrite-Regeln nötig. Env-Variablen werden **zur Buildzeit** eingebacken — beim gewählten Direct-Upload-Flow kommen sie aus `frontend/.env.local`, bei einem Git-Flow bräuchte der Host `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` als Build-Env.
 

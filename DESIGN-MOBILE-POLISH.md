@@ -95,3 +95,63 @@ den Aufgeben-Button bzw. die Feedback-Anzeige der Floating-Action-Bar.
   Pin-Fehlklick) und Desktop 1280 px (4-spaltiges Grid, Flagge 240×180,
   Zoom sichtbar, Attribution ausgeklappt, Toggle versteckt).
   Offen: Geräte-Bestätigung Back-Button + Login-E2E mit echtem Account.
+
+---
+
+## 5. Vollbild (Immersive Mode) — Feedback-Runde 2 (2026-08-03)
+
+**Problem (App-Feedback):** „Vom Handy werden die obere und untere Zeile
+angezeigt, deswegen ist die App nicht im Vollbild." Status- und
+Navigationsleiste fraßen oben und unten je einen Streifen — die App wirkte
+wie eine Website im Browser statt wie ein Spielautomat.
+
+**Regel:** Beide Systemleisten sind ausgeblendet. Ein Wisch von der Kante holt
+sie transient zurück (Uhr, Zurück-Geste bleiben erreichbar) und lässt sie
+danach von selbst wieder verschwinden — `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`
+statt `BEHAVIOR_DEFAULT`, das sie dauerhaft einblenden würde.
+
+**Umsetzung** (`MainActivity.java`, `styles.xml`, `AndroidManifest.xml`,
+`index.css`) — die Reihenfolge ist eine Kette, jeder Schritt löste das nächste
+Problem aus:
+
+1. `WindowInsetsControllerCompat.hide(Type.systemBars())` in `onCreate` und
+   erneut in `onWindowFocusChanged` (Android blendet die Leisten nach
+   Benachrichtigungs-Shade, App-Wechsel oder Berechtigungsdialog von sich aus
+   wieder ein). **Nicht** über `android:windowFullscreen` — das versteckt nur
+   die Statusleiste.
+2. Danach blieb oben ein **schwarzer Streifen**: Android lässt das Fenster im
+   Hochformat unterhalb der Kamera-Aussparung beginnen.
+   → `android:windowLayoutInDisplayCutoutMode="shortEdges"` in beiden Themes
+   (ohne SplashScreen-Plugin bleibt das Launch-Theme aktiv). Nicht `always`:
+   das gälte auch im Querformat, wo die Aussparung mitten in der Kartenfläche
+   säße.
+3. Der Streifen wurde daraufhin **weiß**: die WebView bekam den Cutout weiter
+   als Inset, sichtbar war der Fenster-Hintergrund (das Capacitor-Theme erbt
+   von `Theme.AppCompat.DayNight`).
+   → `WindowCompat.setDecorFitsSystemWindows(getWindow(), false)`.
+4. Jetzt lag die Kopfzeile **unter der Kamera**. `env(safe-area-inset-top)`
+   hilft hier nicht: die Android-WebView meldet dafür 0, auch mit
+   `viewport-fit=cover` und freigegebenem Cutout. Nachgemessen im Emulator
+   (Pixel 7, 136 px Aussparung): der Inhalt rutschte um exakt die volle
+   Aussparungshöhe hoch statt stehen zu bleiben.
+   → MainActivity liest das `displayCutout`-Inset und setzt es per
+   `evaluateJavascript` als `--android-inset-top` auf `documentElement`;
+   `#root` rechnet es in `padding-block` ein, mit `env(...)` als Fallback für
+   Web und iOS-PWA. **Wichtig:** die Handy-Media-Query (`max-width: 600px`)
+   überschreibt `padding-block` und musste dieselbe Rechnung bekommen — sonst
+   greift die Korrektur ausgerechnet auf keinem Handy.
+5. `setDecorFitsSystemWindows(false)` schaltet das automatische Verkleinern
+   des Fensters für die **Tastatur** ab. Folge: WebView blieb in voller Höhe,
+   die Tastatur legte sich darüber, und Chromium scrollte das fokussierte Feld
+   nicht mehr ins Bild — im Emulator gegen die Vorgängerversion (Release-APK
+   vom 2026-07-30) direkt gegengeprüft: dort lag das Passwortfeld sichtbar
+   über der Tastatur, in der neuen Fassung darunter.
+   → Das `ime()`-Inset wird in `observeInsets()` selbst als Bottom-Padding auf
+   `android.R.id.content` angewendet; `windowSoftInputMode="adjustResize"` im
+   Manifest dazu.
+
+**Verifiziert** im Emulator (AVD `geoquiz_pixel7`, Android 14): keine
+Systemleisten, Hintergrund läuft bis in die Aussparung, Kopfzeile darunter,
+Passwortfeld beim Fokus wieder über der Tastatur (mit Fokusring), Datenschutz-
+Link öffnet den System-Browser. Web unverändert: `#root`-Padding bleibt
+24/48 px (Desktop) bzw. 12/24 px (≤ 600 px).

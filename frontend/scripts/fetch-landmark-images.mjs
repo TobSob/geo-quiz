@@ -2,8 +2,9 @@
 // landmark from the German Wikipedia API (action=query, prop=coordinates
 // pageimages) and writes:
 //   - src/data/landmarks.json (final quiz data)
+//   - src/data/landmark-credits.json (Urheber + Lizenz je Foto)
 //   - public/landmarks/<id>.jpg (downloaded thumbnails)
-//   - docs/IMAGE_CREDITS.md (source article + license per image)
+//   - docs/IMAGE_CREDITS.md (dasselbe als lesbare Tabelle)
 // Run: node scripts/fetch-landmark-images.mjs
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -30,6 +31,11 @@ const MANUAL_OVERRIDES = {
   },
   // These Wikipedia articles' "page image" is a locator map or flag rather
   // than an actual photo — swapped for a real Commons photo instead.
+  // Alhambra: pageimage ist ein Grundriss von 1889 ("Plano del Palacio Arabe"),
+  // im Pin-Modus als Hinweis wertlos. Bewusst NICHT das Mirador-Panorama aus
+  // demselben Artikel — 10172×2160 ergäbe als 500er-Thumbnail einen 106 px
+  // hohen Streifen.
+  lm_alhambra: { imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Alhambra_from_Generalife_%282017%29.jpg/500px-Alhambra_from_Generalife_%282017%29.jpg' },
   lm_atacama: { imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Atacama_Desert_Panorama_%28img_2303%29.jpg/500px-Atacama_Desert_Panorama_%28img_2303%29.jpg' },
   lm_cartagena: { imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Cartagena%2C_Colombia_%285049256137%29.jpg/500px-Cartagena%2C_Colombia_%285049256137%29.jpg' },
   lm_chichen_itza: { imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Chichen_Itza_3.jpg/500px-Chichen_Itza_3.jpg' },
@@ -53,6 +59,7 @@ const MANUAL_OVERRIDES = {
 
 const here = dirname(fileURLToPath(import.meta.url))
 const outJson = join(here, '..', 'src', 'data', 'landmarks.json')
+const outCreditsJson = join(here, '..', 'src', 'data', 'landmark-credits.json')
 const outImageDir = join(here, '..', 'public', 'landmarks')
 const outCredits = join(here, '..', '..', 'docs', 'IMAGE_CREDITS.md')
 
@@ -84,6 +91,102 @@ async function queryBatch(titles) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+// ---- Bildnachweise (CC-BY verlangt Urheber UND Lizenz am Bild) --------------
+
+/**
+ * Dateiname zu einer Thumbnail-URL. Aufbau bei Wikimedia:
+ *   …/commons/thumb/6/66/Panama_Canal.jpg/500px-Panama_Canal.jpg
+ * Gebraucht wird das Segment VOR der Größenangabe — bei den MANUAL_OVERRIDES
+ * ist das die einzige Quelle für den Dateinamen (dort gibt es kein pageimage).
+ */
+function fileTitleFromThumbUrl(url) {
+  const match = url.match(/\/thumb\/[0-9a-f]\/[0-9a-f]{2}\/([^/]+)\//)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+/** extmetadata liefert HTML („<a href=…>Name</a>", verschachtelte spans). */
+function plainText(html) {
+  if (!html) return null
+  const text = String(html)
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return text.length > 0 ? text.slice(0, 120) : null
+}
+
+/**
+ * Rückfallebene für alte Uploads ohne maschinenlesbares `Artist`-Feld (bei
+ * 129 Bildern betraf das vier). Deren Beschreibungsseiten haben auch kein
+ * `author=` im Wikitext — die einzige belastbare Person ist der Erst-Uploader
+ * aus der Dateiversion-Historie. „unbekannt" wäre bei CC-BY(-SA) keine
+ * zulässige Namensnennung, der Uploader ist es.
+ */
+async function queryOriginalUploader(fileTitle) {
+  const url = new URL('https://commons.wikimedia.org/w/api.php')
+  url.searchParams.set('action', 'query')
+  url.searchParams.set('prop', 'imageinfo')
+  url.searchParams.set('iiprop', 'user')
+  url.searchParams.set('iilimit', '500')
+  url.searchParams.set('titles', `File:${fileTitle}`)
+  url.searchParams.set('format', 'json')
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) return null
+  const data = await res.json()
+  const page = Object.values(data.query?.pages ?? {})[0]
+  const versions = page?.imageinfo ?? []
+  const oldest = versions[versions.length - 1]
+  return oldest?.user ? `${oldest.user} (Wikimedia Commons)` : null
+}
+
+/**
+ * Urheber + Lizenz je Datei. Läuft gegen die de-Wikipedia-API, die
+ * Commons-Dateien über das Fremd-Repo mit auflöst — ein Endpunkt für beide
+ * Fälle (lokal hochgeladen vs. Commons).
+ */
+async function queryFileInfo(fileTitles) {
+  const url = new URL(API)
+  url.searchParams.set('action', 'query')
+  url.searchParams.set('prop', 'imageinfo')
+  url.searchParams.set('iiprop', 'extmetadata|url')
+  url.searchParams.set(
+    'iiextmetadatafilter',
+    'Artist|Credit|LicenseShortName|LicenseUrl|AttributionRequired',
+  )
+  url.searchParams.set('titles', fileTitles.map((t) => `File:${t}`).join('|'))
+  url.searchParams.set('format', 'json')
+  const res = await fetch(url, { headers: { 'User-Agent': UA } })
+  if (!res.ok) throw new Error(`imageinfo error ${res.status}`)
+  const data = await res.json()
+
+  const out = new Map()
+  const normalized = new Map((data.query?.normalized ?? []).map((n) => [n.to, n.from]))
+  for (const page of Object.values(data.query?.pages ?? {})) {
+    const info = page.imageinfo?.[0]
+    if (!info) continue
+    const meta = info.extmetadata ?? {}
+    // Titel zurück auf die angefragte Schreibweise mappen (die API normalisiert
+    // Unterstriche zu Leerzeichen), damit der Aufrufer wiederfindet, was er
+    // gefragt hat.
+    // Namensraum abschneiden — die de-Wikipedia antwortet mit „Datei:", nicht „File:".
+    const stripNs = (title) => title.replace(/^[^:]+:/, '')
+    const asked = normalized.get(page.title) ?? page.title
+    out.set(stripNs(asked), {
+      file: stripNs(page.title),
+      author: plainText(meta.Artist?.value) ?? plainText(meta.Credit?.value) ?? null,
+      license: plainText(meta.LicenseShortName?.value) ?? 'siehe Dateiseite',
+      licenseUrl: meta.LicenseUrl?.value ?? null,
+      url: info.descriptionurl ?? null,
+    })
+  }
+  return out
+}
 
 async function downloadImage(url, destPath, attempt = 1) {
   const res = await fetch(url, { headers: { 'User-Agent': UA } })
@@ -132,7 +235,10 @@ async function main() {
 
   const results = []
   const failures = []
-  const credits = []
+  /** id -> Commons-/Wikipedia-Dateiname, für die Nachweis-Abfrage danach. */
+  const fileTitleById = new Map()
+  /** id -> Artikel-URL; nur als Fallback-Link in IMAGE_CREDITS.md, nicht in der App. */
+  const articleById = new Map()
 
   for (const entry of LANDMARK_MANIFEST) {
     const page = byTitle.get(entry.wikiTitle)
@@ -163,6 +269,15 @@ async function main() {
       continue
     }
     await sleep(400)
+    // pageimage ist der Dateiname des Artikelbilds; bei einem Override steckt
+    // er nur in der URL.
+    const fileTitle = override?.imageUrl
+      ? fileTitleFromThumbUrl(override.imageUrl)
+      : (page.pageimage ?? fileTitleFromThumbUrl(thumb))
+    if (fileTitle) fileTitleById.set(entry.id, fileTitle)
+    else failures.push(`${entry.id}: Dateiname nicht ermittelbar (kein Bildnachweis)`)
+    articleById.set(entry.id, page.fullurl)
+
     results.push({
       id: entry.id,
       name: entry.name,
@@ -173,17 +288,73 @@ async function main() {
       difficulty: entry.difficulty,
       image: `/landmarks/${entry.id}.jpg`,
     })
-    credits.push(`- **${entry.name}** — [${page.title}](${page.fullurl}) (Wikipedia, ${Math.round(bytes / 1024)} KB)`)
     process.stdout.write(`ok  ${entry.id} <- ${page.title} (${bytes} bytes)\n`)
   }
 
+  // ---- Bildnachweise nachziehen --------------------------------------------
+  // Erst jetzt, gebündelt: 40 Dateien pro Anfrage statt 129 Einzelabrufe.
+  const creditByFile = new Map()
+  for (const batch of chunk([...new Set(fileTitleById.values())], 40)) {
+    try {
+      for (const [key, value] of await queryFileInfo(batch)) creditByFile.set(key, value)
+    } catch (err) {
+      failures.push(`imageinfo-Batch: ${err.message}`)
+    }
+    await sleep(300)
+  }
+
+  // Fehlt der Urheber, den Erst-Uploader nachschlagen (Einzelabfragen, betrifft
+  // erfahrungsgemäß nur eine Handvoll alter Dateien).
+  for (const [fileTitle, credit] of creditByFile) {
+    if (credit.author) continue
+    credit.author = (await queryOriginalUploader(fileTitle)) ?? 'unbekannt'
+    await sleep(300)
+  }
+
+  // Die Nachweise liegen bewusst in einer EIGENEN Datei, nicht als Feld an
+  // jedem Landmark: sie wiegen 33 KB gegen 22 KB Quizdaten und werden nur vom
+  // Nachweis-Screen gebraucht. So bleiben sie aus dem Startbundle (dieselbe
+  // Überlegung wie beim Umriss-Atlas, DESIGN-OUTLINE-DETAIL.md). Beide Dateien
+  // entstehen hier im selben Lauf, sie können also nicht auseinanderlaufen.
+  const creditEntries = []
+  const creditLines = []
+  for (const entry of results) {
+    const fileTitle = fileTitleById.get(entry.id)
+    const credit = fileTitle ? creditByFile.get(fileTitle) : null
+    if (!credit) {
+      failures.push(`${entry.id}: kein Bildnachweis für "${fileTitle ?? '?'}"`)
+      continue
+    }
+    creditEntries.push({ id: entry.id, name: entry.name, ...credit })
+    creditLines.push(
+      `| ${entry.name} | ${credit.author} | ${credit.license} | [Dateiseite](${credit.url ?? articleById.get(entry.id)}) |`,
+    )
+  }
+
   writeFileSync(outJson, JSON.stringify(results))
+  writeFileSync(outCreditsJson, JSON.stringify(creditEntries))
   writeFileSync(
     outCredits,
-    `# Bildnachweise — Landmark-Pin\n\nBilder stammen aus Wikipedia-Artikeln (jeweiliges "Page Image"), Lizenz siehe verlinkter Artikel/Commons-Seite.\n\n${credits.join('\n')}\n`,
+    [
+      '# Bildnachweise — Landmark-Pin',
+      '',
+      'Erzeugt von `frontend/scripts/fetch-landmark-images.mjs`; dieselben Angaben',
+      'stehen maschinenlesbar in `src/data/landmark-credits.json` und werden in der',
+      'App unter **Profil → Bildnachweise** angezeigt.',
+      '',
+      'CC-BY(-SA) verlangt Urheber **und** Lizenz — ein Link auf den Artikel allein',
+      'genügt nicht.',
+      '',
+      '| Motiv | Urheber | Lizenz | Quelle |',
+      '|---|---|---|---|',
+      ...creditLines,
+      '',
+    ].join('\n'),
   )
 
-  process.stdout.write(`\n${results.length} ok, ${failures.length} failed\n`)
+  process.stdout.write(
+    `\n${results.length} ok, ${creditLines.length} mit Nachweis, ${failures.length} Probleme\n`,
+  )
   if (failures.length) {
     process.stdout.write('\nFAILURES:\n' + failures.map((f) => `  - ${f}`).join('\n') + '\n')
   }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto-Backup-Regeln für Android < 12 (DESIGN-PLAYSTORE.md).
+
+  Die Supabase-Anmeldesitzung liegt seit ROADMAP B4 bewusst in den nativen
+  SharedPreferences (@capacitor/preferences, Gruppe "CapacitorStorage") — im
+  WebView-localStorage überlebte sie OEM-Speicherbereinigungen nicht. Genau
+  diese eine Datei soll aber nicht in Googles Cloud-Backup wandern: ein
+  Sitzungs-Token, das jahrelang in einem Drive-Backup liegt, ist der
+  schlechtere Tausch gegen den Komfort, nach einem Gerätewechsel schon
+  angemeldet zu sein.
+
+  Folge: Ein wiederhergestelltes Gerät startet mit frischer anonymer
+  Identität. Wer einen Account hat, meldet sich einmal an und hat alles
+  zurück. Der Rest (Spielfortschritt im WebView-Speicher) wird weiter
+  gesichert.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="CapacitorStorage.xml" />
+</full-backup-content>

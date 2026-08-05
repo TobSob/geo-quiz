@@ -10,6 +10,10 @@
 *.local
 .env
 
+# wrangler-Cache — der launch.json-Eintrag „geo-quiz-pages" startet
+# `wrangler pages dev` aus dem Repo-Root und legt ihn hier an.
+/.wrangler
+
 # OS
 Thumbs.db
 .DS_Store

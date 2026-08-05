@@ -13,6 +13,15 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview", "--prefix", "frontend", "--", "--host", "--port", "4173"],
       "port": 4173
+    },
+    {
+      "//": "Echte Cloudflare-Pages-Laufzeit über dist/ — anders als vite preview",
+      "//2": "ohne SPA-Fallback, also der einzige Weg, statische Seiten wie",
+      "//3": "/datenschutz/ so zu prüfen, wie sie live ausgeliefert werden.",
+      "name": "geo-quiz-pages",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["wrangler", "pages", "dev", "frontend/dist", "--port", "8788"],
+      "port": 8788
     }
   ]
 }

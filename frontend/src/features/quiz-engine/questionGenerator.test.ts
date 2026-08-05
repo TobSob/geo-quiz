@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import countriesRaw from '../../data/countries.json'
 import citiesRaw from '../../data/cities.json'
 import landmarksRaw from '../../data/landmarks.json'
+import credits from '../../data/landmark-credits.json'
 import type { City, Country, Landmark } from './types'
 import {
   generateChoiceQuestion,
@@ -29,6 +30,22 @@ describe('data integrity', () => {
   it('every landmark references an existing country', () => {
     const iso2 = new Set(countries.map((c) => c.iso2))
     for (const lm of landmarks) expect(iso2.has(lm.countryIso2)).toBe(true)
+  })
+
+  // Bildnachweise (ROADMAP K15): CC-BY(-SA) verlangt Urheber UND Lizenz je
+  // Foto. Beide Dateien entstehen im selben Skript-Lauf — dieser Test hält
+  // fest, dass sie deckungsgleich bleiben, falls jemand nur eine anfasst.
+  it('every landmark photo has a credit with author and license', () => {
+    const byId = new Map(credits.map((c) => [c.id, c]))
+    expect(credits.length).toBe(landmarks.length)
+    for (const lm of landmarks) {
+      const credit = byId.get(lm.id)
+      expect(credit, `kein Bildnachweis für ${lm.id}`).toBeDefined()
+      expect(credit!.author.length).toBeGreaterThan(0)
+      expect(credit!.author).not.toBe('unbekannt')
+      expect(credit!.license.length).toBeGreaterThan(0)
+      expect(credit!.url).toMatch(/^https:\/\//)
+    }
   })
 
   it('city coordinates are plausible (Berlin↔Paris ~878 km)', () => {

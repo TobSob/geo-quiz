@@ -75,17 +75,23 @@ function encodePng(width, height, rgba) {
 // ---- Zeichenfläche ---------------------------------------------------------
 
 class Canvas {
-  constructor(size, fill = TRANSPARENT) {
-    this.size = size
-    this.data = Buffer.alloc(size * size * 4)
+  /**
+   * `height` steht hinter `fill`, damit die quadratischen Aufrufer
+   * (Icons, Splash) unverändert `new Canvas(1024, BG_PANEL)` schreiben —
+   * das Querformat braucht nur die Feature-Grafik.
+   */
+  constructor(width, fill = TRANSPARENT, height = width) {
+    this.width = width
+    this.height = height
+    this.data = Buffer.alloc(width * height * 4)
     if (fill[3] !== 0) {
-      for (let i = 0; i < size * size; i++) fill.forEach((v, k) => (this.data[i * 4 + k] = v))
+      for (let i = 0; i < width * height; i++) fill.forEach((v, k) => (this.data[i * 4 + k] = v))
     }
   }
 
   set(x, y, color) {
-    if (x < 0 || y < 0 || x >= this.size || y >= this.size) return
-    const i = (y * this.size + x) * 4
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height) return
+    const i = (y * this.width + x) * 4
     color.forEach((v, k) => (this.data[i + k] = v))
   }
 
@@ -96,7 +102,7 @@ class Canvas {
   }
 
   png() {
-    return encodePng(this.size, this.size, this.data)
+    return encodePng(this.width, this.height, this.data)
   }
 }
 
@@ -239,4 +245,31 @@ const globe = globeGrid()
   writeFileSync(join(OUT_DIR, 'splash-dark.png'), png)
 }
 
-console.log(`OK → ${OUT_DIR} (icon-only, icon-foreground, icon-background, splash, splash-dark)`)
+// Feature-Grafik 1024×500 für den Play-Store-Eintrag (DESIGN-PLAYSTORE.md).
+// Querformat: Globus links, zweizeiliges Wordmark rechts, Sternenfeld dahinter.
+// Play blendet über die Grafik je nach Platzierung eigene Elemente ein —
+// deshalb bleibt der Rand frei und nichts Wichtiges liegt am Bildrand.
+{
+  const W = 1024
+  const H = 500
+  const c = new Canvas(W, BG_DEEP, H)
+
+  // Sternenfeld: fester LCG statt Math.random, damit zwei Läufe dieselbe
+  // Grafik ergeben (sonst rauscht jeder Regenerierungs-Commit).
+  let seed = 0x9e37
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
+  for (let i = 0; i < 90; i++) {
+    const x = Math.floor(rnd() * W)
+    const y = Math.floor(rnd() * H)
+    const big = rnd() > 0.82
+    c.rect(x, y, big ? 4 : 2, big ? 4 : 2, big ? WHITE : BG_PANEL)
+  }
+
+  drawGrid(c, globe, 22, 250, H / 2)
+  drawLines(c, WORDMARK, 10, 700, H / 2)
+  writeFileSync(join(OUT_DIR, 'feature-graphic.png'), c.png())
+}
+
+console.log(
+  `OK → ${OUT_DIR} (icon-only, icon-foreground, icon-background, splash, splash-dark, feature-graphic)`,
+)

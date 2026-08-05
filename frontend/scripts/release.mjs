@@ -14,6 +14,7 @@
 //   --skip-checks   Tests + Lint überspringen (nur für Notfall-Redeploys)
 //   --no-deploy     alles bauen, aber nichts hochladen (Trockenlauf)
 //   --debug-apk     zusätzlich die Debug-APK bauen (fürs schnelle Aufspielen)
+//   --no-bump       versionCode NICHT hochzählen (sonst Standard, siehe unten)
 //
 // Voraussetzungen für den Android-Teil: JAVA_HOME + ANDROID_HOME gesetzt
 // (siehe ROADMAP B1) und `android/keystore.properties` für die Signierung —
@@ -27,6 +28,7 @@ import {
   readdirSync,
   readFileSync,
   statSync,
+  writeFileSync,
 } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -88,12 +90,61 @@ const mb = (path) => `${(statSync(path).size / 1024 / 1024).toFixed(1)} MB`
 
 // ---- Vorprüfungen ----------------------------------------------------------
 
+const GRADLE_FILE = join(ANDROID, 'app', 'build.gradle')
+
 /** Versionsangaben aus build.gradle — landen im Dateinamen der Artefakte. */
 function androidVersion() {
-  const gradle = readFileSync(join(ANDROID, 'app', 'build.gradle'), 'utf8')
+  const gradle = readFileSync(GRADLE_FILE, 'utf8')
   const code = gradle.match(/versionCode\s+(\d+)/)?.[1] ?? '0'
   const name = gradle.match(/versionName\s+"([^"]+)"/)?.[1] ?? '0.0'
   return { code, name }
+}
+
+/**
+ * versionCode vor jedem Release-Build hochzählen (DESIGN-PLAYSTORE.md).
+ *
+ * Play nimmt ein .aab nur mit HÖHEREM versionCode an als das zuletzt
+ * hochgeladene. Eine Zahl, die man von Hand pflegen muss, vergisst man genau
+ * einmal — und merkt es erst am abgelehnten Upload. Ein zu hoher Wert kostet
+ * dagegen nichts, Play verlangt nur Monotonie, keine Lückenlosigkeit.
+ *
+ * Der versionName („1.0") bleibt bewusst manuell: den soll eine
+ * Release-Entscheidung setzen, kein Build.
+ */
+function bumpVersionCode() {
+  const gradle = readFileSync(GRADLE_FILE, 'utf8')
+  const match = gradle.match(/versionCode\s+(\d+)/)
+  if (!match) {
+    warn('versionCode in app/build.gradle nicht gefunden — nicht hochgezählt.')
+    return
+  }
+  const next = Number(match[1]) + 1
+  writeFileSync(GRADLE_FILE, gradle.replace(match[0], `versionCode ${next}`))
+  info(`versionCode ${match[1]} → ${next}  (--no-bump lässt ihn stehen)`)
+}
+
+/**
+ * Die Rechtstexte in public/ tragen Platzhalter für den Verantwortlichen, die
+ * kein Skript füllen kann. Eine Datenschutzerklärung mit „TODO" darin ist
+ * schlimmer als gar keine (und ihre URL steht im Play-Store-Eintrag) — beim
+ * Upload bricht der Lauf deshalb ab. Bei einem Trockenlauf reicht die Warnung,
+ * sonst könnte man nicht mal mehr eine Test-APK bauen.
+ */
+function checkLegalPlaceholders(hard) {
+  const pages = ['datenschutz/index.html', 'konto-loeschen/index.html']
+  const unfilled = pages.filter((p) => {
+    const file = join(ROOT, 'dist', p)
+    return existsSync(file) && readFileSync(file, 'utf8').includes('TODO_ANBIETER')
+  })
+  if (unfilled.length === 0) return
+
+  const what = `Platzhalter in den Rechtstexten: ${unfilled.join(', ')}`
+  const how =
+    'Anbieterangaben in frontend/public/ eintragen (TODO_ANBIETER_NAME,\n' +
+    '      TODO_ANBIETER_ANSCHRIFT, TODO_ANBIETER_EMAIL) — siehe DESIGN-PLAYSTORE.md.'
+  if (hard) fail(`${what}\n    ${how}`)
+  warn(what)
+  warn(how)
 }
 
 function checkAndroidToolchain() {
@@ -131,6 +182,8 @@ function deployWeb() {
 }
 
 function buildAndroid() {
+  if (!has('--no-bump')) bumpVersionCode()
+
   // Kopiert dist/ nach android/app/src/main/assets/public + aktualisiert Plugins.
   run('npx', ['cap', 'sync', 'android'])
 
@@ -214,6 +267,7 @@ if (doWeb) {
   console.log('\n      Web-Build für die App (dist/ ist die Capacitor-Quelle)')
 }
 buildWeb()
+checkLegalPlaceholders(doUpload)
 
 if (doUpload) {
   step(++n, total, 'Deploy → Cloudflare Pages')

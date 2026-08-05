@@ -99,6 +99,8 @@ cp frontend/.env.example frontend/.env.local
 
 **Spielen geht immer** — beim ersten Start wird unsichtbar eine anonyme Supabase-Session mit Retro-Namen (z. B. `PIXEL_FOX_42`) erzeugt, die den Lernfortschritt geräteübergreifend sichert. **Globale Bestenlisten** (eintragen *und* einsehen) erfordern einen registrierten Account: im Profil E-Mail + Passwort hinterlegen, die User-ID bleibt dieselbe und aller Fortschritt wandert mit. Das Gate ist serverseitig per Row Level Security erzwungen (Views und Insert-Policies prüfen den `is_anonymous`-JWT-Claim), nicht nur in der UI.
 
+**Konto löschen** geht jederzeit selbst (Profil → ⚠ Konto löschen): die RPC `delete_own_account()` löscht die Zeile in `auth.users`, alles Weitere fällt per `on delete cascade`. Rechtstexte: [Datenschutzerklärung](frontend/public/datenschutz/index.html) · [Lösch-Anleitung](frontend/public/konto-loeschen/index.html) — beide werden unter `/datenschutz/` bzw. `/konto-loeschen/` ausgeliefert.
+
 ## Scoring (Kurzfassung — Arcade-Regelwerk)
 
 - **Zeitbudget:** 60 s pro Runde (Cup-Legs 30 s); die Uhr läuft nur, während eine Frage aktiv ist. Jede Antwort kostet mindestens 0,5 s (Anti-Spam).
@@ -117,6 +119,7 @@ Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementie
 - Weltkarten-Topojson: [world-atlas](https://github.com/topojson/world-atlas) `countries-50m` — via `frontend/scripts/build-outline-atlas.mjs`
 - Kartentiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)-Mitwirkende, © [CARTO](https://carto.com/attributions)
 - Städte- und Landmark-Datensätze: eigene Kuratierung
+- Fotos der Sehenswürdigkeiten: Wikimedia Commons / Wikipedia — Urheber und Lizenz je Foto in [docs/IMAGE_CREDITS.md](docs/IMAGE_CREDITS.md) und in der App unter **Profil → Bildnachweise** (`/credits`)
 
 ## Roadmap
 
@@ -131,13 +134,14 @@ Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementie
 - [ ] Phase B: Android-App mit Capacitor (Toolchain steht, Gerätetest offen)
 - [ ] Phase C: Polish (Code-Splitting, PWA, Haptics — Sounds ✅)
 - [ ] Phase D: Anti-Cheat Stufe 2 (server-autoritatives Scoring; Stufe 1 ✅)
+- [ ] Phase K: Google Play Store ([DESIGN-PLAYSTORE.md](DESIGN-PLAYSTORE.md)) — Code-Teil fertig (Konto-Löschung, Datenschutzseite, `versionCode`-Automatik); Developer-Konto und Store-Formulare offen
 
 Detaillierter Plan zum Abhaken: **[ROADMAP.md](ROADMAP.md)** · Stand & Testprotokolle: [STATUS.md](STATUS.md)
 
 ## Weiterführende Doku
 
 - 🛠️ **[Developer-Doku](docs/DEVELOPMENT.md)** — der komplette Stack erklärt: Architekturprinzipien, Quiz-Engine, Delta-Sync, Supabase-Schema & Sicherheitsmodell, Design-System, Erweiterungs-Kochbuch
-- 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md) · [Handy-Performance](DESIGN-PERF-MOBILE.md)
+- 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md) · [Handy-Performance](DESIGN-PERF-MOBILE.md) · [Play-Store-Reife](DESIGN-PLAYSTORE.md)
 - 📋 [Architekturplan](docs/PLAN.md) — die ursprüngliche Planung (Tech-Entscheidungen, Datenmodell, Phasen)
 - ☁️ [Backend-Setup](supabase/README.md) — Migrations anwenden, Dashboard-Einstellungen
 

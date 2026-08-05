@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-07-27
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-08-03
 
 ## Gesamtfortschritt
 
@@ -25,6 +25,7 @@
 | B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Setup fertig; Feedback-Runde 1 umgesetzt: [DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md); Geräte-Bestätigung offen) |
 | C | Polish (Sounds ✅, Handy-Performance ✅ [DESIGN-PERF-MOBILE.md](DESIGN-PERF-MOBILE.md); Code-Splitting/PWA/Haptics offen) | 🔄 |
 | D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |
+| K | Play-Store-Reife ([DESIGN-PLAYSTORE.md](DESIGN-PLAYSTORE.md)) | 🔄 Technisch fertig: Konto-Löschung (0017 **live + E2E bestätigt**), Rechtstexte live, `versionCode`-Automatik, Backup-Regeln, Feature-Grafik, Bildnachweise. Listing-Material liegt bereit: Texte in [docs/STORE-LISTING.md](docs/STORE-LISTING.md), 7 Telefon-Screenshots in `frontend/assets/store-screenshots/` (Bestenliste + Pokalregal brauchen eine Anmeldung im Emulator). **Offen sind nur noch Play-Console-Schritte:** App anlegen + App Signing, Data Safety, Altersfreigabe, Listing, Closed Testing |
 
 **Training seit R3 (2026-07-15):** eigenständig ohne Arcade — Setup-Screen mit
 Kategorien-Filter und Länge (Endlos/10/25), ohne Zeitdruck, adaptiver Sampler
@@ -41,6 +42,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | `data/countries.json` (schlank) | ✅ | 245 Länder (194 UN), 84 KB, via `scripts/transform-countries.mjs` |
 | `data/cities.json` | ✅ | 141 Städte, alle Kontinente, Population + isCapital |
 | `data/landmarks.json` | ✅ | 129 Einträge (Bauwerke, Monumente, Naturwunder, bekannte Plätze), Kategorie + Difficulty 1–3 + Foto je Eintrag, generiert via `scripts/fetch-landmark-images.mjs` |
+| `data/landmark-credits.json` | ✅ | Urheber + Lizenz je Foto (38 KB, eigener Chunk — nur der Nachweis-Screen lädt ihn), aus demselben Skript-Lauf |
 
 ### 🧠 Quiz-Engine (`src/features/quiz-engine/`, pure TS)
 | Modul | Status | Notiz |
@@ -74,7 +76,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | Landmark-Pin | ✅ | steilerer Falloff (R=90), zeigt Foto der Sehenswürdigkeit/des Ortes |
 | Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte je Disziplin einsehbar in „Meine Rekorde" (Hover) und globaler Cup-Bestenliste (Klick, live); Reihenfolge-Fix (Migration 0013) noch ausstehend |
 | Training (adaptiv, eigenständig) | ✅ | Setup: Kategorien + Endlos/10/25, ohne Zeitdruck, zählt nicht in Bestenliste |
-| Bestenliste | ✅ | Lokal „Meine Rekorde" (Allzeit-Top-10 je Kategorie) · Global/Cups/Level mit Gruppen-Umschalter und Avataren; Zeitfilter sind **Kalenderperioden** (Woche Mo–So / Monat / Jahr, Europe/Berlin — wie die Pokale) und mit ◀/▶ blätterbar ([DESIGN-LEADERBOARD-PERIODS.md](DESIGN-LEADERBOARD-PERIODS.md)); Migration 0016 live seit 2026-07-22 |
+| Bestenliste | ✅ | **Geo Cup ist der Hauptpunkt** (großer Button oben; für Accounts vorausgewählt, Gäste starten weiter bei „Meine Rekorde"), darunter als Unterpunkte Level / Global / „Meine Rekorde" (Allzeit-Top-10 je Kategorie, lokal) — alle drei mit Gruppen-Umschalter und Avataren; Zeitfilter sind **Kalenderperioden** (Woche Mo–So / Monat / Jahr, Europe/Berlin — wie die Pokale) und mit ◀/▶ blätterbar ([DESIGN-LEADERBOARD-PERIODS.md](DESIGN-LEADERBOARD-PERIODS.md)); Migration 0016 live seit 2026-07-22 |
 | Avatare & Spielerkarte | ✅ | 21 Pixel-Avatare, Picker, Karte für jede angeklickte Bestenlisten-Zeile (Migrationen 0010–0012 live) ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) |
 | Erfolge (Abzeichen/Pokale/Level) | ✅ | `/achievements`, Unlock-Panel am Rundenende, Level-Chip im Header |
 
@@ -104,7 +106,11 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 | System-Back-Button → Menü statt App-Exit | ✅ | `@capacitor/app`-Listener in `App.tsx` (Home beendet weiter); Geräte-Test offen ([DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md)) |
 | Mobile-Feedback-Runde 1 (Login-Sync, Choice-Skalierung, Pin-Overlay) | ✅ | Login lädt jetzt Level/XP/Avatar sofort (`applyAuthSession()`), Choice-Modi passen auf 360×640 ohne Scrollen, Pin-Karte ohne Zoom-Buttons + einklappbare Attribution — wirkt auch im Web |
 | Emulator-Test (AVD `geoquiz_pixel7`) | 🔄 | Flaggen + Profil + Online-Login OK; Karten-Modi (Pin-Präzision) offen |
-| On-Device-Test (Touch auf SVG-Karten) | ⬜ | |
+| On-Device-Test (Touch auf SVG-Karten) | ✅ | vom Nutzer durchgeführt (2026-08-03) |
+| Vollbild (Immersive Mode) | ✅ | Systemleisten aus, Inhalt bis in die Kamera-Aussparung, Tastatur-Inset selbst angewendet ([DESIGN-MOBILE-POLISH.md §5](DESIGN-MOBILE-POLISH.md)) |
+| `versionCode` je Release automatisch | ✅ | `release.mjs` zählt vor jedem Android-Release hoch (`--no-bump` schaltet ab) — Play nimmt nur höhere Werte an |
+| Auth-Token nicht im Google-Auto-Backup | ✅ | `backup_rules.xml` + `data_extraction_rules.xml` schließen `CapacitorStorage.xml` aus |
+| Feature-Grafik 1024×500 fürs Store-Listing | ✅ | `assets/feature-graphic.png`, prozedural aus `generate-app-assets.mjs` |
 
 ## Verifikation (Stand 2026-07-10)
 - ✅ `npm run test` — 32 Tests grün (Scoring-Beispiele aus dem Plan, Distanztabelle, Sampler-Statistik, Daten-Integrität)
@@ -126,6 +132,78 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
   reproduzierbar zu testen ([DESIGN-DEV-ROUND.md](DESIGN-DEV-ROUND.md)). Route
   + Menü-Link hängen an `import.meta.env.DEV`, im Production-Bundle nicht
   enthalten (Lazy-Import).
+
+## Bildnachweise der Landmark-Fotos (2026-08-03)
+Letzte offene Rechtsposition vor der Veröffentlichung: CC-BY(-SA) verlangt
+Urheber **und** Lizenz, `docs/IMAGE_CREDITS.md` nannte bisher nur den Artikel.
+- 📸 `fetch-landmark-images.mjs` zieht beides über die `extmetadata` der
+  Wikipedia-/Commons-API nach. Vier alte Uploads ohne `Artist`-Feld bekommen
+  den **Erst-Uploader** aus der Versionshistorie — „unbekannt" wäre bei CC-BY
+  keine zulässige Namensnennung. **129/129 mit benanntem Urheber.**
+- ✅ Beim Lauf hat sich **keine einzige Bilddatei geändert** — die Nachweise
+  beschreiben nachweislich genau die ausgelieferten Fotos.
+- 🧩 Ablage in einer eigenen `landmark-credits.json` (eigener Chunk, 9,2 KB
+  gzip, per `import()`), damit die 33 KB nicht im Startbundle landen.
+- 🖥️ Neuer Screen `/credits` (lazy) mit allen Foto-Nachweisen plus Länderdaten,
+  Flaggen, Umriss-Topojson und Kartenkacheln; verlinkt im Profil neben der
+  Datenschutzerklärung.
+
+## Vollbild auf dem Handy (2026-08-03)
+App-Feedback: „vom Handy werden die obere und untere Zeile angezeigt, deswegen
+ist die App nicht im Vollbild." Fünf aufeinander aufbauende Schritte, Herleitung
+in [DESIGN-MOBILE-POLISH.md §5](DESIGN-MOBILE-POLISH.md):
+Systemleisten ausblenden → Kamera-Aussparung freigeben → WebView bis unter die
+Aussparung ziehen → deren Höhe nativ als CSS-Variable durchreichen (die
+Android-WebView meldet `env(safe-area-inset-top)` als 0) → das Tastatur-Inset
+selbst anwenden, weil `setDecorFitsSystemWindows(false)` das automatische
+Verkleinern abschaltet.
+- ⚠️ Dabei per A/B gegen die Vorgänger-APK eine **Regression gefunden und
+  behoben**: das fokussierte Passwortfeld lag zwischenzeitlich unter der
+  Tastatur.
+- Web bleibt unverändert (`#root`-Padding 24/48 px, auf Handybreite 12/24 px).
+
+## Store-Listing: Texte + Screenshots (2026-08-05)
+Alles Listing-Material liegt versioniert im Repo statt nur in einem
+Console-Formular: [docs/STORE-LISTING.md](docs/STORE-LISTING.md).
+- ✍️ **Texte**: Titel 14/30, Kurzbeschreibung 75/80 (plus 3 Alternativen),
+  Vollbeschreibung 2458/4000 Zeichen — Zeichenzahlen gezählt, nicht geschätzt.
+  Dazu die Antworten fürs Data-Safety-Formular (deckungsgleich mit der
+  Datenschutzerklärung) und den IARC-Fragebogen.
+- 📸 **7 Telefon-Screenshots** (1080×2400) in `frontend/assets/store-screenshots/`,
+  aufgenommen aus einer eigens gebauten Release-APK — die letzte vom 04.08.
+  war **älter als der Cup-Umbau der Bestenliste** und hätte einen überholten
+  Screen gezeigt.
+- ⚠️ **Zwei Motive bleiben offen**: globale Bestenliste und Pokalregal sind für
+  Gäste serverseitig gesperrt, sie brauchen eine Anmeldung im Emulator durch
+  den Nutzer. Play verlangt mindestens 2 Screenshots — die Pflicht ist erfüllt.
+- 🐛 Nebenbefund, noch am selben Tag behoben: `lm_alhambra.jpg` war ein
+  **Grundriss** von 1889, kein Foto (Wikipedia-`pageimage` der Alhambra ist
+  eine Planzeichnung). Ersetzt per `MANUAL_OVERRIDES` durch „Alhambra from
+  Generalife" (Martinvl, CC BY-SA 4.0); beim erneuten Skriptlauf hat sich **nur
+  diese eine Datei** geändert. Scan über alle 129 Nachweise fand keinen zweiten
+  Fall. Tests 138/138.
+
+## Play-Store-Reife: Code-Teil (2026-08-03)
+Details und Begründungen in [DESIGN-PLAYSTORE.md](DESIGN-PLAYSTORE.md), Abhak-Plan
+in [ROADMAP Phase K](ROADMAP.md).
+- 🔐 **Konto-Löschung** (Play-Pflicht seit 2023) — seit 2026-08-04 auf der
+  Live-DB und E2E bestätigt (Wegwerf-Gastkonto: Profil angelegt → gelöscht →
+  `user_not_found`, Profil per Cascade weg, 6/6). Migration `0017` mit
+  `delete_own_account()` — parameterlos, arbeitet nur auf `auth.uid()`; alle 12
+  Nutzertabellen hängen per `on delete cascade` an `auth.users`, eine
+  `delete`-Anweisung räumt alles ab. In der App unter **Profil → ⚠ Konto
+  löschen** mit Zwei-Stufen-Bestätigung; Reihenfolge Server → lokal, damit ein
+  Serverfehler nicht den lokalen Fortschritt kostet.
+- 📄 **Datenschutzerklärung** (`/datenschutz/`) und **Lösch-Anleitung**
+  (`/konto-loeschen/`) als statisches HTML — ohne App und ohne JS erreichbar,
+  gegen die echte Cloudflare-Pages-Laufzeit geprüft (200 mit und ohne
+  Schrägstrich). Verlinkt im Profil.
+- 🔢 **`versionCode`** wird vor jedem Android-Release automatisch hochgezählt.
+- 🛡️ **Auth-Token** ist aus Googles Auto-Backup ausgenommen.
+- ✅ **Anbieterangaben eingetragen** (2026-08-04), Kontakt `geoquizsupport@gmail.com`;
+  beide Seiten sind live und auf `noindex` gesetzt — erreichbar, wie Play es
+  verlangt, aber die Privatanschrift landet nicht in Suchmaschinen. Die
+  Platzhalter-Sperre in `release.mjs` bleibt als Netz für künftige Textänderungen.
 
 ## Umriss-Modus: schärfer & verortet (2026-07-30)
 App-Feedback (2026-07-30): „Umrisse ziemlich ungenau … man erkennt kaum das

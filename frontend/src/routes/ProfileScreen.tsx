@@ -1,7 +1,9 @@
 import { useEffect, useState, type CSSProperties } from 'react'
+import { Link } from 'react-router-dom'
 import {
   consumePendingOAuthMessage,
   continueWithProvider,
+  deleteOwnAccount,
   ensureSession,
   OAUTH_PROVIDER_LABELS,
   signInWithEmail,
@@ -20,10 +22,20 @@ import {
 } from '../api/groupApi'
 import { isOnlineEnabled } from '../api/supabaseClient'
 import { applyAuthSession } from '../features/auth/applySession'
+import { DEFAULT_AVATAR_ID } from '../features/avatars/avatarCatalog'
+import { useAvatarStore } from '../state/avatarStore'
+import { useProgressStore } from '../state/progressStore'
 import { useUserStore } from '../state/userStore'
 import { PlayerCard } from '../components/PlayerCard'
 import { AvatarPicker } from '../components/AvatarPicker'
 import { TrophyShelfEditor } from '../components/TrophyShelf'
+
+/**
+ * Absolut, nicht relativ: in der Android-App ist der Origin `https://localhost`
+ * (Capacitor-WebView), ein „/datenschutz/" liefe dort ins Leere. Die Seiten
+ * liegen statisch in `public/` und werden von Cloudflare Pages ausgeliefert.
+ */
+const PRIVACY_URL = 'https://geo-quiz-a6s.pages.dev/datenschutz/'
 
 const inputStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
@@ -44,7 +56,29 @@ export function ProfileScreen() {
       <TrophyShelfEditor />
       <AvatarPicker />
       <AccountSection />
+      <LegalFooter />
     </div>
+  )
+}
+
+/**
+ * Datenschutz-Link — Pflichtangabe für den Play-Store-Eintrag und ohnehin die
+ * Stelle, an der Leute danach suchen. Bewusst außerhalb der AccountSection,
+ * damit er auch im Offline-Modus da ist. `target="_blank"` öffnet in der
+ * Android-App den System-Browser (Capacitor lädt externe URLs nicht in die
+ * WebView), im Web einen neuen Tab.
+ */
+function LegalFooter() {
+  return (
+    <p className="dim center" style={{ fontSize: 17, margin: 0 }}>
+      <a href={PRIVACY_URL} target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)' }}>
+        Datenschutzerklärung
+      </a>
+      {' · '}
+      <Link to="/credits" style={{ color: 'var(--cyan)' }}>
+        Bildnachweise
+      </Link>
+    </p>
   )
 }
 
@@ -92,7 +126,90 @@ function AccountSection() {
         Bestenlisten, kannst Freundesgruppen erstellen und dich auf jedem
         Gerät anmelden ({displayName ?? 'dein Name'} bleibt dabei erhalten).
       </p>
+
+      <DangerZone />
     </>
+  )
+}
+
+/**
+ * Konto löschen (DESIGN-PLAYSTORE.md) — Play verlangt den Weg in der App.
+ * Auch für Gäste sichtbar: an einer anonymen Sitzung hängen serverseitig
+ * Profil und Lernfortschritt.
+ *
+ * Reihenfolge ist wichtig: erst der Server, dann lokal. Bei einem Serverfehler
+ * bleibt lokal alles stehen — sonst wäre der Fortschritt hier weg und dort
+ * noch da. Danach sofort eine frische anonyme Sitzung, sonst stünde die App
+ * ohne Identität da und die nächste Runde liefe ins Leere.
+ */
+function DangerZone() {
+  const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+
+  const remove = async () => {
+    setBusy(true)
+    setMessage(null)
+    const result = await deleteOwnAccount()
+    if (!result.ok) {
+      setBusy(false)
+      setConfirming(false)
+      setMessage(result.message)
+      return
+    }
+
+    useProgressStore.getState().resetProgress()
+    // setState statt setAvatar(): setAvatar würde den Default gleich wieder
+    // ans Profil des frischen Gastkontos schreiben.
+    useAvatarStore.setState({ avatarId: DEFAULT_AVATAR_ID })
+    await signOutUser()
+    const auth = await ensureSession()
+    await applyAuthSession(auth)
+
+    setBusy(false)
+    setConfirming(false)
+    setMessage(result.message)
+  }
+
+  return (
+    <div className="pixel-panel stack" style={{ padding: 20 }}>
+      <h3 className="glow-red">⚠ Konto löschen</h3>
+      <p className="dim" style={{ margin: 0, fontSize: 19, lineHeight: 1.3 }}>
+        Löscht dein Konto endgültig — mit allem, was daran hängt: Spielername,
+        Avatar, Lernfortschritt, Bestenlisten-Einträge, Pokale, Abzeichen und
+        deine Freundesgruppen. Das lässt sich nicht rückgängig machen, und wir
+        können nichts davon wiederherstellen.
+      </p>
+
+      {confirming ? (
+        <div className="row" style={{ flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="pixel-btn pixel-btn--danger"
+            disabled={busy}
+            onClick={remove}
+          >
+            {busy ? '…' : 'Ja, alles löschen'}
+          </button>
+          <button
+            type="button"
+            className="pixel-btn"
+            disabled={busy}
+            onClick={() => setConfirming(false)}
+          >
+            Abbrechen
+          </button>
+        </div>
+      ) : (
+        <div>
+          <button type="button" className="pixel-btn" onClick={() => setConfirming(true)}>
+            Konto löschen
+          </button>
+        </div>
+      )}
+
+      {message && <p className="glow-yellow" style={{ margin: 0 }}>{message}</p>}
+    </div>
   )
 }
 

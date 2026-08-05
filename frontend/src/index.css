@@ -301,6 +301,23 @@ a { color: var(--cyan); }
 .glow-cyan { color: var(--cyan); text-shadow: 0 0 8px #29adff88, 0 0 24px #29adff33; }
 .glow-yellow { color: var(--yellow); text-shadow: 0 0 8px #ffec2788, 0 0 24px #ffec2733; }
 .glow-pink { color: var(--pink); text-shadow: 0 0 8px #ff77a888, 0 0 24px #ff77a833; }
+.glow-red { color: var(--red); text-shadow: 0 0 8px #ff004d88, 0 0 24px #ff004d33; }
+
+/* --- Bildnachweise (ROADMAP K15) --- */
+.credit-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.credit-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--panel-light);
+}
+
+.credit-list li:last-child { border-bottom: none; }
 
 /* --- layout --- */
 html {
@@ -312,7 +329,13 @@ html {
   z-index: 1;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  /* Der Hintergrund (body + Sternenfeld) läuft in der Android-App bis unter
+     die Kamera-Aussparung — der Inhalt hält davon Abstand. `--android-inset-top`
+     setzt MainActivity.java, weil die Android-WebView `env(safe-area-inset-top)`
+     als 0 meldet; env() bleibt als Fallback für Web/iOS-PWA stehen. Ohne
+     Aussparung sind beide 0, dann ändert sich nichts. */
+  padding: calc(24px + var(--android-inset-top, env(safe-area-inset-top, 0px))) 16px
+    calc(48px + env(safe-area-inset-bottom, 0px));
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -344,6 +367,30 @@ html {
   .tab-row--three > .pixel-btn:last-child {
     grid-column: 1 / -1;
   }
+}
+
+/* Bestenliste: Der Geo Cup ist der Hauptpunkt, die anderen Listen hängen als
+   kleinere Unterpunkte darunter. */
+.tab-hero {
+  width: 100%;
+  font-size: 14px;
+  padding: 18px 20px;
+  letter-spacing: 1px;
+}
+
+.tab-hero--active {
+  background: var(--yellow);
+  color: var(--bg-deep);
+}
+
+.tab-hero--active:hover:not(:disabled) {
+  background: #fff45c;
+  color: var(--bg-deep);
+}
+
+.tab-row--sub > .pixel-btn {
+  font-size: 10px;
+  padding: 10px 12px;
 }
 
 /* --- timer bar --- */
@@ -457,7 +504,13 @@ html {
    gestrafft — Ziel: 360×640 komplett ohne Scrollen. */
 @media (max-width: 600px) {
   .app-header { margin-bottom: 14px; }
-  #root { padding-block: 12px 24px; }
+  /* Kompaktere Abstände als im Basis-Regelwerk, aber die Aussparung muss auch
+     hier respektiert werden — sonst läge die Kopfzeile unter der Kamera
+     (genau der Fall auf jedem Handy, denn diese Query greift dort immer). */
+  #root {
+    padding-block: calc(12px + var(--android-inset-top, env(safe-area-inset-top, 0px)))
+      calc(24px + env(safe-area-inset-bottom, 0px));
+  }
 
   .quiz-screen--choice { gap: 8px; }
   .quiz-screen--choice .stack { gap: 8px; }

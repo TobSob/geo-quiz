@@ -18,6 +18,7 @@ import {
   toIsoDate,
   type LeaderboardPeriod,
 } from '../features/leaderboard/periods'
+import { startTab, type LeaderboardTab } from '../features/leaderboard/startTab'
 import { formatTrophyPeriod } from '../features/gamification/badgeCatalog'
 import { isOnlineEnabled } from '../api/supabaseClient'
 import {
@@ -43,7 +44,7 @@ const MODE_LABEL: Record<string, string> = {
 
 const GAME_MODES = Object.keys(MODE_TITLES) as GameMode[]
 
-type Tab = 'local' | 'global' | 'cups' | 'level'
+type Tab = LeaderboardTab
 
 function formatDate(ts: number | string): string {
   return new Date(ts).toLocaleDateString('de-DE', {
@@ -221,44 +222,52 @@ function CupLegBreakdownRow({ cupRunId, colSpan }: { cupRunId: number; colSpan: 
 }
 
 export function ScoresScreen() {
-  const [tab, setTab] = useState<Tab>('local')
+  const status = useUserStore((s) => s.status)
+  const isAnonymous = useUserStore((s) => s.isAnonymous)
+  // null = noch keine eigene Wahl getroffen, dann entscheidet der Account
+  // (siehe `startTab` — Cup als Hauptpunkt, Gäste bei „Meine Rekorde").
+  const [picked, setTab] = useState<Tab | null>(null)
+  const tab = picked ?? startTab(isOnlineEnabled, status, isAnonymous)
 
   return (
     <div className="stack" style={{ gap: 24 }}>
       <h2 className="glow-yellow center">🥇 Bestenliste</h2>
 
-      <div className="tab-row">
+      <div className="stack" style={{ gap: 10 }}>
         <button
           type="button"
-          className={`pixel-btn${tab === 'local' ? ' pixel-btn--cyan' : ''}`}
-          onClick={() => setTab('local')}
-        >
-          Meine Rekorde
-        </button>
-        <button
-          type="button"
-          className={`pixel-btn${tab === 'global' ? ' pixel-btn--cyan' : ''}`}
-          onClick={() => setTab('global')}
-          disabled={!isOnlineEnabled}
-        >
-          Global
-        </button>
-        <button
-          type="button"
-          className={`pixel-btn${tab === 'cups' ? ' pixel-btn--cyan' : ''}`}
+          className={`pixel-btn tab-hero${tab === 'cups' ? ' tab-hero--active' : ''}`}
           onClick={() => setTab('cups')}
           disabled={!isOnlineEnabled}
         >
-          Cups
+          🏆 Geo Cup
         </button>
-        <button
-          type="button"
-          className={`pixel-btn${tab === 'level' ? ' pixel-btn--cyan' : ''}`}
-          onClick={() => setTab('level')}
-          disabled={!isOnlineEnabled}
-        >
-          Level
-        </button>
+
+        <div className="tab-row tab-row--three tab-row--sub">
+          <button
+            type="button"
+            className={`pixel-btn${tab === 'level' ? ' pixel-btn--cyan' : ''}`}
+            onClick={() => setTab('level')}
+            disabled={!isOnlineEnabled}
+          >
+            Level
+          </button>
+          <button
+            type="button"
+            className={`pixel-btn${tab === 'global' ? ' pixel-btn--cyan' : ''}`}
+            onClick={() => setTab('global')}
+            disabled={!isOnlineEnabled}
+          >
+            Global
+          </button>
+          <button
+            type="button"
+            className={`pixel-btn${tab === 'local' ? ' pixel-btn--cyan' : ''}`}
+            onClick={() => setTab('local')}
+          >
+            Meine Rekorde
+          </button>
+        </div>
       </div>
 
       {tab === 'local' && <LocalScores />}

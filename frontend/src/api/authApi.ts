@@ -253,6 +253,31 @@ export async function signOutUser(): Promise<void> {
   await supabase.auth.signOut()
 }
 
+/**
+ * Konto endgültig löschen (DESIGN-PLAYSTORE.md) — Play-Pflicht für jede App
+ * mit Registrierung. Die RPC `delete_own_account` (0017) löscht die Zeile in
+ * auth.users, der Rest fällt per Cascade: Profil, Lernfortschritt, Scores,
+ * Cups, Pokale, Abzeichen, Gruppen.
+ *
+ * Räumt bewusst NICHT die lokalen Speicher auf — das macht der Aufrufer erst
+ * nach `ok: true`. Andersherum stünde bei einem Serverfehler der Fortschritt
+ * lokal gelöscht und serverseitig noch da.
+ */
+export async function deleteOwnAccount(): Promise<AuthActionResult> {
+  if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
+  const { error } = await supabase.rpc('delete_own_account')
+  if (error) {
+    // PGRST202 = Funktion nicht im Schema-Cache, also Migration 0017 noch nicht
+    // eingespielt. Der Code steht in error.code; die message („Could not find
+    // the function … in the schema cache") ist nichts, was man Spielern zeigt.
+    if (error.code === 'PGRST202') {
+      return { ok: false, message: 'Löschen ist auf diesem Server noch nicht freigeschaltet.' }
+    }
+    return { ok: false, message: translateAuthError(error.message) }
+  }
+  return { ok: true, message: 'Konto und alle zugehörigen Daten wurden gelöscht.' }
+}
+
 export async function updateDisplayName(name: string): Promise<boolean> {
   if (!supabase) return false
   const trimmed = name.trim().slice(0, 24)

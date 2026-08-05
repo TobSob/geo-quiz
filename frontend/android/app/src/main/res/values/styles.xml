@@ -13,6 +13,7 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 
 
@@ -21,5 +22,20 @@
              GeoQuiz-Navy statt Weiß); ältere Geräte nutzen das Drawable. -->
         <item name="windowSplashScreenBackground">#070613</item>
         <item name="android:background">@drawable/splash</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
+
+    <!--
+      windowLayoutInDisplayCutoutMode (beide Themes, weil ohne
+      SplashScreen-Plugin das Launch-Theme aktiv bleibt): Ohne das lässt
+      Android das Fenster im Hochformat unterhalb der Kamera-Aussparung
+      beginnen — nach dem Ausblenden der Systemleisten blieb oben ein
+      schwarzer Streifen stehen und die App sah weiter aus wie „fast
+      Vollbild". `shortEdges` (API 27+, auf 24–26 schlicht ignoriert) lässt
+      den Inhalt bis unter die Aussparung laufen; damit dort nichts Lesbares
+      landet, hält `#root` in index.css per env(safe-area-inset-top) Abstand.
+      Bewusst nicht `always`: das gilt auch im Querformat, wo die Aussparung
+      dann mitten in der Kartenfläche säße.
+    -->
+
 </resources>
