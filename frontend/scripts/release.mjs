@@ -131,7 +131,7 @@ function bumpVersionCode() {
  * sonst könnte man nicht mal mehr eine Test-APK bauen.
  */
 function checkLegalPlaceholders(hard) {
-  const pages = ['datenschutz/index.html', 'konto-loeschen/index.html']
+  const pages = ['datenschutz/index.html', 'konto-loeschen/index.html', 'impressum/index.html']
   const unfilled = pages.filter((p) => {
     const file = join(ROOT, 'dist', p)
     return existsSync(file) && readFileSync(file, 'utf8').includes('TODO_ANBIETER')

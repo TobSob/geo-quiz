@@ -119,7 +119,10 @@ Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementie
 - Weltkarten-Topojson: [world-atlas](https://github.com/topojson/world-atlas) `countries-50m` — via `frontend/scripts/build-outline-atlas.mjs`
 - Kartentiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)-Mitwirkende, © [CARTO](https://carto.com/attributions)
 - Städte- und Landmark-Datensätze: eigene Kuratierung
-- Fotos der Sehenswürdigkeiten: Wikimedia Commons / Wikipedia — Urheber und Lizenz je Foto in [docs/IMAGE_CREDITS.md](docs/IMAGE_CREDITS.md) und in der App unter **Profil → Bildnachweise** (`/credits`)
+- Fotos der Sehenswürdigkeiten: Wikimedia Commons / Wikipedia — Urheber und Lizenz je Foto in [docs/IMAGE_CREDITS.md](docs/IMAGE_CREDITS.md) und in der App unter **Profil → Nachweise** (`/credits`)
+- Schriften: Press Start 2P und VT323 (SIL Open Font License 1.1) — als Dateien eingebettet, nichts wird von Google Fonts nachgeladen
+- Bibliotheken: React, Leaflet, react-leaflet (Hippocratic 2.1), d3-geo, topojson-client, Zustand, React Router, supabase-js, Capacitor — Rechteinhaber und Lizenz je Projekt ebenfalls unter `/credits`
+- Anbieterangaben: [Impressum](frontend/public/impressum/index.html) (§ 5 DDG), ausgeliefert unter `/impressum/`
 
 ## Roadmap
 

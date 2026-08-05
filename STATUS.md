@@ -162,6 +162,24 @@ Verkleinern abschaltet.
   Tastatur.
 - Web bleibt unverändert (`#root`-Padding 24/48 px, auf Handybreite 12/24 px).
 
+## Rechts-Review nach dem Release (2026-08-05)
+Prüfung gegen die laufenden Systeme, nicht gegen die Doku. Details in
+[DESIGN-PLAYSTORE.md §7](DESIGN-PLAYSTORE.md).
+- ✅ **Konto-Löschung E2E erneut bestätigt** (Wegwerf-Gastkonto): RPC ohne
+  Sitzung `401/42501`, Profil + Lernfortschritt angelegt, `delete_own_account()`
+  → `204`, Token danach `user_not_found`, Profil und Fortschritt per Cascade
+  weg. 8/8, Testkonto räumt sich selbst weg.
+- ✅ **Nur `INTERNET`** als Berechtigung in der gebauten APK (`aapt`) — deckt
+  sich mit der Datenschutzerklärung.
+- ✅ **Netzwerkziele im Bundle**: nur Supabase und CARTO. Null Treffer für
+  Google Fonts, kein Analytics, kein Werbe-SDK.
+- ✅ **129 Fotos**: alle mit Urheber, Lizenz und Quelle; 113 CC-Fotos alle mit
+  Lizenz-Link; **keine** NC-/ND-Lizenz (die wäre für eine Store-App ein Problem).
+- 🆕 **Nachgezogen**: Schriften (OFL 1.1) und 9 Bibliotheken mit Rechteinhaber
+  und Lizenz auf `/credits`; dabei entdeckt, dass **react-leaflet unter der
+  Hippocratic License 2.1** steht, nicht MIT. Neue Seite `/impressum/` (§ 5 DDG),
+  verlinkt aus Profil und beiden Rechtstexten.
+
 ## Store-Listing: Texte + Screenshots (2026-08-05)
 Alles Listing-Material liegt versioniert im Repo statt nur in einem
 Console-Formular: [docs/STORE-LISTING.md](docs/STORE-LISTING.md).

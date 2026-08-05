@@ -25,6 +25,134 @@ interface LandmarkCredit {
   url: string | null
 }
 
+interface SoftwareCredit {
+  name: string
+  url: string
+  copyright: string
+  license: string
+  licenseUrl: string
+}
+
+const MIT = 'https://opensource.org/license/mit'
+const ISC = 'https://opensource.org/license/isc-license-txt'
+const OFL = 'https://openfontlicense.org/open-font-license-official-text/'
+
+/**
+ * Schriften: liegen als .woff2 im Bundle und in der APK — das ist Weitergabe,
+ * und die OFL 1.1 verlangt dafür Copyright- und Lizenzhinweis. Die Angaben
+ * stammen aus den LICENSE-Dateien der @fontsource-Pakete, nicht aus dem Kopf.
+ */
+const FONTS: SoftwareCredit[] = [
+  {
+    name: 'Press Start 2P',
+    url: 'https://fonts.google.com/specimen/Press+Start+2P',
+    copyright: '© 2012 The Press Start 2P Project Authors',
+    license: 'SIL Open Font License 1.1',
+    licenseUrl: OFL,
+  },
+  {
+    name: 'VT323',
+    url: 'https://fonts.google.com/specimen/VT323',
+    copyright: '© 2011 The VT323 Project Authors',
+    license: 'SIL Open Font License 1.1',
+    licenseUrl: OFL,
+  },
+]
+
+/**
+ * Bibliotheken, die minifiziert im ausgelieferten Bundle stecken. MIT und
+ * BSD verlangen den Hinweis „in all copies"; die Hippocratic-Lizenz von
+ * react-leaflet sagt es in ihrem Notice-Abschnitt sogar ausdrücklich.
+ * Reihenfolge: nach Sichtbarkeit im Spiel, nicht alphabetisch.
+ */
+const LIBRARIES: SoftwareCredit[] = [
+  {
+    name: 'React & React DOM',
+    url: 'https://react.dev',
+    copyright: '© Meta Platforms, Inc. und Beitragende',
+    license: 'MIT',
+    licenseUrl: MIT,
+  },
+  {
+    name: 'Leaflet',
+    url: 'https://leafletjs.com',
+    copyright: '© 2010–2023 Volodymyr Agafonkin',
+    license: 'BSD 2-Clause',
+    licenseUrl: 'https://opensource.org/license/bsd-2-clause',
+  },
+  {
+    name: 'React Leaflet',
+    url: 'https://react-leaflet.js.org',
+    copyright: '© 2020 Paul Le Cam und Beitragende',
+    license: 'Hippocratic License 2.1',
+    licenseUrl: 'https://firstdonoharm.dev/version/2/1/license/',
+  },
+  {
+    name: 'd3-geo',
+    url: 'https://d3js.org/d3-geo',
+    copyright: '© 2010–2024 Mike Bostock',
+    license: 'ISC',
+    licenseUrl: ISC,
+  },
+  {
+    name: 'topojson-client',
+    url: 'https://github.com/topojson/topojson-client',
+    copyright: '© 2012–2019 Michael Bostock',
+    license: 'ISC',
+    licenseUrl: ISC,
+  },
+  {
+    name: 'React Router',
+    url: 'https://reactrouter.com',
+    copyright: '© React Training LLC / Remix Software',
+    license: 'MIT',
+    licenseUrl: MIT,
+  },
+  {
+    name: 'Zustand',
+    url: 'https://github.com/pmndrs/zustand',
+    copyright: '© 2019 Paul Henschel',
+    license: 'MIT',
+    licenseUrl: MIT,
+  },
+  {
+    name: 'supabase-js',
+    url: 'https://github.com/supabase/supabase-js',
+    copyright: '© 2020 Supabase',
+    license: 'MIT',
+    licenseUrl: MIT,
+  },
+  {
+    name: 'Capacitor',
+    url: 'https://capacitorjs.com',
+    copyright: '© 2017–heute Drifty Co.',
+    license: 'MIT',
+    licenseUrl: MIT,
+  },
+]
+
+function SoftwareList({ items }: { items: SoftwareCredit[] }) {
+  return (
+    <ul className="credit-list">
+      {items.map((s) => (
+        <li key={s.name}>
+          <a href={s.url} target="_blank" rel="noreferrer">
+            {s.name}
+          </a>
+          <span className="dim">
+            {' — '}
+            {s.copyright}
+            {' · '}
+            <a href={s.licenseUrl} target="_blank" rel="noreferrer">
+              {s.license}
+            </a>
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export function CreditsScreen() {
   const [credits, setCredits] = useState<LandmarkCredit[] | null>(null)
   const [failed, setFailed] = useState(false)
@@ -122,6 +250,25 @@ export function CreditsScreen() {
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="pixel-panel stack" style={{ padding: 20 }}>
+        <h3 className="glow-yellow">Schriften</h3>
+        <p className="dim" style={{ margin: 0, fontSize: 19, lineHeight: 1.4 }}>
+          Beide Pixel-Schriften sind im Spiel eingebettet und stehen unter der
+          SIL Open Font License 1.1.
+        </p>
+        <SoftwareList items={FONTS} />
+      </div>
+
+      <div className="pixel-panel stack" style={{ padding: 20 }}>
+        <h3 className="glow-yellow">Open-Source-Bibliotheken</h3>
+        <p className="dim" style={{ margin: 0, fontSize: 19, lineHeight: 1.4 }}>
+          Ohne diese Projekte gäbe es das Spiel nicht — sie stecken im
+          ausgelieferten Programm und werden hier mit Rechteinhaber und Lizenz
+          genannt.
+        </p>
+        <SoftwareList items={LIBRARIES} />
       </div>
     </div>
   )

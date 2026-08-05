@@ -197,6 +197,68 @@ lägen sie im Startbundle, so sind sie ein nachgeladener Chunk (9,2 KB gzip).
 Handy 88 px breit, und das Choice-Layout ist auf „360×640 ohne Scrollen"
 getrimmt. Ein Nachweis-Screen ist die für Spiele übliche und akzeptierte Form.
 
+## 7. Lizenz-Nachweise und Impressum (2026-08-05)
+
+Aus einem Rechts-Review nach dem ersten Release. Die Bildnachweise (§ 6) waren
+vollständig, zwei Klassen von Nachweisen fehlten aber ganz, und beim Impressum
+ging es nicht um Inhalt, sondern um Kennzeichnung.
+
+### Schriften — Weitergabe, nicht bloße Nutzung
+
+Press Start 2P und VT323 liegen als `.woff2` **im Bundle und in der APK**. Das
+ist Weitergabe der Font Software, und die SIL Open Font License 1.1 verlangt
+dafür Copyright- und Lizenzhinweis. Dass die Schriften „von Google Fonts"
+stammen, ändert daran nichts — geladen wird nichts von dort (nachgemessen: null
+Treffer auf `fonts.googleapis` im Build), ausgeliefert wird die Datei selbst.
+
+Die Angaben stammen aus den `LICENSE`-Dateien der `@fontsource`-Pakete, nicht
+aus dem Gedächtnis.
+
+### Bibliotheken — und eine Überraschung
+
+React, Leaflet, d3-geo, topojson-client, Zustand, React Router, supabase-js und
+Capacitor stecken minifiziert im ausgelieferten Programm; MIT verlangt den
+Hinweis „in all copies or substantial portions", BSD und ISC analog.
+
+Beim Auslesen der Lizenzfelder fiel auf, dass **`react-leaflet` nicht MIT ist,
+sondern unter der Hippocratic License 2.1 steht** — einer Lizenz mit
+Nutzungsbeschränkungen, die von der OSI nicht als Open Source anerkannt ist.
+Für ein Geografie-Quiz ist ihre Bedingung (keine Nutzung entgegen
+Menschenrechtsnormen) unproblematisch, aber ihr *Notice*-Abschnitt verlangt
+ausdrücklich, dass jeder Empfänger Lizenz und Copyright-Hinweis mitbekommt.
+Damit war Punkt 2 für diese eine Abhängigkeit nicht kosmetisch, sondern eine
+echte Auflage.
+
+Beides landet im vorhandenen Screen `/credits` statt in einer neuen Route: Die
+Seite ist lazy geladen, heißt im Profil jetzt „Nachweise" statt
+„Bildnachweise" und ist die eine Stelle, an der alles zusammensteht. Alle
+Lizenz-URLs wurden vor dem Ausliefern per HTTP geprüft (6× 200) — ein toter
+Link in einem Lizenzhinweis ist kein Lizenzhinweis.
+
+### Impressum — Kennzeichnung, nicht Inhalt
+
+§ 5 DDG verlangt ein Impressum für **geschäftsmäßige** Telemedien. GEOQUIZ
+ARCADE ist kostenlos, werbefrei, ohne Käufe und privat betrieben — als nicht
+geschäftsmäßig vertretbar, aber ein Graubereich, sobald es über einen
+Developer-Account im Store steht. Da Name, Anschrift und E-Mail ohnehin schon
+in der Datenschutzerklärung standen, war der teuerste Teil längst bezahlt; es
+fehlte nur die als Impressum gekennzeichnete, unmittelbar erreichbare Seite.
+
+`public/impressum/index.html` folgt demselben Muster wie die beiden anderen
+Rechtstexte (statisch, ohne JS, eigenes Mini-CSS), ist aus dem Profil und aus
+beiden Rechtsseiten verlinkt und steht wie sie auf `noindex`: verlangt ist
+„leicht erkennbar, unmittelbar erreichbar, ständig verfügbar" — nicht
+„auffindbar über Google", und die Seite nennt eine Privatanschrift.
+
+**Bewusst kein Link auf die EU-Streitschlichtungsplattform (OS/ODR):** Die
+Plattform hat ihren Betrieb im Juli 2025 eingestellt; ein Link darauf wäre
+heute ein toter Verweis, kein Pflichthinweis. Der Satz zur
+Verbraucherschlichtung bleibt, er kostet nichts.
+
+`release.mjs` prüft die neue Seite mit auf `TODO_ANBIETER`-Platzhalter — die
+Liste dort ist fest verdrahtet und hätte die Datei sonst stillschweigend
+ausgelassen.
+
 ## Bewusst NICHT in dieser Runde
 
 - **R8/Minification** (`minifyEnabled false`) — Größenoptimierung, kein

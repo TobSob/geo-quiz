@@ -36,6 +36,7 @@ import { TrophyShelfEditor } from '../components/TrophyShelf'
  * liegen statisch in `public/` und werden von Cloudflare Pages ausgeliefert.
  */
 const PRIVACY_URL = 'https://geo-quiz-a6s.pages.dev/datenschutz/'
+const IMPRINT_URL = 'https://geo-quiz-a6s.pages.dev/impressum/'
 
 const inputStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
@@ -62,21 +63,27 @@ export function ProfileScreen() {
 }
 
 /**
- * Datenschutz-Link — Pflichtangabe für den Play-Store-Eintrag und ohnehin die
- * Stelle, an der Leute danach suchen. Bewusst außerhalb der AccountSection,
- * damit er auch im Offline-Modus da ist. `target="_blank"` öffnet in der
- * Android-App den System-Browser (Capacitor lädt externe URLs nicht in die
- * WebView), im Web einen neuen Tab.
+ * Rechtliche Links — der Datenschutz-Link ist Pflichtangabe für den
+ * Play-Store-Eintrag, das Impressum muss „leicht erkennbar und unmittelbar
+ * erreichbar" sein (§ 5 DDG); beides gehört an die Stelle, an der Leute danach
+ * suchen. Bewusst außerhalb der AccountSection, damit sie auch im
+ * Offline-Modus da sind. `target="_blank"` öffnet in der Android-App den
+ * System-Browser (Capacitor lädt externe URLs nicht in die WebView), im Web
+ * einen neuen Tab.
  */
 function LegalFooter() {
   return (
     <p className="dim center" style={{ fontSize: 17, margin: 0 }}>
+      <a href={IMPRINT_URL} target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)' }}>
+        Impressum
+      </a>
+      {' · '}
       <a href={PRIVACY_URL} target="_blank" rel="noreferrer" style={{ color: 'var(--cyan)' }}>
         Datenschutzerklärung
       </a>
       {' · '}
       <Link to="/credits" style={{ color: 'var(--cyan)' }}>
-        Bildnachweise
+        Nachweise
       </Link>
     </p>
   )
