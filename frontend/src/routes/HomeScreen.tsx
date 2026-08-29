@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { prefetchOutlineAtlas } from '../data/outlineAtlas'
+import { prefetchPinMap } from '../components/MapPicker'
 
 const MODES = [
   {
@@ -44,10 +45,12 @@ const MODES = [
 export function HomeScreen() {
   const navigate = useNavigate()
 
-  // Der Umriss-Atlas ist ein eigener Chunk (~236 KB gzip). Im Menü steht die
-  // Leitung ohnehin still — dann lädt die erste Umriss-Frage nicht mehr nach.
+  // Umriss-Atlas (~236 KB gzip) und Kartenmotor der Pin-Modi liegen in
+  // eigenen Chunks. Im Menü steht die Leitung ohnehin still — dann lädt die
+  // erste Umriss- bzw. Pin-Frage nicht mehr nach.
   useEffect(() => {
     void prefetchOutlineAtlas()
+    void prefetchPinMap()
   }, [])
 
   return (

@@ -61,8 +61,8 @@ const FONTS: SoftwareCredit[] = [
 
 /**
  * Bibliotheken, die minifiziert im ausgelieferten Bundle stecken. MIT und
- * BSD verlangen den Hinweis „in all copies"; die Hippocratic-Lizenz von
- * react-leaflet sagt es in ihrem Notice-Abschnitt sogar ausdrücklich.
+ * BSD verlangen den Hinweis „in all copies" — das gilt auch für MapLibres
+ * 3-Clause-BSD, die den Lizenztext ausdrücklich in Binärform mitverlangt.
  * Reihenfolge: nach Sichtbarkeit im Spiel, nicht alphabetisch.
  */
 const LIBRARIES: SoftwareCredit[] = [
@@ -74,18 +74,11 @@ const LIBRARIES: SoftwareCredit[] = [
     licenseUrl: MIT,
   },
   {
-    name: 'Leaflet',
-    url: 'https://leafletjs.com',
-    copyright: '© 2010–2023 Volodymyr Agafonkin',
-    license: 'BSD 2-Clause',
-    licenseUrl: 'https://opensource.org/license/bsd-2-clause',
-  },
-  {
-    name: 'React Leaflet',
-    url: 'https://react-leaflet.js.org',
-    copyright: '© 2020 Paul Le Cam und Beitragende',
-    license: 'Hippocratic License 2.1',
-    licenseUrl: 'https://firstdonoharm.dev/version/2/1/license/',
+    name: 'MapLibre GL JS',
+    url: 'https://maplibre.org',
+    copyright: '© 2020 MapLibre-Beitragende, © 2010–2020 Mapbox',
+    license: 'BSD 3-Clause',
+    licenseUrl: 'https://opensource.org/license/bsd-3-clause',
   },
   {
     name: 'd3-geo',
@@ -200,14 +193,19 @@ export function CreditsScreen() {
             (Natural Earth, gemeinfrei)
           </li>
           <li>
-            Kartenkacheln: ©{' '}
+            Kartenkacheln:{' '}
+            <a href="https://openfreemap.org" target="_blank" rel="noreferrer">
+              OpenFreeMap
+            </a>
+            , ©{' '}
+            <a href="https://www.openmaptiles.org/" target="_blank" rel="noreferrer">
+              OpenMapTiles
+            </a>
+            , Daten ©{' '}
             <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
               OpenStreetMap
             </a>
-            -Mitwirkende, ©{' '}
-            <a href="https://carto.com/attributions" target="_blank" rel="noreferrer">
-              CARTO
-            </a>
+            -Mitwirkende
           </li>
         </ul>
       </div>

@@ -31,7 +31,7 @@ Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Alle
 ## Tech-Stack
 
 - **Frontend:** React 18 + TypeScript + Vite, Zustand (State), React Router (Hash-Routing, Capacitor-tauglich)
-- **Karten:** [d3-geo](https://d3js.org/d3-geo) + world-atlas-Topojson (Umriss-Modus, SVG direkt gezeichnet) · [Leaflet](https://leafletjs.com/) via react-leaflet (Pin-Modi, Carto-Tiles ohne Labels)
+- **Karten:** [d3-geo](https://d3js.org/d3-geo) + world-atlas-Topojson (Umriss-Modus, SVG direkt gezeichnet) · [MapLibre GL JS](https://maplibre.org) (Pin-Modi, beschriftungsfreie OpenFreeMap-Vektorkacheln)
 - **Design:** 8-Bit-Theme mit [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) + [VT323](https://fonts.google.com/specimen/VT323), CRT-Scanlines, Pixel-Borders — pures CSS, kein UI-Framework
 - **Backend:** [Supabase](https://supabase.com/) (Postgres + Auth + PostgREST) — es gibt **keinen eigenen Server-Code**, das gesamte Backend ist SQL unter [`supabase/migrations/`](supabase/)
 - **Tests:** Vitest (Quiz-Engine ist pures, framework-freies TypeScript)
@@ -117,11 +117,11 @@ Regelwerk mit Begründungen: [DESIGN-ARCADE.md](DESIGN-ARCADE.md) · implementie
 - Länderdaten: [mledoze/countries](https://github.com/mledoze/countries) (ODbL) — transformiert via `frontend/scripts/transform-countries.mjs`
 - Flaggen: [flag-icons](https://github.com/lipis/flag-icons) (MIT)
 - Weltkarten-Topojson: [world-atlas](https://github.com/topojson/world-atlas) `countries-50m` — via `frontend/scripts/build-outline-atlas.mjs`
-- Kartentiles: © [OpenStreetMap](https://www.openstreetmap.org/copyright)-Mitwirkende, © [CARTO](https://carto.com/attributions)
+- Kartenkacheln: [OpenFreeMap](https://openfreemap.org), © [OpenMapTiles](https://www.openmaptiles.org/), Daten © [OpenStreetMap](https://www.openstreetmap.org/copyright)-Mitwirkende — beschriftungsfreier Dark-Style via `frontend/scripts/build-basemap-style.mjs` ([DESIGN-BASEMAP.md](DESIGN-BASEMAP.md))
 - Städte- und Landmark-Datensätze: eigene Kuratierung
 - Fotos der Sehenswürdigkeiten: Wikimedia Commons / Wikipedia — Urheber und Lizenz je Foto in [docs/IMAGE_CREDITS.md](docs/IMAGE_CREDITS.md) und in der App unter **Profil → Nachweise** (`/credits`)
 - Schriften: Press Start 2P und VT323 (SIL Open Font License 1.1) — als Dateien eingebettet, nichts wird von Google Fonts nachgeladen
-- Bibliotheken: React, Leaflet, react-leaflet (Hippocratic 2.1), d3-geo, topojson-client, Zustand, React Router, supabase-js, Capacitor — Rechteinhaber und Lizenz je Projekt ebenfalls unter `/credits`
+- Bibliotheken: React, MapLibre GL JS (BSD 3-Clause), d3-geo, topojson-client, Zustand, React Router, supabase-js, Capacitor — Rechteinhaber und Lizenz je Projekt ebenfalls unter `/credits`
 - Anbieterangaben: [Impressum](frontend/public/impressum/index.html) (§ 5 DDG), ausgeliefert unter `/impressum/`
 
 ## Roadmap
@@ -143,6 +143,7 @@ Detaillierter Plan zum Abhaken: **[ROADMAP.md](ROADMAP.md)** · Stand & Testprot
 
 ## Weiterführende Doku
 
+- ▶️ **[Betrieb & Werkzeuge](docs/RUNNING.md)** — Dev-Server (auch am Handy im WLAN), Produktions-Build lokal ansehen, Tests, APK bauen und aufspielen, Daten-Pipeline, Stolpersteine
 - 🛠️ **[Developer-Doku](docs/DEVELOPMENT.md)** — der komplette Stack erklärt: Architekturprinzipien, Quiz-Engine, Delta-Sync, Supabase-Schema & Sicherheitsmodell, Design-System, Erweiterungs-Kochbuch
 - 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md) · [Handy-Performance](DESIGN-PERF-MOBILE.md) · [Play-Store-Reife](DESIGN-PLAYSTORE.md)
 - 📋 [Architekturplan](docs/PLAN.md) — die ursprüngliche Planung (Tech-Entscheidungen, Datenmodell, Phasen)

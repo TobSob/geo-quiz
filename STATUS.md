@@ -72,7 +72,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | Countries (Hauptstadt→Land) | ✅ | |
 | Capitals (Land→Hauptstadt) | ✅ | |
 | Outline (markiertes Land erkennen) | ✅ | 50m-Geometrie mit sichtbarer Umgebung, direkt per d3-geo gezeichnet, MC-Antworten; Pool 193 Länder |
-| City-Pin | ✅ | Leaflet + Haversine, Feedback mit Ziel-Marker + Distanzlinie |
+| City-Pin | ✅ | MapLibre GL + Haversine, Feedback mit Ziel-Marker + Distanzlinie |
 | Landmark-Pin | ✅ | steilerer Falloff (R=90), zeigt Foto der Sehenswürdigkeit/des Ortes |
 | Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte je Disziplin einsehbar in „Meine Rekorde" (Hover) und globaler Cup-Bestenliste (Klick, live); Reihenfolge-Fix (Migration 0013) noch ausstehend |
 | Training (adaptiv, eigenständig) | ✅ | Setup: Kategorien + Endlos/10/25, ohne Zeitdruck, zählt nicht in Bestenliste |

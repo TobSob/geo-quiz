@@ -1,6 +1,6 @@
 # Developer-Doku — GeoQuiz
 
-Technische Gesamtübersicht: Architektur, Stack, Datenflüsse, Backend-Schema und wie man das Projekt erweitert. Für Setup/Loslegen siehe die [Haupt-README](../README.md), für die Planungshistorie [PLAN.md](PLAN.md), für den aktuellen Stand [STATUS.md](../STATUS.md).
+Technische Gesamtübersicht: Architektur, Stack, Datenflüsse, Backend-Schema und wie man das Projekt erweitert. Wie man das Ganze **startet, testet und baut**, steht in [RUNNING.md](RUNNING.md). Für Setup/Loslegen siehe die [Haupt-README](../README.md), für die Planungshistorie [PLAN.md](PLAN.md), für den aktuellen Stand [STATUS.md](../STATUS.md).
 
 ---
 
@@ -43,8 +43,8 @@ Drei Entscheidungen prägen alles andere:
 | State | Zustand 5 (+ `persist`-Middleware) | Zwei kleine Stores statt Redux-Zeremonie; localStorage-Persistenz ist eine Zeile |
 | Routing | React Router 7, **HashRouter** | Hash-URLs funktionieren identisch auf statischem Hosting und im Capacitor-WebView — keine Server-Rewrites nötig |
 | Umriss-Karte | d3-geo direkt + world-atlas `countries-50m` | 110m war auf Länder-Zoom sichtbar kantig (Niederlande: 16 Stützpunkte). 50m wird als eigener Chunk nachgeladen und nur im sichtbaren Ausschnitt gezeichnet, kostet den First Paint also nichts (DESIGN-OUTLINE-DETAIL.md) |
-| Pin-Karte | Leaflet via react-leaflet 4 | Frei zoombare Rasterkarte für Distanz-Raten |
-| Tiles | Carto `dark_nolabels` | **Ohne Ortsnamen** (sonst verrät die Karte die Antwort) und konform mit Nutzungsrichtlinien — der offizielle OSM-Tileserver ist für gebündelte Apps tabu |
+| Pin-Karte | MapLibre GL JS 6 (ohne React-Wrapper) | Frei zoombare Vektorkarte für Distanz-Raten. Als eigener Chunk hinter `React.lazy` — größte Abhängigkeit der App, gebraucht von einem von acht Modi |
+| Tiles | OpenFreeMap (Vektor), Style lokal generiert | **Ohne Ortsnamen** (sonst verrät die Karte die Antwort), ohne API-Key. Der Style wird zur Bauzeit aus OpenFreeMaps Dark-Style beschriftungsfrei erzeugt und mitgeliefert, damit er sich nicht unter uns ändert (DESIGN-BASEMAP.md). Vorgänger Carto `dark_nolabels` verlangt seit 08/2026 einen Key |
 | Fonts | @fontsource: Press Start 2P (Display) + VT323 (Fließtext) | Selbst gehostet → offlinefähig, kein Google-CDN |
 | Backend | Supabase (Postgres + GoTrue-Auth + PostgREST) | Anonyme Auth eingebaut, RLS statt handgeschriebener Autorisierung, auto-generierte REST-API |
 | Tests | Vitest | Läuft direkt gegen die pure-TS-Engine, kein DOM nötig |
@@ -196,7 +196,7 @@ Wiederverwendung: `QuizView` ist der einzige Quiz-Screen — Einzelmodi, Cup-Leg
 ### Karten-Komponenten
 
 - **`CountryOutline`** (Umriss-Modus): matcht das Ziel-Land über die **numerische ISO-Kennung** (`ccn3`) gegen die Topojson-Geometrie-IDs; Zoom-Heuristik nach Landesfläche (Russland 1.6× … Mikrostaaten 12×), Interaktion deaktiviert.
-- **`MapPicker`** (Pin-Modi): Klick setzt den Pin, „Bestätigen" submittet (GeoGuessr-Muster) — Timeout submittet den zuletzt gesetzten Pin. Marker sind CSS-`divIcon`s (umgeht Leaflets Bundler-Icon-Problem *und* passt zum Pixel-Look). Im Feedback: Ziel-Marker, gestrichelte Linie, `fitBounds` auf beide Punkte.
+- **`MapPicker`** (Pin-Modi): Klick setzt den Pin, „Bestätigen" submittet (GeoGuessr-Muster) — Timeout submittet den zuletzt gesetzten Pin. Marker sind reine DOM-Elemente (spart MapLibres Sprite-/Icon-Maschinerie *und* passt zum Pixel-Look). Im Feedback: Ziel-Marker, gestrichelte Linie, `fitBounds` auf beide Punkte.
 
 ---
 
@@ -264,7 +264,8 @@ Konvention aus dem Plan: **Eine Phase gilt erst als fertig, wenn sie end-to-end 
 - **React 18, nicht 19** — siehe Stack-Tabelle. Nicht „mal eben" upgraden.
 - **`import.meta.env`** nur via `.env.local` (gitignored durch `*.local`); nach Env-Änderungen den Dev-Server neu starten, Vite liest Env nur beim Start.
 - **Zustand-Updater müssen pur sein** (StrictMode double-invoke): kein `setB()` innerhalb eines `setA(updater)`.
-- **Bundle-Warnung (~700 KB JS)** ist bekannt; Code-Splitting (Leaflet/Topojson lazy) steht unter Polish.
+- **MapLibre braucht `config.WORKER_URL`** (in `PinMap.tsx` gesetzt). Sein Worker-Pfad ist zusammengesetzt und für Vite nicht analysierbar — ohne die Zeile fehlt die Worker-Datei in Dev *und* Build, es gibt **keinen Konsolenfehler**, und die Karte ist einfach schwarz. Symptom-Check: `curl` auf die Worker-URL; ein 404 ist die Diagnose (DESIGN-BASEMAP.md §6).
+- **Bundle-Warnung** ist bekannt; Kartenmotor (`PinMap`) und Topojson liegen bereits in eigenen Chunks, der Rest steht unter Polish.
 - **Training-Modus schreibt keine Score-Einträge** — Übung verzerrt keine Bestenliste; Fortschritts-Zähler laufen natürlich trotzdem.
 - Git-Identität ist **repo-lokal** auf den privaten Account gesetzt; Remote läuft über den SSH-Alias `github-private` (siehe `~/.ssh/config`).
 

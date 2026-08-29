@@ -734,11 +734,48 @@ html {
   border-bottom: 1px solid #ffffff14;
 }
 
-/* --- leaflet dark tweaks --- */
-.leaflet-container {
+/* --- MapLibre dark tweaks (DESIGN-BASEMAP.md) --- */
+.pin-map,
+.map-frame .maplibregl-map {
+  width: 100%;
+  height: 100%;
   background: var(--bg-deep);
   font-family: var(--font-body);
-  image-rendering: auto;
+}
+
+/* Platzhalter, solange der Karten-Chunk laedt. */
+.map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0;
+}
+
+/* Zoom-Buttons im 8-Bit-Look statt MapLibres weissen Pillen.
+   Alle Regeln hier sind bewusst mit `.map-frame` vorangestellt: MapLibres
+   eigenes Stylesheet kommt aus dem lazy geladenen PinMap-Chunk und wird
+   deshalb NACH index.css eingehaengt — bei gleicher Spezifitaet gewinnt es,
+   und die Buttons blieben weiss. */
+.map-frame .maplibregl-ctrl-group {
+  background: rgba(7, 6, 19, 0.78);
+  border: var(--px) solid var(--shadow);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.map-frame .maplibregl-ctrl-group button {
+  background: transparent;
+  width: 32px;
+  height: 32px;
+}
+
+.map-frame .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--shadow);
+}
+
+.map-frame .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(1);
 }
 
 .map-frame {
@@ -754,7 +791,7 @@ html {
   position: absolute;
   right: 6px;
   bottom: 6px;
-  /* über den Leaflet-Panes (tiles 200 … popup 700) */
+  /* über dem Karten-Canvas und seinen Controls */
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -786,7 +823,7 @@ html {
   cursor: pointer;
 }
 
-/* Leaflet needs an explicit container height (the outline mode's SVG map
+/* MapLibre needs an explicit container height (the outline mode's SVG map
    sizes itself and must NOT get one). */
 .map-frame--pin {
   height: 448px;
@@ -925,7 +962,7 @@ html {
 
   /* Zoom-Buttons weg: Pinch-Zoom deckt das ab, und unten links verdeckten
      sie Aufgeben-Button/Feedback-Text der Action-Bar (App-Feedback #4). */
-  .quiz-screen--pin .leaflet-control-zoom {
+  .quiz-screen--pin .maplibregl-ctrl-bottom-left {
     display: none;
   }
 
