@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GameMode, Question, SessionSummary } from '../features/quiz-engine/types'
 import type { ArcadeAnswerFeedback, ArcadeSummary } from '../features/quiz-engine/arcadeSession'
+import { arcadeRank } from '../features/quiz-engine/arcadeRank'
 import { useArcadeSession, toSessionSummary } from '../hooks/useArcadeSession'
 import type { PinAnswer } from '../hooks/useQuizSession'
 import type { UnlockPayload } from '../api/gamificationApi'
@@ -453,20 +454,9 @@ export function ArcadeSummaryView({
     sfx.fanfare()
   }, [])
 
-  const accuracy =
-    summary.questionCount > 0
-      ? Math.round((100 * summary.correctCount) / summary.questionCount)
-      : 0
-  const rank =
-    accuracy >= 90 && summary.questionCount >= 5
-      ? 'S'
-      : accuracy >= 75
-        ? 'A'
-        : accuracy >= 60
-          ? 'B'
-          : accuracy >= 40
-            ? 'C'
-            : 'D'
+  // Mit Mindestmenge statt reiner Trefferquote — sonst gäbe es für 3 von 3
+  // richtig und Abwarten ein A (DESIGN-ARCADE.md, Nachtrag C8).
+  const rank = arcadeRank(summary.correctCount, summary.questionCount, summary.mode)
   const rankColor =
     rank === 'S'
       ? 'glow-yellow'

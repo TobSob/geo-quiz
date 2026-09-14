@@ -19,16 +19,25 @@
 
 | Punkt | Begründung |
 |---|---|
-| **Build 8 auf echtem Gerät** | Gerätetest erfolgte auf Build 6; Basemap-Nachjustierung und Passwort-Reset kamen danach. Der MapLibre-Umbau hatte einen Fehler, der nur im echten Build sichtbar war (schwarzer Bildschirm ohne Konsolenfehler) |
 | **Migrationen 0013/0014 live?** | STATUS.md nennt sie als ausstehend, 0017 ist aber nachweislich live. Widersprüchlich — im Dashboard nachsehen und hier eintragen |
 | **2 fehlende Screenshots** | Globale Bestenliste + Pokalregal, beide brauchen eine Anmeldung im Emulator. Kein Blocker (Play verlangt 2, es gibt 7), aber die Bestenliste ist das Verkaufsargument |
 
 ## Erledigt seit dem letzten Stand
 
+- **Rang mit Mindestmenge** (ROADMAP C8, 2026-09-14): 3 von 3 richtig ergab
+  **A**. Jetzt `richtig / max(beantwortet, 15)` in Choice-Modi, 7 in
+  Pin-Modi — Herleitung im Nachtrag von
+  [DESIGN-ARCADE.md](../../DESIGN-ARCADE.md). Code in
+  `quiz-engine/arcadeRank.ts`, Tests 172/172. **Auf dem Gerät bestätigt**
+  (Build 9, `versionCode 9`): 3 von 3 richtig ergibt jetzt **D**.
+
 - **Build 8** (2026-09-14, `versionCode 8`, signiert): enthält Passwort-Reset
   und Mail-Link-Einlösung; im App-Bundle geprüft, dass `token_hash` und
   `geoquiz.tobsob.dev` drin sind und `geo-quiz-a6s` nicht mehr. Löst den
-  Blocker „Android-Build älter als das Web".
+  Blocker „Android-Build älter als das Web". **Auf dem Gerät bestätigt**
+  (S24 Ultra, per `adb install -r` über Build 7, Spielstand erhalten): Karte
+  im Pin-Modus rendert, Flaggen-Runde läuft durch, Datenschutz-Link öffnet
+  die neue Domain. Einziger Befund: die Rang-Bewertung (siehe oben).
 - **Unversionierter Stand committet und gepusht** (`0bd62f5`, 2026-09-14).
 
 - **Mailversand eingerichtet** (2026-09-12, Dashboard-Durchgang) — 2FA,

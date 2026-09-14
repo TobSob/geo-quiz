@@ -60,6 +60,7 @@ Legende: ⬜ offen · 🔄 in Arbeit · ✅ fertig · ⚠️ blockiert (Grund in
 | C5 | PWA-Manifest + Service Worker (installierbar am Handy, echtes Offline-Caching) | ⬜ | günstige Alternative/Ergänzung zur Android-App |
 | C6 | Cup-Ergebnis: Balken-Breakdown pro Disziplin statt nur Tabelle | ⬜ | |
 | C7 | `npm audit`-Findings prüfen (5 high, transitiv) | ⬜ | vermutlich Dev-Dependencies — prüfen, ob Runtime betroffen |
+| C8 | **Rang-Bewertung mit Mindestmenge** — bisher zählte nur die Trefferquote, 3 von 3 richtig ergab **A** (Gerätetest Build 8, 2026-09-14). Jetzt `Wertung = richtig / max(beantwortet, Mindestmenge)`: Choice **15** (Nutzer-Entscheid), Pin **7** (gleicher Anteil an den realistischen 10–15 Pin-Fragen pro Lauf). Sonderregel „S erst ab 5 Fragen" entfällt, Schwellen bleiben | ✅ | `quiz-engine/arcadeRank.ts` + 8 Tests, genutzt von `ArcadeSummaryView`; Herleitung: Nachtrag in [DESIGN-ARCADE.md](DESIGN-ARCADE.md). Tests 172/172. Cup zeigt keinen Rang, Training behält die reine Quote |
 | C8 | Pin-Mode-UX (Nutzer-Feedback: "mehr Stress als arcade-cool") — Karte kann nicht mehr ins Leere gescrollt werden (`maxBounds`), schlankere mobile Top-Leiste für mehr Kartenfläche im Hochformat | ✅ | Details, Ursachenanalyse und geparkte Idee (Kontinent-Sprung-Buttons): [DESIGN-PIN-UX.md](DESIGN-PIN-UX.md) |
 
 ---

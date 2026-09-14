@@ -227,6 +227,8 @@ in `index.css`: `.arcade-clock`, `.time-pop` (+5-SEC-Effekt).
   ist (`nextReady`); Pin-„Weiter"-Button zeigt bis dahin „LADE…".
 - Streak-Badge ab Streak ≥ 1: `⚡/🔥 {streak (de-DE, 1 Dezimale)} · {multiplier %}`.
 - Ergebnisscreen rankt nach Trefferquote (S ab 90 % und ≥ 5 Fragen).
+  **Überholt seit 2026-09-14 (ROADMAP C8)** — siehe Nachtrag
+  „Rang mit Mindestmenge" am Ende.
 
 **Browser-Verifikation (Dev-Server, 2026-07-12):** Countdown + Balken laufen;
 2. richtige Antwort gab 110 Punkte (Score 210, Badge „⚡ 2 · 120%"); Pin-Feedback
@@ -308,3 +310,50 @@ Pausen-Regeln oben beachten!), No-Repeat-Sampler, Training unverändert.
 | 2026-07-12 | Pausen-Regeln zu O4 ergänzt (Nutzer-Einwand: Pause darf nicht schummelbar sein): atomares Aufdecken mit Uhr-Start + Preload, Wanduhr-Messung bei aktiver Frage, Server-Backstop in Phase D. In Roadmap-Schritt E2 übernommen |
 | 2026-07-12 | Alle offenen Punkte O1–O6 im Chat entschieden: einheitliche Pin-Stufen, Streak unbegrenzt, +5 s automatisch, Uhr pausiert bei Feedback, Zeitbonus gestrichen, Pools ausreichend. Umbau als Phase E in die Roadmap überführt |
 | 2026-07-12 | Dokument angelegt: Kernregeln aus erstem Design-Gespräch fixiert, offene Punkte O1–O6 gesammelt |
+
+---
+
+## Nachtrag 2026-09-14: Rang mit Mindestmenge (ROADMAP C8)
+
+**Befund:** Gerätetest mit Build 8 — drei Fragen richtig beantwortet, die Zeit
+laufen lassen, Rang **A**. Der Rang hing nur an der Trefferquote; die
+Mindestmenge von 5 Fragen galt allein für S. In einem Modus, dessen Kern
+„so viele wie möglich in 60 Sekunden" ist, belohnt das ausgerechnet Abwarten.
+
+**Regel:**
+
+```
+Wertung = richtig / max(beantwortet, Mindestmenge)
+```
+
+Fehlende Fragen bis zur Mindestmenge zählen wie falsche. Die Schwellen
+(S ≥ 90 %, A ≥ 75 %, B ≥ 60 %, C ≥ 40 %, sonst D) bleiben.
+
+| Modus-Art | Mindestmenge | Herleitung |
+|---|---|---|
+| Choice (Flaggen, Länder, Hauptstädte, Umriss) | **15** | Nutzer-Entscheid. O6 oben: realistisch 25–30 Fragen pro Lauf → gut die Hälfte |
+| Pin (Städte, Sehenswürdigkeiten) | **7** | O6: realistisch 10–15 pro Lauf. Gleicher Anteil wie bei Choice (15 / 27,5 ≈ 55 %) auf 12,5 → 6,8, aufgerundet |
+
+Beispiele: 3/3 Choice → 20 % → **D**. 14/15 Choice → 93 % → **S**. 7/7 Pin →
+**S**. 12 von 20 Choice → 60 % → **B** (über der Mindestmenge gilt die echte
+Quote).
+
+**Folgen, bewusst in Kauf genommen:**
+
+- Die alte Sonderregel „S nur ab 5 Fragen" entfällt — sie ist durch die
+  Mindestmenge vollständig abgedeckt.
+- Angezeigt wird weiter nur der Buchstabe plus „N Fragen · M Treffer". Eine
+  Prozentzahl gibt es nicht, deshalb entsteht kein Widerspruch zwischen
+  sichtbarer Trefferquote und Rang.
+- **Dev-Runde** (`/dev`, nur im Dev-Build): Eine selbst zusammengestellte
+  Runde mit drei Fragen landet jetzt immer bei D. Egal, dort geht es um
+  Grenzfälle der Fragen, nicht um den Rang.
+- **Cup:** zeigt keinen Rang, nur die Punkte-Tabelle. Für die 30-s-Legs
+  braucht es deshalb keine eigene Mindestmenge; käme dort einer dazu, wäre
+  die halbe Menge der naheliegende Wert.
+- **Training** (`QuizView`, ohne Zeitdruck) bleibt bei der reinen Quote:
+  Dort bestimmt der Spieler die Länge vorher, Abwarten gibt es nicht.
+
+**Umsetzung:** `quiz-engine/arcadeRank.ts` (rein, getestet), genutzt von
+`ArcadeSummaryView`.
+
