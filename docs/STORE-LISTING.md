@@ -213,7 +213,19 @@ Lösch-URL.
 | Personenbezogene Daten | E-Mail-Adresse | ja | nein | optional (nur bei Registrierung) | Kontoverwaltung |
 | Personenbezogene Daten | Nutzer-IDs | ja | nein | Pflicht | Kontoverwaltung, Spielfunktionen |
 | Personenbezogene Daten | Name (frei wählbarer Spielername) | ja | nein | Pflicht | Spielfunktionen (Bestenliste) |
-| App-Aktivität | Spielinteraktionen (Punkte, Runden, Lernfortschritt) | ja | nein | Pflicht | Spielfunktionen |
+| App-Aktivität | App-Interaktionen (Punkte, Runden, Lernfortschritt, Zeitstempel/Dauer einer Runde) | ja | nein | Pflicht | App-Funktionen **+ Betrugsprävention, Sicherheit und Compliance** (Session-Guard gegen manipulierte Scores, DSE §3 „berechtigtes Interesse") **+ Personalisierung** (adaptiver Trainingsmodus wählt Fragen nach Lernfortschritt, DSE §3) |
+| App-Aktivität | Sonstige nutzergenerierte Inhalte (Name einer Freundesgruppe) | ja | nein | optional | App-Funktionen |
+
+**In der Console eingetragen 2026-09-14**, Vorschau gegen die
+Datenschutzerklärung abgeglichen. Abweichung zur Tabelle: E-Mail-Adresse trägt
+zusätzlich „Funktionen der App" (Google zählt Authentifizierung dazu). Die
+Store-Zeile „Der Entwickler bietet keine Möglichkeit, das Löschen von Daten
+anzufordern" meint Teil-Löschung ohne Kontolöschung; die gibt es nicht, die
+Kontolöschung mit Link steht direkt darüber.
+
+*Nachgetragen 2026-09-14 beim Ausfüllen:* die Gruppennamen-Zeile, der
+Betrugspräventions- und der Personalisierungs-Zweck fehlten in der ursprünglichen Fassung; beides steht so
+in der Datenschutzerklärung §3.
 
 Nicht erhoben und entsprechend zu verneinen: Standort, Kontakte, Fotos/Videos,
 Audio, Kalender, SMS, Gesundheit, Finanzdaten, Geräte-IDs für Werbung,
@@ -225,9 +237,18 @@ Begründung für „Avatar" und „Abzeichen": fallen unter App-Aktivität
 ## 7. Altersfreigabe (IARC) + Zielgruppe (K12)
 
 - Gewalt, Sexualität, Schimpfwörter, Drogen, Glücksspiel, Angst: **jeweils nein**
-- **Nutzergenerierte Inhalte: ja** — der Spielername ist frei wählbar und für
-  andere sichtbar (Bestenliste, Spielerkarte). Verschweigen wäre der klassische
-  Grund für eine nachträgliche Neubewertung.
+- **Kommunikation zwischen Nutzern: Nein** (revidiert 2026-09-14). Der echte
+  Fragebogen fragt nicht allgemein nach nutzergenerierten Inhalten, sondern:
+  „Verfügt das Spiel über ein natives Feature, durch das Nutzer per Sprache
+  oder Text mit anderen kommunizieren oder Bilder/Audiodaten teilen können?"
+  Probeweise mit **Ja** beantwortet (Nachfragen Blockieren/Melden/Moderation/
+  nur Freunde: alle Nein) ergab das **USK ab 16** („Erhöhte
+  Kommunikationsrisiken") und in allen Regionen das Element **„Chats"**, bei
+  sonst USK-freien Werten (PEGI 3, ESRB Jedes Alter, ClassInd 0). Die App hat
+  keinen Chat; „Chats" wäre selbst eine Falschdarstellung. Freie Spieler- und
+  Gruppennamen sind nutzergenerierte Inhalte, aber keine Kommunikation im Sinne
+  der Frage. Die Googles UGC-Richtlinie gilt davon unabhängig → Moderation für
+  Namen steht in [wiki/offene-punkte.md](wiki/offene-punkte.md).
 - Standortweitergabe an andere Nutzer: nein
 - Käufe: nein · Werbung: nein
 - **Zielgruppe: 13+ / „nicht primär an Kinder gerichtet"**. Mit Konten, frei
@@ -236,6 +257,11 @@ Begründung für „Avatar" und „Abzeichen": fallen unter App-Aktivität
   bereits dasselbe.
 
 ## 8. Erwartetes Ergebnis
+
+**Eingetragen 2026-09-14:** USK ab 0, PEGI 3, ESRB Jedes Alter, ClassInd 0,
+GRAC 0, ACB Allgemein, IARC Generic 3 — ohne Inhaltsbeschreibungen, ohne
+„Chats". (Die Erwartung unten traf zu, nachdem die Kommunikationsfrage auf
+Nein stand, siehe §7.)
 
 USK 0 / PEGI 3 dürfte herauskommen (kein anstößiger Inhalt), die
 Zielgruppen-Einstufung bleibt davon unberührt bei 13+. Das ist kein
