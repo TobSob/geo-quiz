@@ -25,6 +25,17 @@
 
 ## Erledigt seit dem letzten Stand
 
+- **Google-Login in der Android-App** (2026-09-14, Build 13): landete vorher
+  im Browser. Deep-Link `de.tobsob.geoquizarcade://auth-callback`, Custom Tab,
+  PKCE nur nativ ([DESIGN-OAUTH-ANDROID.md](../../DESIGN-OAUTH-ANDROID.md)).
+  Unterwegs zwei weitere Fehler gefunden und behoben: `email_exists` löste den
+  Anmelde-Umweg nicht aus (betraf auch das **Web**), und der automatische
+  zweite Sprung verschwand in der App hinter dem Bildschirm — dort jetzt ein
+  zweiter Tipp. Auf dem Gerät bestätigt; GitHub und ein ganz neues
+  Google-Konto nicht getestet. Supabase-Redirect-URL eingetragen.
+- **Store-Screenshots** erneuert: Pin-Modi mit neuer Karte, Spielerkarte mit
+  Pokalregal; globale Bestenliste bewusst weggelassen (fremder Name).
+
 - **Rang mit Mindestmenge** (ROADMAP C8, 2026-09-14): 3 von 3 richtig ergab
   **A**. Jetzt `richtig / max(beantwortet, 15)` in Choice-Modi, 7 in
   Pin-Modi — Herleitung im Nachtrag von

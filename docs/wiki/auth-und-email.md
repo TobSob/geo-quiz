@@ -153,6 +153,14 @@ curl -s "$SUPABASE_URL/auth/v1/settings" -H "apikey: $SUPABASE_ANON_KEY"
 OAuth-Rücksprung geht auf `origin + pathname` **ohne** Hash, damit
 `detectSessionInUrl` das Token-Fragment liest, bevor der HashRouter greift.
 
+**In der Android-App anders (seit 2026-09-14):** Rücksprung auf
+`de.tobsob.geoquizarcade://auth-callback` (Supabase-Redirect-URL eingetragen),
+Provider-Seite als Chrome Custom Tab, PKCE statt Implicit Flow, Einlösen per
+`appUrlOpen` → `exchangeCodeForSession`. Gibt es schon einen Spieler zum
+Google-Konto, zeigt die App eine Meldung und meldet beim **zweiten Tipp** an —
+kein automatischer zweiter Sprung wie im Web. Details:
+[../../DESIGN-OAUTH-ANDROID.md](../../DESIGN-OAUTH-ANDROID.md).
+
 ## Welche Mail die App überhaupt auslöst
 
 Genau **eine**: die Bestätigung beim Gast→Konto-Upgrade. Weil das technisch

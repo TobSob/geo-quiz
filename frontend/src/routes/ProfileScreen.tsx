@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { Capacitor } from '@capacitor/core'
 import {
   consumeEmailLinkMessage,
   consumePendingOAuthMessage,
@@ -7,6 +8,7 @@ import {
   continueWithProvider,
   deleteOwnAccount,
   ensureSession,
+  OAUTH_MESSAGE_EVENT,
   OAUTH_PROVIDER_LABELS,
   onPasswordRecovery,
   requestPasswordReset,
@@ -628,8 +630,13 @@ const PROVIDER_ICONS: Record<OAuthProvider, () => JSX.Element> = {
  * linkIdentity — bei einem frischen Gast bleibt so der Fortschritt erhalten;
  * gehört die Identität schon einem anderen Account, löst
  * resolveOAuthRedirectError() nach dem Rücksprung automatisch einen normalen
- * Login aus. Bei Erfolg verlässt der Browser die App Richtung Provider —
- * busy bleibt deshalb bewusst an.
+ * Login aus. Im Web verlässt der Browser bei Erfolg die Seite Richtung
+ * Provider — busy bleibt deshalb bewusst an.
+ *
+ * In der App bleibt die Seite stehen, der Provider liegt als Custom Tab
+ * darüber. busy muss dort wieder aus, sonst sind die Buttons nach dem
+ * Rücksprung gesperrt — und genau dann braucht es den zweiten Tipp
+ * (DESIGN-OAUTH-ANDROID.md §6, Gerätetest Build 12).
  */
 function OAuthButtons() {
   const [busy, setBusy] = useState(false)
@@ -642,6 +649,8 @@ function OAuthButtons() {
     if (!result.ok) {
       setBusy(false)
       setMessage(result.message)
+    } else if (Capacitor.isNativePlatform()) {
+      setBusy(false)
     }
   }
 
@@ -684,8 +693,15 @@ function LoginPanel() {
   // Meldung aus einem vorherigen OAuth-Redirect abholen (z. B. wenn der
   // automatische Fallback-Login in resolveOAuthRedirectError() scheiterte).
   useEffect(() => {
-    const pending = consumePendingOAuthMessage()
-    if (pending) setMessage(pending)
+    const pickUp = () => {
+      const pending = consumePendingOAuthMessage()
+      if (pending) setMessage(pending)
+    }
+    pickUp()
+    // In der App kommt die Meldung, während das Panel schon offen ist
+    // (kein Seiten-Reload nach dem Rücksprung, DESIGN-OAUTH-ANDROID.md).
+    window.addEventListener(OAUTH_MESSAGE_EVENT, pickUp)
+    return () => window.removeEventListener(OAUTH_MESSAGE_EVENT, pickUp)
   }, [])
 
   const submit = async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseOAuthRedirectError } from './oauthRedirect'
+import { parseOAuthRedirectError, shouldSignInInsteadOfLinking } from './oauthRedirect'
 
 describe('parseOAuthRedirectError', () => {
   it('kein Fehler-Redirect → hasError false', () => {
@@ -37,5 +37,22 @@ describe('parseOAuthRedirectError', () => {
     const result = parseOAuthRedirectError('#error=server_error', '')
     expect(result.hasError).toBe(true)
     expect(result.errorCode).toBeNull()
+  })
+})
+
+describe('shouldSignInInsteadOfLinking', () => {
+  it('Provider-Konto hängt schon an einem Spieler', () => {
+    expect(shouldSignInInsteadOfLinking('identity_already_exists')).toBe(true)
+  })
+
+  it('Gerätetest 2026-09-14: Spieler mit derselben E-Mail existiert', () => {
+    expect(shouldSignInInsteadOfLinking('email_exists')).toBe(true)
+    expect(shouldSignInInsteadOfLinking('user_already_exists')).toBe(true)
+  })
+
+  it('andere Fehler bleiben eine Meldung', () => {
+    expect(shouldSignInInsteadOfLinking('access_denied')).toBe(false)
+    expect(shouldSignInInsteadOfLinking('missing_code')).toBe(false)
+    expect(shouldSignInInsteadOfLinking(null)).toBe(false)
   })
 })

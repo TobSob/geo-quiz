@@ -3,7 +3,7 @@
 > Alle Texte und Formular-Antworten für den Store-Eintrag, versioniert im Repo
 > (Roadmap K13a). In der Play Console werden sie von hier kopiert — nicht dort
 > direkt getippt, sonst existiert die einzige Fassung in einem Webformular.
-> Stand: 2026-08-05 · Paket `de.tobsob.geoquizarcade`
+> Stand: 2026-09-14 (Texte gegen Code geprüft) · Paket `de.tobsob.geoquizarcade`
 
 **Zeichen-Limits von Play:** Titel 30 · Kurzbeschreibung 80 · Vollbeschreibung 4000.
 Die Zahlen unten sind gezählt, nicht geschätzt.
@@ -62,8 +62,8 @@ SECHS DISZIPLINEN
 - Hauptstädte: Wie heißt die Hauptstadt?
 - Länder: Zu welchem Land gehört diese Hauptstadt?
 - Umrisse: Erkenne das markierte Land auf der Weltkarte
-- Stadt finden: Setze den Pin so nah wie möglich an die richtige Stelle
-- Sehenswürdigkeit finden: Wo auf der Welt steht dieses Bauwerk?
+- Städte-Pin: Setze den Pin so nah wie möglich an die richtige Stelle
+- Landmark-Pin: Wo auf der Welt steht dieses Wahrzeichen?
 
 Dazu der GEO CUP: alle sechs Disziplinen hintereinander, je 30 Sekunden, eine
 Gesamtwertung. Das ist die Königsdisziplin — und die Bestenliste, um die es
@@ -110,12 +110,12 @@ FAIR UND OHNE HAKEN
   Internet)
 - Dein Konto löschst du jederzeit selbst im Profil, vollständig
 
-245 Länder, 141 Städte, 129 Sehenswürdigkeiten mit Foto. Deutschsprachig.
+245 Länder, 143 Städte, 129 Sehenswürdigkeiten mit Foto. Deutschsprachig.
 
 Viel Erfolg — und pass auf die Uhr auf.
 ```
 
-**2 458 Zeichen** von 4000. Der Rest bleibt bewusst frei: Play schneidet die
+**2 449 Zeichen** von 4000 (gezählt 2026-09-14). Der Rest bleibt bewusst frei: Play schneidet die
 Beschreibung in der Vorschau nach wenigen Zeilen ab, und ein Textblock, den
 niemand zu Ende liest, verkauft nichts.
 
@@ -153,47 +153,39 @@ niemand zu Ende liest, verkauft nichts.
 
 ## 5. Telefon-Screenshots (K13b)
 
-Aufgenommen am 2026-08-05 im AVD `geoquiz_pixel7` (Android 14) aus der
-signierten Release-APK vom selben Tag — also mit Vollbild und mit dem neuen
-Bestenlisten-Aufbau. Alle **1080×2400 PNG**, in `frontend/assets/store-screenshots/`.
+**Upload-Satz, Stand 2026-09-14** — 7 Bilder, in dieser Reihenfolge hochladen:
 
-| Datei | Motiv | Warum es im Listing steht |
+| Datei | Motiv | Quelle |
 |---|---|---|
-| `01-menue.png` | Startmenü mit Geo Cup obenauf | Erster Eindruck: 8-Bit-Look, „60 Sekunden"-Versprechen steht im Bild |
-| `02-flaggen-streak.png` | Flaggen-Frage, Streak „⚡ 2 · 120%", Score 210, Restzeit orange | Zeigt das Spielprinzip **und** das Scoring in einem Bild |
-| `03-umrisse.png` | Guinea-Bissau markiert, Nachbarländer sichtbar | Der Modus, der am wenigsten selbsterklärend ist |
-| `04-staedte-pin.png` | Rio de Janeiro aufgelöst: „STARK! 150 km daneben +50" | Distanzstufen, Ziel-Marker und Verbindungslinie |
-| `05-geo-cup.png` | Cup-Intro mit der Reihenfolge aller 6 Disziplinen | Erklärt den Hauptmodus ohne Text im Listing |
-| `06-training.png` | Trainings-Setup: Kategorien + Länge | Beleg für „auch ohne Zeitdruck spielbar" |
-| `07-landmark-pin.png` | Alhambra aufgelöst: „VOLLTREFFER! 27 km daneben +100" | Die Belohnungsseite derselben Mechanik |
+| `01-menue.png` | Startmenü mit Geo Cup obenauf | AVD, 2026-08-05 (1080×2400) |
+| `02-flaggen-streak.png` | Flaggen-Frage mit Serie „⚡ 2 · 120%" | AVD, 2026-08-05 |
+| `03-umrisse.png` | Guinea-Bissau markiert, Nachbarn sichtbar | AVD, 2026-08-05 |
+| `04-staedte-pin.png` | Nuuk aufgelöst: „VOLLTREFFER! 54 km daneben +100" | **S24 Ultra, Build 9, 2026-09-14** (1080×2340) |
+| `05-geo-cup.png` | Cup-Intro mit allen 6 Disziplinen | AVD, 2026-08-05 |
+| `07-landmark-pin.png` | Roter Platz mit Foto: „VOLLTREFFER! 66 km daneben +105" | **S24 Ultra, Build 9, 2026-09-14** |
+| `08-spielerkarte-pokalregal.png` | Eigene Spielerkarte: Level 18, Pokalregal voll, Bestpunkte | **S24 Ultra, Build 13, 2026-09-14** |
 
-⚠️ **`07-landmark-pin.png` ist nachzuschießen.** Das Vorschaubild oben rechts
-zeigt noch den Alhambra-**Grundriss**, der am selben Tag durch ein Foto ersetzt
-wurde (siehe [DESIGN-PLAYSTORE.md](../DESIGN-PLAYSTORE.md#nachtrag-2026-08-05-alhambra-war-ein-grundriss)).
-Entweder mit der nächsten APK neu aufnehmen — sinnvollerweise zusammen mit den
-beiden angemeldeten Motiven unten — oder aus dem Listing weglassen; die
-übrigen sechs tragen es allein.
+Warum die Änderungen gegenüber dem 05.08.:
 
-Play nennt in seinen Vorgaben 16:9 bzw. 9:16; 1080×2400 ist das native
-Seitenverhältnis heutiger Telefone (20:9) und wird üblicherweise angenommen.
-Sollte die Console es zurückweisen, auf **1080×1920** beschneiden — nicht
-skalieren, sonst verwischen die Pixel-Fonts.
+- **04 und 07 neu:** Die alten Bilder zeigten noch die **CARTO-Karte** von vor
+  dem MapLibre-Umbau, 07 dazu den Alhambra-**Grundriss**.
+- **08 neu:** Pokalregal ist nur angemeldet zu sehen. Nach dem Fix des
+  Google-Logins in der App (DESIGN-OAUTH-ANDROID.md) mit dem eigenen Konto
+  aufgenommen — zeigt ausschließlich eigene Daten.
+- **`06-training.png` nicht im Upload-Satz** (Datei bleibt liegen): schwächstes
+  Motiv, und Play erlaubt höchstens 8.
+- **Globale Bestenliste bewusst weggelassen:** Aufgenommen, aber darauf stand
+  der selbst gewählte Name eines anderen echten Spielers. Ohne Einwilligung
+  nicht im Store veröffentlichen.
 
-### Zwei Motive fehlen noch — sie brauchen einen angemeldeten Account
-
-Aus der Motivliste der Roadmap fehlen **globale Bestenliste** und
-**Pokalregal**. Beide sind für Gäste serverseitig gesperrt (der Erfolge-Screen
-zeigt als Gast ein Schloss, die Bestenliste startet auf „Meine Rekorde" mit den
-lokalen Werten des Emulators). Ein Konto anzulegen ist nichts, was hier
-nebenbei passieren sollte — die Anmeldung im Emulator muss der Mensch selbst
-vornehmen, danach lassen sich beide Bilder in zwei Minuten nachziehen:
+Gemischte Seitenverhältnisse (20:9 vom Emulator, 19,5:9 vom S24) nimmt Play an.
+Beim Aufnehmen auf dem Gerät auf **Vollbild** achten: Nach einer
+Tastatureingabe (Anmeldung) waren Status- und Navigationsleiste sichtbar,
+ein Neustart der App behebt das.
 
 ```bash
-adb -s emulator-5554 shell screencap -p /sdcard/s.png && adb -s emulator-5554 pull /sdcard/s.png frontend/assets/store-screenshots/08-bestenliste.png
+adb exec-out screencap -p > frontend/assets/store-screenshots/NAME.png
 ```
-
-Sieben Screenshots erfüllen die Play-Vorgabe (min. 2, max. 8) bereits
-vollständig; die beiden fehlenden sind Kür, keine Pflicht.
 
 ## 6. Data-Safety-Formular (K12)
 

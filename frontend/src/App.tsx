@@ -9,7 +9,7 @@ import { TrainingScreen } from './routes/TrainingScreen'
 import { ScoresScreen } from './routes/ScoresScreen'
 import { ProfileScreen } from './routes/ProfileScreen'
 import { AchievementsScreen } from './routes/AchievementsScreen'
-import { ensureSession } from './api/authApi'
+import { ensureSession, handleNativeOAuthCallback } from './api/authApi'
 import { isOnlineEnabled } from './api/supabaseClient'
 import { applyAuthSession } from './features/auth/applySession'
 import { useUserStore } from './state/userStore'
@@ -66,6 +66,28 @@ function App() {
       const onHome = window.location.hash === '' || window.location.hash === '#/'
       if (onHome) void CapacitorApp.exitApp()
       else window.location.hash = '#/'
+    })
+    return () => {
+      void handle.then((h) => h.remove())
+    }
+  }, [])
+
+  // Rücksprung aus Google/GitHub in die App (DESIGN-OAUTH-ANDROID.md).
+  // `getLaunchUrl()` deckt den Fall ab, dass Android die App dafür neu
+  // gestartet hat; doppelte Lieferungen fängt handleNativeOAuthCallback ab.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    const onUrl = (url: string) => {
+      void handleNativeOAuthCallback(url).then(async (handled) => {
+        if (!handled) return
+        window.location.hash = '#/profile'
+        const auth = await ensureSession()
+        await applyAuthSession(auth)
+      })
+    }
+    const handle = CapacitorApp.addListener('appUrlOpen', ({ url }) => onUrl(url))
+    void CapacitorApp.getLaunchUrl().then((launch) => {
+      if (launch?.url) onUrl(launch.url)
     })
     return () => {
       void handle.then((h) => h.remove())

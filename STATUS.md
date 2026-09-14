@@ -59,7 +59,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | `adaptiveSampler.ts` | ✅ | Weighted-random, 30 % Flat-Mix, 5er-Ring-Buffer |
 | `cupSession.ts` | ✅ | 6 Legs à 30 s, Cup-Total = Rohsumme |
 | `geo/distance.ts` (Haversine) | ✅ | Berlin↔Paris-Test |
-| Vitest-Tests | ✅ | 164 Tests, 17 Dateien (geprüft 2026-09-14) |
+| Vitest-Tests | ✅ | 181 Tests, 19 Dateien (geprüft 2026-09-14) |
 
 ### 🎨 UI / Design
 | Baustein | Status | Notiz |
@@ -123,6 +123,13 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 - ✅ `npm run lint` — nur 3 unkritische Warnungen (bewusste `runKey`-Re-Roll-Dependencies)
 - ✅ Im Browser durchgespielt: Flaggen-Runde 10/10 (Rang A, 1812 Pkt.), City-Pin Amsterdam (197 km → +34, deckt sich mit Plan-Tabelle), Umriss-Modus (Katar markiert), Cup Leg 1 → Interstitial (Zwischenstand 72/100), Bestenliste + localStorage-Persistenz bestätigt
 - 🐛 Gefixt dabei: Race-Condition Timeout-vs-Klick in `useQuizSession` (Ref-Lock), unreiner setState-Updater (StrictMode)
+
+## Google-Login in der Android-App (2026-09-14)
+Landete vorher im Browser. Jetzt Deep-Link + Custom Tab + PKCE, auf dem Gerät
+mit Build 13 bestätigt ([DESIGN-OAUTH-ANDROID.md](DESIGN-OAUTH-ANDROID.md)).
+Unterwegs behoben: `email_exists` löste den Anmelde-Umweg nicht aus (auch im
+Web), und in der App braucht es bei einem schon vorhandenen Spieler einen
+zweiten Tipp statt eines automatischen Sprungs. Tests 181/181.
 
 ## Mailversand über eigene Domain (2026-09-12 bis 2026-09-14)
 Letzter echter Veröffentlichungs-Blocker. Ist-Stand und Prüfwege:

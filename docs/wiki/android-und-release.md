@@ -10,7 +10,9 @@
 | `applicationId` / `appId` | `de.tobsob.geoquizarcade` |
 | App-Name | GEOQUIZ ARCADE |
 | `versionName` | `1.0` (manuell — das soll eine Release-Entscheidung sein) |
-| `versionCode` | **9** (automatisch hochgezählt; Build 9 vom 2026-09-14, `npm run release`, Signatur `CN=Tobias Sobek`, auf S24 Ultra installiert) |
+| `versionCode` | **13** (automatisch hochgezählt; Build 13 vom 2026-09-14, Signatur `CN=Tobias Sobek`, auf S24 Ultra installiert). Builds 10–13 an einem Tag wegen dreier Gerätetest-Runden zum Google-Login. Web zuletzt mit dem Stand von Build 11 deployt — 12/13 ändern nur App-Verhalten |
+| Deep-Link | `de.tobsob.geoquizarcade://auth-callback` (Manifest-`intent-filter`, Google/GitHub-Rücksprung, [DESIGN-OAUTH-ANDROID.md](../../DESIGN-OAUTH-ANDROID.md)) |
+| Capacitor-Plugins | `@capacitor/app`, `@capacitor/preferences`, **`@capacitor/browser`** (seit 2026-09-14, Custom Tab für OAuth) |
 | `minSdkVersion` | 24 |
 | `targetSdkVersion` / `compileSdkVersion` | 36 — erfüllt Googles aktuelle Mindestanforderung |
 | `minifyEnabled` | false — Größenoptimierung, **kein** Store-Kriterium |

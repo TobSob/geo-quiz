@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
@@ -25,9 +26,22 @@ const capacitorStorage = {
  * Null when env vars are missing — the game then runs fully offline
  * (local scores + progress only, no global leaderboard).
  */
+/**
+ * PKCE nur in der App (DESIGN-OAUTH-ANDROID.md): Der Rücksprung aus
+ * Google/GitHub läuft dort über ein eigenes URL-Schema, das jede andere App
+ * ebenfalls registrieren könnte — mit PKCE steht darin nur ein Code, der ohne
+ * den hier gespeicherten Verifier wertlos ist. Das Web bleibt beim Implicit
+ * Flow, auf den `detectSessionInUrl` und `resolveOAuthRedirectError()`
+ * abgestimmt sind.
+ */
 export const supabase: SupabaseClient | null =
   url && anonKey
-    ? createClient(url, anonKey, { auth: { storage: capacitorStorage } })
+    ? createClient(url, anonKey, {
+        auth: {
+          storage: capacitorStorage,
+          flowType: Capacitor.isNativePlatform() ? 'pkce' : 'implicit',
+        },
+      })
     : null
 
 export const isOnlineEnabled = supabase !== null

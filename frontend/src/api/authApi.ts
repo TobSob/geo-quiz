@@ -1,10 +1,16 @@
+import { Browser } from '@capacitor/browser'
 import { Capacitor } from '@capacitor/core'
 import { supabase } from './supabaseClient'
 import {
   parseOAuthRedirectError,
+  shouldSignInInsteadOfLinking,
   type OAuthRedirectOutcome,
 } from '../features/auth/oauthRedirect'
 import { isRecoveryRedirect } from '../features/auth/recovery'
+import {
+  NATIVE_OAUTH_REDIRECT,
+  parseNativeOAuthCallback,
+} from '../features/auth/nativeOAuth'
 import {
   emailLinkSuccessMessage,
   parseEmailLink,
@@ -160,6 +166,28 @@ function oauthRedirectTo(): string {
 }
 
 /**
+ * Rücksprungziel für Google/GitHub. In der App ist `oauthRedirectTo()`
+ * Capacitors `https://localhost/` — dorthin kann Supabase nicht zurück, man
+ * landete im Browser. Stattdessen das eigene Schema, das das Manifest an die
+ * App leitet (DESIGN-OAUTH-ANDROID.md).
+ */
+function providerRedirectTo(): string {
+  return Capacitor.isNativePlatform() ? NATIVE_OAUTH_REDIRECT : oauthRedirectTo()
+}
+
+/**
+ * In der App navigiert supabase-js nicht selbst (`skipBrowserRedirect`),
+ * sondern wir öffnen die Provider-Seite als Custom Tab. Google lehnt OAuth in
+ * eingebetteten WebViews ab.
+ */
+async function openProviderPage(url: string | null | undefined): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) return true
+  if (!url) return false
+  await Browser.open({ url })
+  return true
+}
+
+/**
  * Gast → Account per Google/GitHub: linkIdentity verknüpft die OAuth-Identität
  * mit der BESTEHENDEN (anonymen) User-ID — Fortschritt und Retro-Name bleiben,
  * wie beim E-Mail-Upgrade. Bei Erfolg verlässt der Browser die App Richtung
@@ -169,11 +197,17 @@ function oauthRedirectTo(): string {
  */
 export async function linkProvider(provider: OAuthProvider): Promise<AuthActionResult> {
   if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
-  const { error } = await supabase.auth.linkIdentity({
+  const { data, error } = await supabase.auth.linkIdentity({
     provider,
-    options: { redirectTo: oauthRedirectTo() },
+    options: {
+      redirectTo: providerRedirectTo(),
+      skipBrowserRedirect: Capacitor.isNativePlatform(),
+    },
   })
   if (error) return { ok: false, message: translateAuthError(error.message) }
+  if (!(await openProviderPage(data.url))) {
+    return { ok: false, message: translateAuthError('missing provider url') }
+  }
   return { ok: true, message: `Weiter bei ${OAUTH_PROVIDER_LABELS[provider]}…` }
 }
 
@@ -185,15 +219,22 @@ export async function signInWithProvider(
   provider: OAuthProvider,
 ): Promise<AuthActionResult> {
   if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: oauthRedirectTo() },
+    options: {
+      redirectTo: providerRedirectTo(),
+      skipBrowserRedirect: Capacitor.isNativePlatform(),
+    },
   })
   if (error) return { ok: false, message: translateAuthError(error.message) }
+  if (!(await openProviderPage(data.url))) {
+    return { ok: false, message: translateAuthError('missing provider url') }
+  }
   return { ok: true, message: `Weiter bei ${OAUTH_PROVIDER_LABELS[provider]}…` }
 }
 
 const PENDING_PROVIDER_KEY = 'geoquiz-oauth-pending-provider'
+const SIGN_IN_NEXT_KEY = 'geoquiz-oauth-sign-in-next'
 const OAUTH_MESSAGE_KEY = 'geoquiz-oauth-message'
 
 /**
@@ -206,6 +247,14 @@ const OAUTH_MESSAGE_KEY = 'geoquiz-oauth-message'
 export async function continueWithProvider(
   provider: OAuthProvider,
 ): Promise<AuthActionResult> {
+  // App: Der letzte Verknüpfungsversuch hat ergeben, dass es schon einen
+  // Spieler zu diesem Konto gibt — jetzt direkt anmelden (siehe
+  // handleNativeOAuthCallback, DESIGN-OAUTH-ANDROID.md §6).
+  if (sessionStorage.getItem(SIGN_IN_NEXT_KEY) === provider) {
+    sessionStorage.removeItem(SIGN_IN_NEXT_KEY)
+    return signInWithProvider(provider)
+  }
+  sessionStorage.removeItem(SIGN_IN_NEXT_KEY)
   sessionStorage.setItem(PENDING_PROVIDER_KEY, provider)
   const result = await linkProvider(provider)
   if (!result.ok) sessionStorage.removeItem(PENDING_PROVIDER_KEY)
@@ -224,6 +273,8 @@ export async function continueWithProvider(
  * hier schon mal über den Anmelden-Button verknüpft). Statt einer Fehlermeldung
  * folgt automatisch ein normaler Zweitgerät-Login mit demselben Provider —
  * vom Umweg merkt der Nutzer nichts außer einem zweiten kurzen Redirect.
+ * Dasselbe gilt, wenn ein Spieler mit derselben E-Mail existiert
+ * (`email_exists`) — welche Codes, steht in `shouldSignInInsteadOfLinking`.
  */
 export function resolveOAuthRedirectError(): void {
   if (typeof window === 'undefined') return
@@ -234,7 +285,7 @@ export function resolveOAuthRedirectError(): void {
   sessionStorage.removeItem(PENDING_PROVIDER_KEY)
   window.history.replaceState(null, '', window.location.pathname + '#/profile')
 
-  if (outcome.errorCode === 'identity_already_exists' && pendingProvider) {
+  if (shouldSignInInsteadOfLinking(outcome.errorCode) && pendingProvider) {
     void signInWithProvider(pendingProvider)
   } else {
     sessionStorage.setItem(
@@ -242,6 +293,61 @@ export function resolveOAuthRedirectError(): void {
       translateAuthError(outcome.errorDescription ?? outcome.errorCode ?? 'oauth error'),
     )
   }
+}
+
+/** Event, mit dem ein bereits offenes LoginPanel eine neue Meldung abholt. */
+export const OAUTH_MESSAGE_EVENT = 'geoquiz:oauth-message'
+
+function setPendingOAuthMessage(message: string): void {
+  sessionStorage.setItem(OAUTH_MESSAGE_KEY, message)
+  // Im Web lädt die Seite nach dem Redirect neu und das Panel liest beim
+  // Mounten. In der App bleibt die Seite stehen — das Panel ist womöglich
+  // schon offen und braucht einen Anstoß.
+  window.dispatchEvent(new Event(OAUTH_MESSAGE_EVENT))
+}
+
+const handledNativeCallbacks = new Set<string>()
+
+/**
+ * Rücksprung aus Google/GitHub in die App (DESIGN-OAUTH-ANDROID.md). Gibt
+ * `true` zurück, wenn die URL unser Callback war — der Aufrufer baut dann den
+ * Kontozustand neu auf. Fehler werden wie im Web behandelt, einschließlich
+ * des automatischen Zweitgerät-Logins (`shouldSignInInsteadOfLinking`).
+ *
+ * Jede URL genau einmal: `appUrlOpen` und `getLaunchUrl()` können denselben
+ * Rücksprung liefern, und ein zweites Einlösen des Codes schlüge fehl.
+ */
+export async function handleNativeOAuthCallback(url: string): Promise<boolean> {
+  if (!supabase) return false
+  const callback = parseNativeOAuthCallback(url)
+  if (!callback) return false
+  if (handledNativeCallbacks.has(url)) return false
+  handledNativeCallbacks.add(url)
+
+  const pendingProvider = sessionStorage.getItem(PENDING_PROVIDER_KEY) as OAuthProvider | null
+  sessionStorage.removeItem(PENDING_PROVIDER_KEY)
+
+  if (callback.kind === 'error') {
+    const { errorCode, errorDescription } = callback.outcome
+    if (shouldSignInInsteadOfLinking(errorCode) && pendingProvider) {
+      // Anders als im Web KEIN automatischer zweiter Sprung: Der Custom Tab
+      // würde im selben Moment geöffnet, in dem Android die App nach vorne
+      // holt, und verschwindet dahinter (Gerätetest 2026-09-14: /authorize
+      // kam an, /callback nie). Ein Tipp mehr, dafür verlässlich.
+      sessionStorage.setItem(SIGN_IN_NEXT_KEY, pendingProvider)
+      const label = OAUTH_PROVIDER_LABELS[pendingProvider]
+      setPendingOAuthMessage(
+        `Zu diesem ${label}-Konto gibt es schon einen Spieler. Tippe nochmal auf „Mit ${label}", um dich dort anzumelden.`,
+      )
+    } else {
+      setPendingOAuthMessage(translateAuthError(errorDescription ?? errorCode ?? 'oauth error'))
+    }
+    return true
+  }
+
+  const { error } = await supabase.auth.exchangeCodeForSession(callback.code)
+  if (error) setPendingOAuthMessage(translateAuthError(error.message))
+  return true
 }
 
 /** Einmalige Meldung aus einem vorherigen OAuth-Redirect abholen (LoginPanel). */
