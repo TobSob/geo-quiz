@@ -201,6 +201,9 @@ Antworten decken sich mit der [Datenschutzerklärung](../frontend/public/datensc
 Abweichungen sind ein Richtlinien-Verstoß, nicht nur unschön.
 
 **Werden Daten erhoben oder geteilt?** Erhoben ja, **geteilt nein**.
+Supabase, Cloudflare und seit 2026-09-13 **Resend** (Mailversand) verarbeiten
+im Auftrag — das zählt bei Google ausdrücklich nicht als Teilen. Die
+Datenschutzerklärung nennt alle drei (Stand 2026-09-14).
 **Alle Daten verschlüsselt übertragen?** Ja (HTTPS).
 **Kann der Nutzer Löschung verlangen?** Ja — in der App *und* über die
 Lösch-URL.

@@ -1,6 +1,6 @@
 # Recht & Nachweise
 
-> **Stand:** 2026-08-30 · **Verifiziert:** `frontend/public/*/index.html`,
+> **Stand:** 2026-09-14 · **Verifiziert:** `frontend/public/*/index.html`,
 > `src/routes/CreditsScreen.tsx`, HTTP-Prüfung der Live-URLs
 
 ## Die drei öffentlichen Rechtsseiten
@@ -19,6 +19,16 @@ erkennbar, unmittelbar erreichbar" — nicht „über Google auffindbar". Die Se
 nennen eine Privatanschrift.
 
 Anbieter: Tobias Sobek, Kontakt `geoquizsupport@gmail.com`.
+
+**Live-Adressen seit 2026-09-14:** `https://geoquiz.tobsob.dev/datenschutz/`
+und `/konto-loeschen/` (so in der Play Console). `pages.dev` liefert dieselben
+Seiten weiter aus.
+
+**Auftragsverarbeiter laut Datenschutzerklärung §5** (Stand der Erklärung:
+14. September 2026): Supabase (EU, Stockholm), Cloudflare Pages, **Resend**
+(Mailversand, Region EU/Irland). Herleitung und was bewusst fehlt:
+[DESIGN-MAIL-DOMAIN.md](../../DESIGN-MAIL-DOMAIN.md) §7. **Offen:** ob mit
+Resend ein DPA besteht.
 `npm run release` bricht ab, solange irgendwo `TODO_ANBIETER_*` steht.
 
 ## Nachweise in der App (`/credits`)

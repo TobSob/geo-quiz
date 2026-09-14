@@ -104,3 +104,38 @@ Falsch herum ausgerollt, zeigen Mails auf Code, der noch nicht live ist:
 - Reputation: Auch mit sauberem Inhalt kann eine frische Domain bei Microsoft
   noch Wochen im Junk landen. Das ist mit diesem Umbau nicht erledigt, nur
   verkürzt.
+
+## 7. Nachtrag 2026-09-14: Resend in der Datenschutzerklärung
+
+Seit dem Umstieg (2026-09-13) laufen die E-Mail-Adressen der Nutzer über
+Resend. Die Datenschutzerklärung nannte in §5 aber nur Supabase und
+Cloudflare. Das Data-Safety-Formular muss zur Erklärung passen, deshalb vor
+dem Eintrag in der Play Console nachgezogen.
+
+Geändert in `frontend/public/datenschutz/index.html`:
+
+| Stelle | Änderung |
+|---|---|
+| Stand | 3. August → **14. September 2026**. Der alte Stand war schon vor Resend veraltet: OpenFreeMap kam am 2026-08-29 dazu, ohne dass das Datum mitzog |
+| §3, Zeile E-Mail-Adresse | Zweck um Bestätigungs- und Passwort-Mail ergänzt; Rechtsgrundlage bleibt Art. 6 Abs. 1 lit. b (Vertragserfüllung) |
+| §5 | Resend als dritter Auftragsverarbeiter: welche Daten (Adresse, Mailinhalt, Zeitpunkt, Zustellstatus), Versandregion EU (Irland), ausdrücklich keine Werbemails |
+
+**Bewusst nicht aufgenommen:**
+
+- **Firmenname und Sitz von Resend.** Nicht aus einer Primärquelle geprüft,
+  eine falsche Angabe im Rechtstext wiegt schwerer als eine fehlende. Der
+  bestehende Satz zu Standardvertragsklauseln deckt die Drittlands-Frage ab.
+- **Gmail (2026-08-30 bis 2026-09-13).** In dem Zeitraum gingen nur Testmails
+  an eigene Adressen, keine Mails an fremde Nutzer.
+- **Amazon SES** (Resends Unterauftragsverarbeiter, im Mail-Header sichtbar).
+  Unterauftragsverarbeiter führt der Hauptauftragsverarbeiter, nicht wir.
+
+**Offen, beim Nutzer:** Ob mit Resend ein Auftragsverarbeitungsvertrag (DPA)
+tatsächlich besteht, ist nicht geprüft. Die Erklärung behauptet ihn mit
+„verarbeiten Daten für uns als Auftragsverarbeiter". Im Resend-Konto
+nachsehen, ob der DPA Teil der Nutzungsbedingungen ist oder aktiv
+abgeschlossen werden muss.
+
+**Data Safety:** unverändert „geteilt: nein". Weitergabe an Dienstleister,
+die im Auftrag verarbeiten, zählt bei Google nicht als Teilen.
+
