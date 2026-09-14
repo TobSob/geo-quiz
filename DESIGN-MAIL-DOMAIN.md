@@ -130,11 +130,21 @@ Geändert in `frontend/public/datenschutz/index.html`:
 - **Amazon SES** (Resends Unterauftragsverarbeiter, im Mail-Header sichtbar).
   Unterauftragsverarbeiter führt der Hauptauftragsverarbeiter, nicht wir.
 
-**Offen, beim Nutzer:** Ob mit Resend ein Auftragsverarbeitungsvertrag (DPA)
-tatsächlich besteht, ist nicht geprüft. Die Erklärung behauptet ihn mit
-„verarbeiten Daten für uns als Auftragsverarbeiter". Im Resend-Konto
-nachsehen, ob der DPA Teil der Nutzungsbedingungen ist oder aktiv
-abgeschlossen werden muss.
+**DPA mit Resend: besteht (geprüft 2026-09-14).** Resends Data Processing
+Addendum (Stand 27. August 2026, https://resend.com/legal/dpa) ist Teil der
+Nutzungsbedingungen:
+
+- Präambel: geschlossen zwischen *Plus Five Five, Inc.* und dem Kunden „as of
+  the effective date … of the applicable customer's acceptance of the Terms of
+  Service"; bindend „upon Customer entering into the Agreement".
+- Die Unterschriftsfelder sind „for reference purposes only"; die ausgeführte
+  Fassung ist im Resend-Dashboard abrufbar.
+- 6.3.9: Mit dem DPA gelten die EU-SCC als unterzeichnet. Zusätzlich
+  Verpflichtung auf das EU-US Data Privacy Framework.
+
+Kein separater Abschluss nötig. Kopie der Seite als Nachweis (Art. 28 DSGVO):
+`docs/nachweise/resend-dpa-stand-2026-08-27.htm` — **gitignored**, weil das
+Repo öffentlich ist; liegt also nur lokal.
 
 **Data Safety:** unverändert „geteilt: nein". Weitergabe an Dienstleister,
 die im Auftrag verarbeiten, zählt bei Google nicht als Teilen.

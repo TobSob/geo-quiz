@@ -27,8 +27,10 @@ Seiten weiter aus.
 **Auftragsverarbeiter laut Datenschutzerklärung §5** (Stand der Erklärung:
 14. September 2026): Supabase (EU, Stockholm), Cloudflare Pages, **Resend**
 (Mailversand, Region EU/Irland). Herleitung und was bewusst fehlt:
-[DESIGN-MAIL-DOMAIN.md](../../DESIGN-MAIL-DOMAIN.md) §7. **Offen:** ob mit
-Resend ein DPA besteht.
+[DESIGN-MAIL-DOMAIN.md](../../DESIGN-MAIL-DOMAIN.md) §7. **DPA mit Resend
+besteht** (Teil der Nutzungsbedingungen, geprüft 2026-09-14); lokale Kopie in
+`docs/nachweise/` (gitignored, Repo ist öffentlich — bei Rechnerwechsel
+mitnehmen oder neu von https://resend.com/legal/dpa sichern).
 `npm run release` bricht ab, solange irgendwo `TODO_ANBIETER_*` steht.
 
 ## Nachweise in der App (`/credits`)

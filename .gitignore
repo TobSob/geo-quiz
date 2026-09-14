@@ -21,3 +21,7 @@ Thumbs.db
 # Claude Code runtime state (lokal, nicht versionieren)
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Lokale Nachweis-Kopien fremder Verträge (z. B. Resend-DPA) — das Repo ist
+# öffentlich, die Kopien sollen nicht neu veröffentlicht werden.
+/docs/nachweise/
