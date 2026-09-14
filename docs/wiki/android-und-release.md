@@ -10,7 +10,7 @@
 | `applicationId` / `appId` | `de.tobsob.geoquizarcade` |
 | App-Name | GEOQUIZ ARCADE |
 | `versionName` | `1.0` (manuell — das soll eine Release-Entscheidung sein) |
-| `versionCode` | **7** (automatisch hochgezählt) |
+| `versionCode` | **8** (automatisch hochgezählt; Build 8 vom 2026-09-14, `npm run release:android`, Signatur `CN=Tobias Sobek`) |
 | `minSdkVersion` | 24 |
 | `targetSdkVersion` / `compileSdkVersion` | 36 — erfüllt Googles aktuelle Mindestanforderung |
 | `minifyEnabled` | false — Größenoptimierung, **kein** Store-Kriterium |

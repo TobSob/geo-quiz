@@ -10,22 +10,26 @@
 | # | Punkt | Warum es blockt |
 |---|---|---|
 | 1 | **Mail landet bei Outlook im Junk** | Registrierung **funktioniert** Ende zu Ende (2026-09-14 mit echter Mail bewiesen, Links über `geoquiz.tobsob.dev`). Offen ist nur die Zustellung: SPF/DKIM/DMARC `pass`, trotzdem `SCL 5`. Hauptursache Domain-Alter, das geht nur mit Zeit weg. Bis dahin Tester vorwarnen („Junk prüfen, dann *Kein Junk*, sonst ist der Link gesperrt") oder Google-Login empfehlen. Kein harter Blocker mehr |
-| 2 | **Android-Build ist älter als das Web** | Artefakte vom 2026-08-29 = `versionCode 7`, **ohne** den Passwort-Reset vom 30.08.; das Live-Web hat ihn (Strings im ausgelieferten Bundle gefunden). Ein Upload von Build 7 wäre eine App ohne das Feature, dessen Link aufs Web zeigt → vor dem Upload einmal `npm run release` |
-| 3 | **Play Console: App anlegen + App Signing** (K11) | Ohne Play App Signing ist ein Keystore-Verlust das Ende der App |
-| 4 | **Data Safety + IARC + Zielgruppe** (K12) | Antworten liegen fertig in [../STORE-LISTING.md](../STORE-LISTING.md) §6/§7 |
-| 5 | **Store-Eintrag befüllen** (K13) | Texte, Icon, Feature-Grafik, Screenshots liegen bereit |
-| 6 | **Closed Testing** (K14) | Neue Privatkonten: zuletzt 12 Tester, 14 Tage durchgehend. Die eigentliche Wartezeit — nicht abkürzbar |
+| 2 | **Play Console: App anlegen + App Signing** (K11) | Ohne Play App Signing ist ein Keystore-Verlust das Ende der App |
+| 3 | **Data Safety + IARC + Zielgruppe** (K12) | Antworten liegen fertig in [../STORE-LISTING.md](../STORE-LISTING.md) §6/§7 |
+| 4 | **Store-Eintrag befüllen** (K13) | Texte, Icon, Feature-Grafik, Screenshots liegen bereit |
+| 5 | **Closed Testing** (K14) | Neue Privatkonten: zuletzt 12 Tester, 14 Tage durchgehend. Die eigentliche Wartezeit — nicht abkürzbar |
 
 ## Sollte vor dem Release passieren
 
 | Punkt | Begründung |
 |---|---|
 | **Build 8 auf echtem Gerät** | Gerätetest erfolgte auf Build 6; Basemap-Nachjustierung und Passwort-Reset kamen danach. Der MapLibre-Umbau hatte einen Fehler, der nur im echten Build sichtbar war (schwarzer Bildschirm ohne Konsolenfehler) |
-| **Unversionierte Arbeit committen** | Am 2026-09-12 lagen `recovery.ts`, `recovery.test.ts`, `CLAUDE.md`, `DESIGN-PASSWORD-RESET.md`, `DESIGN-WIKI.md`, `docs/wiki/` und vier geänderte Dateien uncommitted auf `main` — Code, der **teilweise schon live ist** |
 | **Migrationen 0013/0014 live?** | STATUS.md nennt sie als ausstehend, 0017 ist aber nachweislich live. Widersprüchlich — im Dashboard nachsehen und hier eintragen |
 | **2 fehlende Screenshots** | Globale Bestenliste + Pokalregal, beide brauchen eine Anmeldung im Emulator. Kein Blocker (Play verlangt 2, es gibt 7), aber die Bestenliste ist das Verkaufsargument |
 
 ## Erledigt seit dem letzten Stand
+
+- **Build 8** (2026-09-14, `versionCode 8`, signiert): enthält Passwort-Reset
+  und Mail-Link-Einlösung; im App-Bundle geprüft, dass `token_hash` und
+  `geoquiz.tobsob.dev` drin sind und `geo-quiz-a6s` nicht mehr. Löst den
+  Blocker „Android-Build älter als das Web".
+- **Unversionierter Stand committet und gepusht** (`0bd62f5`, 2026-09-14).
 
 - **Mailversand eingerichtet** (2026-09-12, Dashboard-Durchgang) — 2FA,
   App-Passwort, Custom SMTP `smtp.gmail.com:587`, Rate Limit 30/h, deutsche
