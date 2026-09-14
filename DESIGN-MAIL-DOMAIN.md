@@ -143,7 +143,7 @@ Nutzungsbedingungen:
   Verpflichtung auf das EU-US Data Privacy Framework.
 
 Kein separater Abschluss nötig. Kopie der Seite als Nachweis (Art. 28 DSGVO):
-`docs/nachweise/resend-dpa-stand-2026-08-27.htm` — **gitignored**, weil das
+`docs/nachweise/resend-dpa-stand-2026-08-27.htm` und `.pdf` (Druckfassung, 121 Seiten inkl. SCC-Anhängen) — **gitignored**, weil das
 Repo öffentlich ist; liegt also nur lokal.
 
 **Data Safety:** unverändert „geteilt: nein". Weitergabe an Dienstleister,
