@@ -2,6 +2,11 @@
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
 > Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-08-03
+>
+> **Geprüfter Ist-Stand statt Historie: [docs/wiki/](docs/wiki/README.md).** Bei
+> Widerspruch zwischen den Status-Spalten hier und
+> [docs/wiki/offene-punkte.md](docs/wiki/offene-punkte.md) gilt das Wiki — es
+> trägt ein Prüfdatum.
 
 ## Gesamtfortschritt
 
@@ -19,9 +24,9 @@
 | E | Arcade-Umbau: zeitbasierte Modi + neues Scoring ([DESIGN-ARCADE.md](DESIGN-ARCADE.md)) | ✅ Fertig inkl. 3 Playtest-Balancing-Runden (2026-07-14/15) |
 | F | Freundesgruppen ([DESIGN-SOCIAL.md](DESIGN-SOCIAL.md)) | ✅ Fertig (Zwei-Account-E2E 2026-07-12) |
 | G | Gamification: Abzeichen, Pokale Top 3, XP/Level ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | ✅ Fertig (Live-DB 0007–0009, E2E 2026-07-14) |
-| H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (21 Avatare, Karte für jeden Spieler, Bestenlisten-Avatare, Cup-Punkte-Aufklappen) — **0010–0012 live, 0013 (Reihenfolge-Fix) noch auf Live-DB** |
+| H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (22 Avatare, Karte für jeden Spieler, Bestenlisten-Avatare, Cup-Punkte-Aufklappen) — **0010–0012 live, 0013 (Reihenfolge-Fix) noch auf Live-DB** |
 | I | Pokal-Ausbau: Perioden-Navigation, Pixel-Pokale, Pokalregal ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | 🔄 Client + Migration 0014 fertig (Tests 109/109) — **`apply_pending.sql` (0013+0014) noch auf Live-DB, dann Account-E2E** |
-| J | Social Login Google/GitHub ([DESIGN-AUTH.md](DESIGN-AUTH.md)) | 🔄 Code fertig (linkIdentity/signInWithOAuth, Buttons in beiden Auth-Panels) — **OAuth-Apps + Supabase-Provider-Setup (manuell) + Redirect-Test offen** |
+| J | Social Login Google/GitHub ([DESIGN-AUTH.md](DESIGN-AUTH.md)) | ✅ Code fertig (linkIdentity/signInWithOAuth, Buttons in beiden Auth-Panels); **Google und GitHub sind serverseitig aktiv** — am 2026-08-30 über `/auth/v1/settings` bestätigt. Redirect-Test auf der Live-Domain durch einen Menschen weiter offen |
 | B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Setup fertig; Feedback-Runde 1 umgesetzt: [DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md); Geräte-Bestätigung offen) |
 | C | Polish (Sounds ✅, Handy-Performance ✅ [DESIGN-PERF-MOBILE.md](DESIGN-PERF-MOBILE.md); Code-Splitting/PWA/Haptics offen) | 🔄 |
 | D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |
@@ -40,7 +45,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | `data/world-atlas-50m.json` | ✅ | Topojson für Outline-Modus, 756 KB, per `import()` nachgeladen |
 | `data/outline-index.json` | ✅ | Umkreis je Land (~7 KB) für Pruning + Outline-Pool, via `scripts/build-outline-atlas.mjs` |
 | `data/countries.json` (schlank) | ✅ | 245 Länder (194 UN), 84 KB, via `scripts/transform-countries.mjs` |
-| `data/cities.json` | ✅ | 141 Städte, alle Kontinente, Population + isCapital |
+| `data/cities.json` | ✅ | 143 Städte, alle Kontinente, Population + isCapital |
 | `data/landmarks.json` | ✅ | 129 Einträge (Bauwerke, Monumente, Naturwunder, bekannte Plätze), Kategorie + Difficulty 1–3 + Foto je Eintrag, generiert via `scripts/fetch-landmark-images.mjs` |
 | `data/landmark-credits.json` | ✅ | Urheber + Lizenz je Foto (38 KB, eigener Chunk — nur der Nachweis-Screen lädt ihn), aus demselben Skript-Lauf |
 
@@ -54,7 +59,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | `adaptiveSampler.ts` | ✅ | Weighted-random, 30 % Flat-Mix, 5er-Ring-Buffer |
 | `cupSession.ts` | ✅ | 6 Legs à 30 s, Cup-Total = Rohsumme |
 | `geo/distance.ts` (Haversine) | ✅ | Berlin↔Paris-Test |
-| Vitest-Tests | ✅ | 103 Tests, 9 Dateien |
+| Vitest-Tests | ✅ | 164 Tests, 17 Dateien (geprüft 2026-09-14) |
 
 ### 🎨 UI / Design
 | Baustein | Status | Notiz |
@@ -77,7 +82,7 @@ bevorzugt Ungesehenes & oft Falsches.
 | Cup (alle 6 Modi rotierend) | ✅ | 30-s-Legs, Interstitials, End-Breakdown-Tabelle, Punkte je Disziplin einsehbar in „Meine Rekorde" (Hover) und globaler Cup-Bestenliste (Klick, live); Reihenfolge-Fix (Migration 0013) noch ausstehend |
 | Training (adaptiv, eigenständig) | ✅ | Setup: Kategorien + Endlos/10/25, ohne Zeitdruck, zählt nicht in Bestenliste |
 | Bestenliste | ✅ | **Geo Cup ist der Hauptpunkt** (großer Button oben; für Accounts vorausgewählt, Gäste starten weiter bei „Meine Rekorde"), darunter als Unterpunkte Level / Global / „Meine Rekorde" (Allzeit-Top-10 je Kategorie, lokal) — alle drei mit Gruppen-Umschalter und Avataren; Zeitfilter sind **Kalenderperioden** (Woche Mo–So / Monat / Jahr, Europe/Berlin — wie die Pokale) und mit ◀/▶ blätterbar ([DESIGN-LEADERBOARD-PERIODS.md](DESIGN-LEADERBOARD-PERIODS.md)); Migration 0016 live seit 2026-07-22 |
-| Avatare & Spielerkarte | ✅ | 21 Pixel-Avatare, Picker, Karte für jede angeklickte Bestenlisten-Zeile (Migrationen 0010–0012 live) ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) |
+| Avatare & Spielerkarte | ✅ | 22 Pixel-Avatare, Picker, Karte für jede angeklickte Bestenlisten-Zeile (Migrationen 0010–0012 live) ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) |
 | Erfolge (Abzeichen/Pokale/Level) | ✅ | `/achievements`, Unlock-Panel am Rundenende, Level-Chip im Header |
 
 ### ☁️ Backend (Supabase) — Phase 4
@@ -118,6 +123,29 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 - ✅ `npm run lint` — nur 3 unkritische Warnungen (bewusste `runKey`-Re-Roll-Dependencies)
 - ✅ Im Browser durchgespielt: Flaggen-Runde 10/10 (Rang A, 1812 Pkt.), City-Pin Amsterdam (197 km → +34, deckt sich mit Plan-Tabelle), Umriss-Modus (Katar markiert), Cup Leg 1 → Interstitial (Zwischenstand 72/100), Bestenliste + localStorage-Persistenz bestätigt
 - 🐛 Gefixt dabei: Race-Condition Timeout-vs-Klick in `useQuizSession` (Ref-Lock), unreiner setState-Updater (StrictMode)
+
+## Mailversand über eigene Domain (2026-09-12 bis 2026-09-14)
+Letzter echter Veröffentlichungs-Blocker. Ist-Stand und Prüfwege:
+[docs/wiki/auth-und-email.md](docs/wiki/auth-und-email.md), Herleitung:
+[DESIGN-MAIL-DOMAIN.md](DESIGN-MAIL-DOMAIN.md).
+- ✅ **Site-URL** stand schon richtig (A4 war nur halb offen); Redirect-Liste
+  ergänzt.
+- ✅ **Gmail-SMTP** lief seit 2026-08-30; Versand am 2026-09-12 bewiesen
+  (Kopie im Gesendet-Ordner). **Microsoft verwarf die Mail still.**
+- ✅ **Domain `tobsob.dev`** (Cloudflare) als Dach für alle Projekte;
+  Versand über **Resend** von `mail.tobsob.dev`, DKIM/SPF/MX automatisch,
+  DMARC `p=none` von Hand. Von außen über zwei Resolver geprüft.
+- ⚠️ **Outlook: jetzt zugestellt, aber Junk** — `spf/dkim/dmarc=pass`,
+  `SCL 5`. Die Technik stimmt; stören Domain-Alter und der Button-Link auf
+  `*.supabase.co`.
+- 🛠️ **Client löst Mail-Links selbst ein** (`captureEmailLink` +
+  `verifyOtp` in `ensureSession`), damit die Templates auf die eigene Domain
+  zeigen können. Nebenbei immun gegen Link-Scanner, die Einmal-Tokens vorab
+  verbrauchen. Tests 164/164, Fehlerpfad im Browser geprüft.
+  **Ausgerollt 2026-09-14** und mit echter Mail an Outlook bewiesen:
+  Link auf `geoquiz.tobsob.dev`, Klick bestätigt das Konto, Token
+  verschwindet aus der URL. Zustellung bei Outlook weiter Junk (Domain-Alter).
+- 🌐 **Web jetzt unter https://geoquiz.tobsob.dev** (`pages.dev` bleibt).
 
 ## Pin-Datumsgrenze + Dev-Runde (2026-07-26)
 - 🐛 Gefixt: Beim Auflösen einer Pin-Frage nahm die Verbindungslinie (und der

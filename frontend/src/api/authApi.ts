@@ -1,8 +1,15 @@
+import { Capacitor } from '@capacitor/core'
 import { supabase } from './supabaseClient'
 import {
   parseOAuthRedirectError,
   type OAuthRedirectOutcome,
 } from '../features/auth/oauthRedirect'
+import { isRecoveryRedirect } from '../features/auth/recovery'
+import {
+  emailLinkSuccessMessage,
+  parseEmailLink,
+  type EmailLink,
+} from '../features/auth/emailLink'
 
 export { parseOAuthRedirectError }
 export type { OAuthRedirectOutcome }
@@ -38,6 +45,10 @@ export interface AuthInfo {
 export async function ensureSession(): Promise<AuthInfo | null> {
   if (!supabase) return null
   try {
+    // Ein Link aus einer Auth-Mail muss VOR getSession() eingelöst sein —
+    // sonst legt die App erst einen neuen Gast an und verliert ihn Sekunden
+    // später wieder an die bestätigte Sitzung.
+    await verifyPendingEmailLink()
     let { data: sessionData } = await supabase.auth.getSession()
     if (!sessionData.session) {
       const { data, error } = await supabase.auth.signInAnonymously()
@@ -98,6 +109,10 @@ function translateAuthError(message: string): string {
     [/provider is not enabled|unsupported provider/i, 'Diese Anmeldung ist serverseitig noch nicht freigeschaltet.'],
     [/manual linking is disabled/i, 'Konto-Verknüpfung ist serverseitig deaktiviert.'],
     [/identity is already linked/i, 'Dieses Konto ist bereits mit einem anderen Spieler verknüpft.'],
+    [/otp_expired|invalid or has expired|token has expired/i, 'Der Link ist abgelaufen oder wurde schon benutzt — fordere einen neuen an.'],
+    [/new password should be different/i, 'Das neue Passwort muss sich vom alten unterscheiden.'],
+    [/auth session missing|session_not_found/i, 'Die Sitzung ist abgelaufen — fordere den Link bitte neu an.'],
+    [/for security purposes|only request this after/i, 'Zu schnell hintereinander — bitte einen Moment warten.'],
     [/network/i, 'Keine Verbindung zum Server — bitte Internetverbindung prüfen.'],
   ]
   for (const [pattern, german] of known) {
@@ -245,6 +260,154 @@ export async function signInWithEmail(
   const { error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) return { ok: false, message: translateAuthError(error.message) }
   return { ok: true, message: 'Angemeldet!' }
+}
+
+const RECOVERY_KEY = 'geoquiz-password-recovery'
+
+/**
+ * Zieladresse des Reset-Links (DESIGN-PASSWORD-RESET.md).
+ *
+ * In der Android-App ist `window.location.origin` Capacitors eigener Origin
+ * (`https://localhost`) — ein Link dorthin wäre für den System-Browser, der die
+ * Mail öffnet, wertlos. Deshalb zeigt der Reset-Link aus der App immer auf die
+ * öffentliche Web-Adresse: Das Passwort wird im Browser neu gesetzt, danach
+ * meldet man sich in der App damit an.
+ */
+const PUBLIC_SITE_URL =
+  (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined) ??
+  'https://geoquiz.tobsob.dev'
+
+function passwordResetRedirectTo(): string {
+  return Capacitor.isNativePlatform() ? PUBLIC_SITE_URL : oauthRedirectTo()
+}
+
+/**
+ * Reset-Mail anfordern. Die Rückmeldung ist bewusst **unabhängig davon, ob es
+ * das Konto gibt** — sonst wäre das Formular ein Verzeichnis dafür, welche
+ * E-Mail-Adressen hier registriert sind.
+ */
+export async function requestPasswordReset(email: string): Promise<AuthActionResult> {
+  if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: passwordResetRedirectTo(),
+  })
+  // Rate-Limits und Netzfehler zeigen wir an; ein „unbekannte Adresse" gibt
+  // Supabase hier ohnehin nicht zurück.
+  if (error) return { ok: false, message: translateAuthError(error.message) }
+  // In der App endet der Link im System-Browser (siehe passwordResetRedirectTo)
+  // — ohne diesen Hinweis wartet man in der App darauf, dass dort etwas
+  // passiert, und die Sitzung wechselt ja bewusst nicht mit.
+  return {
+    ok: true,
+    message: Capacitor.isNativePlatform()
+      ? 'Wenn es zu dieser Adresse ein Konto gibt, ist die Mail unterwegs. Der Link öffnet sich im Browser — setz dort dein neues Passwort und melde dich danach hier damit an.'
+      : 'Wenn es zu dieser Adresse ein Konto gibt, ist die Mail unterwegs. Der Link ist nur kurze Zeit gültig.',
+  }
+}
+
+/**
+ * Neues Passwort setzen. Läuft auf der Sitzung, die der Recovery-Link erzeugt
+ * hat — deshalb ist hier kein altes Passwort nötig und auch keins verfügbar.
+ */
+export async function setNewPassword(password: string): Promise<AuthActionResult> {
+  if (!supabase) return { ok: false, message: 'Offline — kein Backend konfiguriert.' }
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) return { ok: false, message: translateAuthError(error.message) }
+  return { ok: true, message: 'Passwort geändert — du bist angemeldet.' }
+}
+
+/**
+ * Merkt sich synchron, dass dieser Seitenaufruf ein Recovery-Rücksprung war —
+ * **vor** dem ersten Render, aus demselben Grund wie
+ * `resolveOAuthRedirectError()`: Der HashRouter (bzw. seine Catch-all-Route)
+ * schreibt den Hash gleich auf `#/profile` um, und danach wäre `type=recovery`
+ * nicht mehr zu sehen.
+ *
+ * Die Tokens bleiben unangetastet — die löst supabase-js über
+ * `detectSessionInUrl` ein. Hier wird nur die Absicht festgehalten.
+ */
+export function captureRecoveryRedirect(): void {
+  if (typeof window === 'undefined') return
+  if (isRecoveryRedirect(window.location.hash, window.location.search)) {
+    sessionStorage.setItem(RECOVERY_KEY, '1')
+  }
+}
+
+/**
+ * Link aus einer Auth-Mail (DESIGN-MAIL-DOMAIN.md), synchron vor dem ersten
+ * Render festgehalten (main.tsx). Bewusst nur im Speicher: Ein Reload soll den
+ * Einmal-Token nicht ein zweites Mal einlösen — das scheitert sicher und
+ * meldet dann „abgelaufen", obwohl es gerade geklappt hat.
+ */
+let pendingEmailLink: EmailLink | null = null
+let emailLinkVerification: Promise<void> | null = null
+
+const EMAIL_LINK_MESSAGE_KEY = 'geoquiz-email-link-message'
+
+/**
+ * Muss nach `captureRecoveryRedirect()` laufen — das liest `type=recovery`
+ * aus derselben Query, die hier entfernt wird.
+ */
+export function captureEmailLink(): void {
+  if (typeof window === 'undefined') return
+  const link = parseEmailLink(window.location.search)
+  if (!link) return
+  pendingEmailLink = link
+  // Token sofort aus Adressleiste und Verlauf: Ein geteilter Screenshot oder
+  // eine kopierte URL wäre sonst eine weitergegebene Anmeldung.
+  window.history.replaceState(null, '', window.location.pathname + '#/profile')
+}
+
+/**
+ * Löst den festgehaltenen Link genau einmal ein, auch wenn `ensureSession()`
+ * von mehreren Stellen gleichzeitig läuft. `verifyOtp` mit `type: 'recovery'`
+ * feuert `PASSWORD_RECOVERY`, das Passwort-Panel springt also wie gehabt an.
+ */
+function verifyPendingEmailLink(): Promise<void> {
+  if (!emailLinkVerification) {
+    emailLinkVerification = (async () => {
+      const link = pendingEmailLink
+      pendingEmailLink = null
+      if (!supabase || !link) return
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: link.tokenHash,
+        type: link.type,
+      })
+      const message = error
+        ? translateAuthError(error.message)
+        : emailLinkSuccessMessage(link.type)
+      if (message) sessionStorage.setItem(EMAIL_LINK_MESSAGE_KEY, message)
+    })()
+  }
+  return emailLinkVerification
+}
+
+/** Einmalige Rückmeldung zum eingelösten Mail-Link abholen (Profil). */
+export function consumeEmailLinkMessage(): string | null {
+  const msg = sessionStorage.getItem(EMAIL_LINK_MESSAGE_KEY)
+  if (msg) sessionStorage.removeItem(EMAIL_LINK_MESSAGE_KEY)
+  return msg
+}
+
+/** Einmalig abholen, ob gerade ein Recovery-Link geöffnet wurde. */
+export function consumeRecoveryFlag(): boolean {
+  const flag = sessionStorage.getItem(RECOVERY_KEY)
+  if (flag) sessionStorage.removeItem(RECOVERY_KEY)
+  return flag !== null
+}
+
+/**
+ * Zweiter, unabhängiger Weg in den Recovery-Modus: GoTrue feuert nach dem
+ * Einlösen des Links `PASSWORD_RECOVERY`. Der Marker oben deckt den Fall ab,
+ * dass der Router schneller war als supabase-js; dieses Event den Fall, dass
+ * die Seite schon stand. Beide zusammen sind robust gegen die Reihenfolge.
+ */
+export function onPasswordRecovery(callback: () => void): () => void {
+  if (!supabase) return () => {}
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') callback()
+  })
+  return () => data.subscription.unsubscribe()
 }
 
 /** Sign out; the next launch starts a fresh anonymous session. */

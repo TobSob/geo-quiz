@@ -1,11 +1,16 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  consumeEmailLinkMessage,
   consumePendingOAuthMessage,
+  consumeRecoveryFlag,
   continueWithProvider,
   deleteOwnAccount,
   ensureSession,
   OAUTH_PROVIDER_LABELS,
+  onPasswordRecovery,
+  requestPasswordReset,
+  setNewPassword,
   signInWithEmail,
   signOutUser,
   updateDisplayName,
@@ -22,6 +27,11 @@ import {
 } from '../api/groupApi'
 import { isOnlineEnabled } from '../api/supabaseClient'
 import { applyAuthSession } from '../features/auth/applySession'
+import {
+  MIN_PASSWORD_LENGTH,
+  passwordProblemMessage,
+  validateNewPassword,
+} from '../features/auth/recovery'
 import { DEFAULT_AVATAR_ID } from '../features/avatars/avatarCatalog'
 import { useAvatarStore } from '../state/avatarStore'
 import { useProgressStore } from '../state/progressStore'
@@ -35,8 +45,8 @@ import { TrophyShelfEditor } from '../components/TrophyShelf'
  * (Capacitor-WebView), ein „/datenschutz/" liefe dort ins Leere. Die Seiten
  * liegen statisch in `public/` und werden von Cloudflare Pages ausgeliefert.
  */
-const PRIVACY_URL = 'https://geo-quiz-a6s.pages.dev/datenschutz/'
-const IMPRINT_URL = 'https://geo-quiz-a6s.pages.dev/impressum/'
+const PRIVACY_URL = 'https://geoquiz.tobsob.dev/datenschutz/'
+const IMPRINT_URL = 'https://geoquiz.tobsob.dev/impressum/'
 
 const inputStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
@@ -53,11 +63,121 @@ export function ProfileScreen() {
   return (
     <div className="stack" style={{ gap: 28, maxWidth: 560, margin: '0 auto', width: '100%' }}>
       <h2 className="glow-cyan center">👤 Profil</h2>
+      <PasswordRecoveryPanel />
       <PlayerCard />
       <TrophyShelfEditor />
       <AvatarPicker />
       <AccountSection />
       <LegalFooter />
+    </div>
+  )
+}
+
+/**
+ * Neues Passwort setzen, nachdem der Reset-Link geöffnet wurde
+ * (DESIGN-PASSWORD-RESET.md). Steht ganz oben im Profil — wer über den Link
+ * kommt, will genau eine Sache tun.
+ *
+ * Der Modus wird über ZWEI unabhängige Wege erkannt: den synchron in
+ * `main.tsx` gesetzten Marker (falls der Router schneller war als supabase-js)
+ * und das `PASSWORD_RECOVERY`-Event (falls die Seite schon stand). Welcher
+ * zuerst greift, hängt vom Timing ab; zusammen sind sie robust.
+ */
+function PasswordRecoveryPanel() {
+  const [active, setActive] = useState(false)
+  const [password, setPassword] = useState('')
+  const [repeat, setRepeat] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (consumeRecoveryFlag()) setActive(true)
+    return onPasswordRecovery(() => setActive(true))
+  }, [])
+
+  if (!active) return null
+
+  const problem = validateNewPassword(password, repeat)
+
+  // Der Speichern-Knopf ist bei einem Problem deaktiviert — dann muss daneben
+  // stehen, WARUM, sonst hängt man vor einem toten Knopf. Die Meldung kommt
+  // aber erst, wenn das jeweilige Feld überhaupt angefasst wurde: „mindestens
+  // 6 Zeichen" beim ersten Tastendruck wäre Meckern, nicht Hilfe.
+  const showHint =
+    (problem === 'too-short' && password.length > 0) ||
+    (problem === 'mismatch' && repeat.length > 0)
+  const hint = showHint ? passwordProblemMessage(problem) : null
+
+  const submit = async () => {
+    if (problem) {
+      setMessage(passwordProblemMessage(problem))
+      return
+    }
+    setBusy(true)
+    setMessage(null)
+    const result = await setNewPassword(password)
+    if (result.ok) {
+      // Wie beim normalen Login: kompletter Zustand, nicht nur die Sitzung.
+      const auth = await ensureSession()
+      await applyAuthSession(auth)
+      setDone(true)
+    }
+    setBusy(false)
+    setMessage(result.message)
+    setPassword('')
+    setRepeat('')
+  }
+
+  return (
+    <div className="pixel-panel stack" style={{ padding: 20 }}>
+      <h3 className="glow-yellow">🔑 Neues Passwort setzen</h3>
+      {done ? (
+        <>
+          <p style={{ margin: 0, fontSize: 19 }}>{message}</p>
+          <div>
+            <button type="button" className="pixel-btn" onClick={() => setActive(false)}>
+              Weiter
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="dim" style={{ margin: 0, fontSize: 19 }}>
+            Vergib ein neues Passwort für deinen Account — mindestens{' '}
+            {MIN_PASSWORD_LENGTH} Zeichen.
+          </p>
+          <input
+            type="password"
+            placeholder="Neues Passwort"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={inputStyle}
+          />
+          <input
+            type="password"
+            placeholder="Noch einmal"
+            value={repeat}
+            onChange={(e) => setRepeat(e.target.value)}
+            style={inputStyle}
+          />
+          <div>
+            <button
+              type="button"
+              className="pixel-btn pixel-btn--cyan"
+              disabled={busy || problem !== null}
+              onClick={submit}
+            >
+              {busy ? '…' : 'Passwort speichern'}
+            </button>
+          </div>
+          {(hint ?? message) && (
+            <p className="glow-yellow" style={{ margin: 0 }}>
+              {hint ?? message}
+            </p>
+          )}
+        </>
+      )}
     </div>
   )
 }
@@ -111,6 +231,7 @@ function AccountSection() {
 
   return (
     <>
+      <EmailLinkNotice />
       <div className="pixel-panel stack" style={{ padding: 20 }}>
         <NameEditor />
         <div className="dim" style={{ fontSize: 19 }}>
@@ -136,6 +257,29 @@ function AccountSection() {
 
       <DangerZone />
     </>
+  )
+}
+
+/**
+ * Rückmeldung zum Link aus einer Auth-Mail (DESIGN-MAIL-DOMAIN.md). Wird erst
+ * im Online-Zweig gemountet: Die Meldung entsteht in ensureSession() und liegt
+ * damit sicher bereit, sobald der Status auf „online" steht — beim Mount des
+ * Profils wäre sie noch nicht da.
+ */
+function EmailLinkNotice() {
+  const [message, setMessage] = useState<string | null>(null)
+  // Im Effekt statt als useState-Initialisierer: StrictMode ruft beides
+  // doppelt auf, und der zweite Aufruf fände die schon abgeholte Meldung
+  // nicht mehr. `if (msg)` verhindert, dass er sie mit null überschreibt.
+  useEffect(() => {
+    const msg = consumeEmailLinkMessage()
+    if (msg) setMessage(msg)
+  }, [])
+  if (!message) return null
+  return (
+    <p className="pixel-panel glow-yellow center" style={{ padding: 16, margin: 0 }}>
+      {message}
+    </p>
   )
 }
 
@@ -561,6 +705,24 @@ function LoginPanel() {
     }
   }
 
+  /**
+   * Reset-Link anfordern. Nutzt bewusst das Feld oben statt eines zweiten
+   * Formulars — die Adresse steht in dem Moment ohnehin schon da, und ein
+   * eigener Screen wäre für einen Knopf zu viel Weg.
+   */
+  const forgotPassword = async () => {
+    const address = email.trim()
+    if (!address.includes('@')) {
+      setMessage('Trag oben deine E-Mail-Adresse ein, dann schicke ich dir einen Link.')
+      return
+    }
+    setBusy(true)
+    setMessage(null)
+    const result = await requestPasswordReset(address)
+    setBusy(false)
+    setMessage(result.message)
+  }
+
   return (
     <div className="pixel-panel stack" style={{ padding: 20 }}>
       <h3 className="glow-cyan">Anmelden</h3>
@@ -596,6 +758,24 @@ function LoginPanel() {
           {busy ? '…' : 'Anmelden'}
         </button>
       </div>
+      <button
+        type="button"
+        className="dim"
+        disabled={busy}
+        onClick={forgotPassword}
+        style={{
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          font: 'inherit',
+          fontSize: 18,
+          textAlign: 'left',
+          textDecoration: 'underline',
+          cursor: 'pointer',
+        }}
+      >
+        Passwort vergessen?
+      </button>
       {message && <p className="glow-yellow" style={{ margin: 0 }}>{message}</p>}
     </div>
   )

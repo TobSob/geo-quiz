@@ -286,6 +286,6 @@ if (doAndroid) {
 }
 
 console.log('\n  ✔ Release fertig.')
-if (doUpload) info('Web: https://geo-quiz-a6s.pages.dev')
+if (doUpload) info('Web: https://geoquiz.tobsob.dev (auch https://geo-quiz-a6s.pages.dev)')
 if (doAndroid) info(`App: frontend/release/ — aufs Gerät via  adb install -r <apk>`)
 console.log('')

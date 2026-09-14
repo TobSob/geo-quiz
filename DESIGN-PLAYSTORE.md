@@ -290,8 +290,10 @@ Checkliste nach der Anmeldung:
 2. **Play App Signing aktivieren** beim ersten Upload — der lokale Keystore
    wird damit zum reinen Upload-Key und ist ersetzbar. Ohne das ist ein
    Keystore-Verlust das Ende der App. Keystore trotzdem sichern.
-3. Datenschutz-URL eintragen: `https://geo-quiz-a6s.pages.dev/datenschutz/`
-4. Konto-Lösch-URL eintragen: `https://geo-quiz-a6s.pages.dev/konto-loeschen/`
+3. Datenschutz-URL eintragen: `https://geoquiz.tobsob.dev/datenschutz/`
+4. Konto-Lösch-URL eintragen: `https://geoquiz.tobsob.dev/konto-loeschen/`
+   (seit 2026-09-14 die eigene Domain, [DESIGN-MAIL-DOMAIN.md](DESIGN-MAIL-DOMAIN.md);
+   `pages.dev` bleibt erreichbar, soll aber nicht mehr in die Console)
 5. Data-Safety-Formular — erhoben werden: E-Mail (Account), Anzeigename,
    Avatar-Auswahl, Spielergebnisse, User-ID. Verschlüsselt in Transit (HTTPS),
    löschbar (siehe 4.)

@@ -144,9 +144,9 @@ niemand zu Ende liest, verkauft nichts.
 | Kategorie | Quizspiele (Trivia) |
 | Tags | Quiz, Bildung, Gelegenheitsspiel |
 | Kontakt-E-Mail | `geoquizsupport@gmail.com` |
-| Website | `https://geo-quiz-a6s.pages.dev` |
-| Datenschutzerklärung | `https://geo-quiz-a6s.pages.dev/datenschutz/` |
-| Konto-Löschung (URL) | `https://geo-quiz-a6s.pages.dev/konto-loeschen/` |
+| Website | `https://geoquiz.tobsob.dev` |
+| Datenschutzerklärung | `https://geoquiz.tobsob.dev/datenschutz/` |
+| Konto-Löschung (URL) | `https://geoquiz.tobsob.dev/konto-loeschen/` |
 | Icon 512×512 | `frontend/assets/icon-only.png` |
 | Feature-Grafik 1024×500 | `frontend/assets/feature-graphic.png` |
 | Telefon-Screenshots | `frontend/assets/store-screenshots/` (siehe unten) |

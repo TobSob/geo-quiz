@@ -1,6 +1,6 @@
 # 🌍 GeoQuiz
 
-**▶ Jetzt spielen: [geo-quiz-a6s.pages.dev](https://geo-quiz-a6s.pages.dev)**
+**▶ Jetzt spielen: [geoquiz.tobsob.dev](https://geoquiz.tobsob.dev)**
 
 Ein Geographie-Quiz im 8-Bit-Retro-Look — für Web und (geplant) Android. Alle Spielmodi laufen als **Arcade-Sessions**: 60 Sekunden, so viele Fragen wie du schaffst, Streak-Multiplikator ohne Deckel. Dazu Pixel-Avatare, Abzeichen, Pokale, Level, Freundesgruppen — und ein adaptiver Trainingsmodus, der genau die Fragen zurückbringt, die du am häufigsten verhaust.
 
@@ -143,6 +143,7 @@ Detaillierter Plan zum Abhaken: **[ROADMAP.md](ROADMAP.md)** · Stand & Testprot
 
 ## Weiterführende Doku
 
+- 📚 **[Projekt-Wiki](docs/wiki/README.md)** — der geprüfte Ist-Stand in kurzen Seiten: Architektur, Engine, Backend, Auth & Mailversand, Karte, Release, externe Dienste, offene Punkte. Einstiegspunkt für Agenten ist [CLAUDE.md](CLAUDE.md)
 - ▶️ **[Betrieb & Werkzeuge](docs/RUNNING.md)** — Dev-Server (auch am Handy im WLAN), Produktions-Build lokal ansehen, Tests, APK bauen und aufspielen, Daten-Pipeline, Stolpersteine
 - 🛠️ **[Developer-Doku](docs/DEVELOPMENT.md)** — der komplette Stack erklärt: Architekturprinzipien, Quiz-Engine, Delta-Sync, Supabase-Schema & Sicherheitsmodell, Design-System, Erweiterungs-Kochbuch
 - 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md) · [Handy-Performance](DESIGN-PERF-MOBILE.md) · [Play-Store-Reife](DESIGN-PLAYSTORE.md)

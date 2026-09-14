@@ -4,6 +4,22 @@ Supabase verschickt ab Werk englische Standard-Mails („Confirm your new email
 address …"). Diese Vorlagen eindeutschen die relevanten Templates im
 GeoQuiz-Ton.
 
+> **Seit 2026-09-14: Links zeigen auf die eigene Domain**
+> ([DESIGN-MAIL-DOMAIN.md](../DESIGN-MAIL-DOMAIN.md)). Statt
+> `{{ .ConfirmationURL }}` (GoTrue-Verify-Endpunkt auf `*.supabase.co`) steht
+> im Button `{{ .SiteURL }}/?token_hash={{ .TokenHash }}&type=…`; die App löst
+> den Token selbst per `verifyOtp` ein. Zwei Gründe: Outlook stufte „Konto
+> bestätigen + Link auf fremde Domain" als Junk ein, und Link-Scanner
+> verbrauchten den Einmal-Token beim Vorab-Aufruf.
+>
+> **Reihenfolge:** Diese Templates erst einfügen, wenn der Client mit
+> `captureEmailLink()` live ist **und** die Site-URL auf
+> `https://geoquiz.tobsob.dev` steht — sonst landet der Link auf einer Seite,
+> die ihn nicht einlöst.
+>
+> **Betreff ohne Emoji**, Absender `GEOQUIZ ARCADE <geoquiz@mail.tobsob.dev>`.
+> Beides schwache, aber kostenlose Spam-Signale weniger.
+
 > **Voraussetzung (Stand 2026-07, im Dashboard verifiziert): Custom SMTP.**
 > Beim eingebauten Supabase-Mailversand sind die Templates gesperrt
 > („Emails will be sent using the default templates") — erst mit
@@ -33,7 +49,7 @@ darum bekommen neue Spieler DIESE Mail.
 **Subject:**
 
 ```
-🌍 GeoQuiz: Bestätige deine E-Mail-Adresse
+GeoQuiz: Bestätige deine E-Mail-Adresse
 ```
 
 **Body (HTML):**
@@ -44,7 +60,7 @@ darum bekommen neue Spieler DIESE Mail.
   <p style="color: #ffec27; font-weight: bold; margin: 0 0 20px;">&#9654; ACCOUNT SICHERN</p>
   <p>Fast geschafft! Best&auml;tige <strong style="color: #29adff;">{{ .NewEmail }}</strong> als deine E-Mail-Adresse, dann ist dein Spielstand dauerhaft gesichert und du kannst dich auf jedem Ger&auml;t anmelden.</p>
   <p style="margin: 28px 0;">
-    <a href="{{ .ConfirmationURL }}" style="background: #00e756; color: #1a1a2e; padding: 14px 22px; text-decoration: none; font-weight: bold; border: 3px solid #0a0a14;">&#9654;&nbsp;E-MAIL BEST&Auml;TIGEN</a>
+    <a href="{{ .SiteURL }}/?token_hash={{ .TokenHash }}&type=email_change" style="background: #00e756; color: #1a1a2e; padding: 14px 22px; text-decoration: none; font-weight: bold; border: 3px solid #0a0a14;">&#9654;&nbsp;E-MAIL BEST&Auml;TIGEN</a>
   </p>
   <p style="color: #8a8a9e; font-size: 13px;">Du hast das nicht angefordert? Dann kannst du diese Mail einfach ignorieren &mdash; es passiert nichts.</p>
 </div>
@@ -58,7 +74,7 @@ einen Account anlegt).
 **Subject:**
 
 ```
-🌍 GeoQuiz: Bestätige deine Registrierung
+GeoQuiz: Bestätige deine Registrierung
 ```
 
 **Body (HTML):**
@@ -69,7 +85,7 @@ einen Account anlegt).
   <p style="color: #ffec27; font-weight: bold; margin: 0 0 20px;">&#9654; PLAYER REGISTRIERT</p>
   <p>Willkommen! Ein Klick, und dein Account ist startklar:</p>
   <p style="margin: 28px 0;">
-    <a href="{{ .ConfirmationURL }}" style="background: #00e756; color: #1a1a2e; padding: 14px 22px; text-decoration: none; font-weight: bold; border: 3px solid #0a0a14;">&#9654;&nbsp;REGISTRIERUNG BEST&Auml;TIGEN</a>
+    <a href="{{ .SiteURL }}/?token_hash={{ .TokenHash }}&type=signup" style="background: #00e756; color: #1a1a2e; padding: 14px 22px; text-decoration: none; font-weight: bold; border: 3px solid #0a0a14;">&#9654;&nbsp;REGISTRIERUNG BEST&Auml;TIGEN</a>
   </p>
   <p style="color: #8a8a9e; font-size: 13px;">Du hast dich nicht bei GeoQuiz registriert? Dann ignoriere diese Mail einfach.</p>
 </div>
@@ -77,13 +93,14 @@ einen Account anlegt).
 
 ## 3. „Reset Password"
 
-Noch keine UI dafür im Spiel — aber falls die Mail je ausgelöst wird, soll
-sie nicht englisch sein.
+Seit 2026-08-30 gibt es die UI dazu: „Passwort vergessen" im LoginPanel löst
+diese Mail aus, der Link landet im Recovery-Panel des Profils
+(DESIGN-PASSWORD-RESET.md). Die Vorlage ist also **im Einsatz**, nicht Reserve.
 
 **Subject:**
 
 ```
-🌍 GeoQuiz: Passwort zurücksetzen
+GeoQuiz: Passwort zurücksetzen
 ```
 
 **Body (HTML):**
@@ -94,7 +111,7 @@ sie nicht englisch sein.
   <p style="color: #ffec27; font-weight: bold; margin: 0 0 20px;">&#9654; CONTINUE?</p>
   <p>Du willst dein Passwort zur&uuml;cksetzen? Hier entlang:</p>
   <p style="margin: 28px 0;">
-    <a href="{{ .ConfirmationURL }}" style="background: #29adff; color: #1a1a2e; padding: 14px 22px; text-decoration: none; font-weight: bold; border: 3px solid #0a0a14;">&#9654;&nbsp;NEUES PASSWORT SETZEN</a>
+    <a href="{{ .SiteURL }}/?token_hash={{ .TokenHash }}&type=recovery" style="background: #29adff; color: #1a1a2e; padding: 14px 22px; text-decoration: none; font-weight: bold; border: 3px solid #0a0a14;">&#9654;&nbsp;NEUES PASSWORT SETZEN</a>
   </p>
   <p style="color: #8a8a9e; font-size: 13px;">Falls du das nicht warst: Mail ignorieren, dein Passwort bleibt unver&auml;ndert.</p>
 </div>
