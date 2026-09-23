@@ -74,6 +74,20 @@ const REVEAL_FALLBACK_ZOOM = 3
 
 const LINE_ID = 'reveal-line'
 
+/**
+ * Android-WebView killt bei Speicherdruck im Hintergrund gerne den
+ * GPU-Kontext der Karte. MapLibre hört selbst auf `webglcontextlost` /
+ * `-restored` und baut Style + Painter automatisch neu auf (siehe
+ * `_contextLost`/`_contextRestored` in maplibre-gl) — das setzt aber voraus,
+ * dass der Browser den Kontext tatsächlich zurückgibt. Genau das bleibt auf
+ * manchen Android-WebViews nach längerem Hintergrund aus: kein
+ * `contextrestored`, keine Fehlermeldung, die Karte bleibt dauerhaft schwarz
+ * (nur die `background`-Farbe des Styles, siehe karte-und-basemap.md).
+ * Bisher half nur ein App-Neustart. Fallback hier: kommt der Kontext nach
+ * dieser Frist nicht zurück, wird die ganze `PinMap`-Instanz neu aufgebaut.
+ */
+const CONTEXT_LOST_RECOVERY_TIMEOUT_MS = 4000
+
 /** Grundabstand zum Rand, damit Marker nicht auf der Kante kleben. */
 const EDGE_PADDING = 16
 /** Kein Rand darf mehr als so viel der Karte fressen — sonst kippt fitBounds. */
@@ -139,6 +153,9 @@ export const PinMap = memo(function PinMap({
 }: PinMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<MapLibreMap | null>(null)
+  // Bumpt bei liegengebliebenem WebGL-Kontextverlust (siehe
+  // CONTEXT_LOST_RECOVERY_TIMEOUT_MS) und baut damit die Map-Instanz neu auf.
+  const [remountToken, setRemountToken] = useState(0)
   const guessMarker = useRef<Marker | null>(null)
   const targetMarker = useRef<Marker | null>(null)
   // Klick-Handler wird einmal registriert und liest den jeweils aktuellen
@@ -192,14 +209,32 @@ export const PinMap = memo(function PinMap({
     const observer = new ResizeObserver(() => instance.resize())
     observer.observe(container)
 
+    let contextLostTimer: ReturnType<typeof setTimeout> | null = null
+    const handleContextLost = () => {
+      contextLostTimer = setTimeout(() => {
+        setRemountToken((t) => t + 1)
+      }, CONTEXT_LOST_RECOVERY_TIMEOUT_MS)
+    }
+    const handleContextRestored = () => {
+      if (contextLostTimer) {
+        clearTimeout(contextLostTimer)
+        contextLostTimer = null
+      }
+    }
+    instance.on('webglcontextlost', handleContextLost)
+    instance.on('webglcontextrestored', handleContextRestored)
+
     return () => {
+      if (contextLostTimer) clearTimeout(contextLostTimer)
+      instance.off('webglcontextlost', handleContextLost)
+      instance.off('webglcontextrestored', handleContextRestored)
       observer.disconnect()
       guessMarker.current = null
       targetMarker.current = null
       setMap(null)
       instance.remove()
     }
-  }, [])
+  }, [remountToken])
 
   useEffect(() => {
     if (!map) return

@@ -1,6 +1,6 @@
 # Karte & Basemap
 
-> **Stand:** 2026-08-30 · **Verifiziert:** `src/components/PinMap.tsx`,
+> **Stand:** 2026-09-23 · **Verifiziert:** `src/components/PinMap.tsx`,
 > `scripts/build-basemap-style.mjs`, `src/data/basemap-dark-nolabels.json`
 
 ## Aufbau
@@ -47,6 +47,13 @@ nicht optisch zerfällt.
 - **CSS-Reihenfolge:** MapLibres Stylesheet kommt über den lazy geladenen
   Chunk und wird damit **nach** `index.css` eingehängt. Eigene Kartenregeln
   brauchen `.map-frame` davor, sonst gewinnt MapLibre bei gleicher Spezifität.
+- **WebGL-Kontextverlust auf Android (schwarze Karte, kein Fehler):** Gleiches
+  Bild wie der Worker-Pfad-Fall oben (Style-Hintergrund ist `rgb(12,12,12)`),
+  andere Ursache — Android-WebView killt den GPU-Kontext bei Speicherdruck im
+  Hintergrund, und `webglcontextrestored` feuert dort nicht zuverlässig.
+  Watchdog in `PinMap.tsx` baut die Map nach 4 s ohne Recovery neu auf. Bisher
+  nur im Browser simuliert, nicht auf echtem Android-Gerät bestätigt — siehe
+  Nachtrag in [../../DESIGN-MAP-FIXES.md](../../DESIGN-MAP-FIXES.md).
 
 ## Warum nicht CARTO/Esri/Stadia
 

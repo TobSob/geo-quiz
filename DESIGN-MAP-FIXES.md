@@ -109,3 +109,60 @@ Auflöse-Zoom bleibt sanft und gleichmäßig, unabhängig von der Tipp-Güte.
   richtig; nur der fehlende `maxZoom`-Deckel war das Problem.
 - Kein per-Land-Tuning der Umriss-Rahmung — `fitExtent` + Exklaven-Clipping
   erledigt das generisch.
+
+---
+
+## Nachtrag (2026-09-23) · Dauerhaft schwarze Karte auf Android
+
+**Status:** umgesetzt, auf echtem Gerät noch nicht bestätigt
+**Auslöser:** Feedback-Meldung (Android-App, `Städte-Pin`): Karte gelegentlich
+komplett schwarz, manchmal hilft ein App- oder Handy-Neustart, kein Muster
+erkennbar außer „vielleicht das Netz".
+
+### Befund
+
+Style-Hintergrund ist `rgb(12,12,12)` — praktisch schwarz. Fehlen Kacheln, sieht
+das exakt wie „keine Karte" aus, ganz ohne Fehlertext (karte-und-basemap.md,
+Falle 1 kennt das Bild schon vom fehlenden Worker-Pfad). Die zweite, bisher
+nicht dokumentierte Ursache für dasselbe Bild: **WebGL-Kontextverlust im
+Android-WebView.**
+
+MapLibre selbst behandelt `webglcontextlost`/`-restored` (`_contextLost` in
+maplibre-gl: `painter.destroy()`, Style merken; `_contextRestored`:
+`setStyle(...)` baut alles neu auf) — das setzt aber voraus, dass der Browser
+den Kontext irgendwann zurückgibt. Genau das bleibt auf Android-WebViews nach
+Speicherdruck im Hintergrund gern aus: kein `contextrestored`, keine
+Fehlermeldung, die Karte bleibt für immer auf dem letzten Frame bzw. dem
+Hintergrund stehen. Ein App-Neustart erzeugt zwangsläufig eine neue
+`MapLibreMap`-Instanz und behebt es deshalb zuverlässig — genau das gemeldete
+Muster.
+
+### Fix (`PinMap.tsx`)
+
+Watchdog statt Verlass auf die Browser-Erholung: bei `webglcontextlost` läuft
+ein Timer (`CONTEXT_LOST_RECOVERY_TIMEOUT_MS`, 4 s). Feuert in der Frist
+`webglcontextrestored`, wird er nur gelöscht — MapLibres eigene Recovery hat
+funktioniert. Feuert er nicht, bumpt ein `remountToken`-State das
+Mount-`useEffect` und baut die komplette `PinMap`-Instanz neu auf (neuer
+Canvas, neuer GL-Kontext, `LINE_ID`-Source/Layer wird beim neuen `load` erneut
+angelegt).
+
+### Verifiziert
+
+Kein Unit-Test — das Verhalten hängt an echten Browser-Events und einem Timer,
+das lohnt den Mock-Aufwand nicht. Stattdessen im Chrome-DevTools-Browser
+manuell reproduziert: `canvas.getContext('webgl').getExtension
+('WEBGL_lose_context').loseContext()` **ohne** `restoreContext()` — simuliert
+genau den „nie wiederhergestellt"-Fall. Nach der Frist neuer, funktionsfähiger
+`gl.isContextLost() === false`-Kontext, Pin setzen/Auflösen/`fitBounds`
+funktionieren sofort wieder. **Auf einem echten Android-Gerät unter echtem
+Speicherdruck nicht nachgestellt** — das ist der eigentliche Beweis, der noch
+aussteht.
+
+### Bewusst nicht gemacht
+
+- Kein Remount bei jedem `appStateChange`-Resume (Capacitor `@capacitor/app`
+  wird an anderer Stelle schon für `backButton`/`appUrlOpen` genutzt) — das
+  würde bei *jedem* Tab-Wechsel Zoom/Ansicht aller Spieler zurücksetzen, nicht
+  nur beim tatsächlichen Fehlerfall. Der Watchdog reagiert gezielt nur auf den
+  echten `webglcontextlost`.
