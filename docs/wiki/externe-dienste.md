@@ -30,6 +30,7 @@ aktualisiert).
 | Was | Wo | Nie |
 |---|---|---|
 | `VITE_SUPABASE_URL` / `_ANON_KEY` | `frontend/.env.local` (gitignored) | Anon-Key ist öffentlich, das ist so vorgesehen |
-| Keystore-Passwörter | `frontend/android/keystore.properties` (gitignored) | nicht ins Repo, nicht in den Chat |
+| Keystore-Passwörter | `frontend/android/keystore.properties` (gitignored); zusätzlich in **Bitwarden** unter „GeoQuiz Keystore pw" | nicht ins Repo, nicht in den Chat |
+| Keystore-Datei | `C:\Users\tobso\keystores\geoquiz-release.jks` (Alias `geoquiz`, angelegt 2026-07-18) — **außerhalb des Repos**, nur auf diesem Rechner. Zweite Kopie empfohlen | ohne sie kein Upload mehr; mit Play App Signing rettet ein Google-Support-Vorgang die App, unangenehm bleibt es |
 | SMTP-Key | nur im Supabase-Dashboard | nicht in den Chat |
 | Supabase Service-Role-Key | wird nicht verwendet | niemals in den Client |
