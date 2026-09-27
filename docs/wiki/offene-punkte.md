@@ -31,8 +31,9 @@
   Ursache vermutlich WebGL-Kontextverlust im Android-WebView bei
   Speicherdruck, den der Browser nicht immer zurückgibt. Watchdog in
   `PinMap.tsx` baut die Karte nach 4 s ohne Recovery neu auf. Im Browser mit
-  simuliertem Kontextverlust geprüft, **auf einem echten Android-Gerät noch
-  nicht bestätigt** — das steht noch aus.
+  simuliertem Kontextverlust geprüft. **Auf dem Gerät bestätigt am 2026-09-27**
+  (S24 Ultra, Build 14): mehrere Städte-Pin-Runden mit Wechseln in den
+  Hintergrund, die Karte hielt durch.
 - **Google-Login in der Android-App** (2026-09-14, Build 13): landete vorher
   im Browser. Deep-Link `de.tobsob.geoquizarcade://auth-callback`, Custom Tab,
   PKCE nur nativ ([DESIGN-OAUTH-ANDROID.md](../../DESIGN-OAUTH-ANDROID.md)).
