@@ -19,9 +19,15 @@
 
 | Punkt | Begründung |
 |---|---|
-| **2 fehlende Screenshots** | Globale Bestenliste + Pokalregal, beide brauchen eine Anmeldung im Emulator. Kein Blocker (Play verlangt 2, es gibt 7), aber die Bestenliste ist das Verkaufsargument |
 
 ## Erledigt seit dem letzten Stand
+
+- **Screenshot globale Bestenliste** (2026-10-05): `09-bestenliste.png`,
+  1080×2400, mit **Demo-Daten** aus `frontend/scripts/store-screenshot-leaderboard.mjs`
+  (echte App, Supabase abgefangen, keine echten fremden Namen). Das
+  Pokalregal gab es schon seit 2026-09-14 (`08-…`) — der Punkt „2 fehlende
+  Screenshots" war halb veraltet. Upload-Satz jetzt 8/8. **Hochladen in der
+  Console fehlt noch** (Store-Eintrag → Telefon-Screenshots).
 
 - **Bestandsnamen geprüft** (2026-10-05): beide Prüfabfragen aus 0018 im
   SQL-Editor einzeln ausgeführt — **0 Treffer** bei `profiles.display_name`

@@ -173,7 +173,7 @@ bestätigt: Anmeldung klappt, globale Bestenliste erscheint.
 
 ## 5. Telefon-Screenshots (K13b)
 
-**Upload-Satz, Stand 2026-09-14** — 7 Bilder, in dieser Reihenfolge hochladen:
+**Upload-Satz, Stand 2026-10-05** — 8 Bilder (Play-Maximum), in dieser Reihenfolge hochladen:
 
 | Datei | Motiv | Quelle |
 |---|---|---|
@@ -182,6 +182,7 @@ bestätigt: Anmeldung klappt, globale Bestenliste erscheint.
 | `03-umrisse.png` | Guinea-Bissau markiert, Nachbarn sichtbar | AVD, 2026-08-05 |
 | `04-staedte-pin.png` | Nuuk aufgelöst: „VOLLTREFFER! 54 km daneben +100" | **S24 Ultra, Build 9, 2026-09-14** (1080×2340) |
 | `05-geo-cup.png` | Cup-Intro mit allen 6 Disziplinen | AVD, 2026-08-05 |
+| `09-bestenliste.png` | Globale Cup-Bestenliste, eigene Zeile auf Platz 4 hervorgehoben | **Demo-Daten**, Edge headless, 2026-10-05 (1080×2400) — `frontend/scripts/store-screenshot-leaderboard.mjs` |
 | `07-landmark-pin.png` | Roter Platz mit Foto: „VOLLTREFFER! 66 km daneben +105" | **S24 Ultra, Build 9, 2026-09-14** |
 | `08-spielerkarte-pokalregal.png` | Eigene Spielerkarte: Level 18, Pokalregal voll, Bestpunkte | **S24 Ultra, Build 13, 2026-09-14** |
 
@@ -194,9 +195,12 @@ Warum die Änderungen gegenüber dem 05.08.:
   aufgenommen — zeigt ausschließlich eigene Daten.
 - **`06-training.png` nicht im Upload-Satz** (Datei bleibt liegen): schwächstes
   Motiv, und Play erlaubt höchstens 8.
-- **Globale Bestenliste bewusst weggelassen:** Aufgenommen, aber darauf stand
-  der selbst gewählte Name eines anderen echten Spielers. Ohne Einwilligung
-  nicht im Store veröffentlichen.
+- **Globale Bestenliste (2026-10-05) mit Demo-Daten:** Die echte Liste zeigte
+  den selbst gewählten Namen eines anderen echten Spielers — ohne Einwilligung
+  nicht im Store. Deshalb echte App + abgefangene Supabase-Antworten mit
+  erfundenen Spielern im Stil der Zufallsnamen (`COSMIC_LYNX_31` …). Die
+  Oberfläche ist unverändert die echte, nur die Zeilen sind Beispiele. Steht
+  bewusst hinter dem Cup-Intro: erst „was ist der Cup", dann „wer führt".
 
 Gemischte Seitenverhältnisse (20:9 vom Emulator, 19,5:9 vom S24) nimmt Play an.
 Beim Aufnehmen auf dem Gerät auf **Vollbild** achten: Nach einer
