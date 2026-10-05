@@ -31,9 +31,10 @@
   (DE/AT/CH), Tester (Google Group `geoquiztester@googlegroups.com`) und ein
   Release-Entwurf sind angelegt; offen sind *Release-Vorschau bestätigen* und
   *zur Überprüfung senden* — erst damit geht alles (inkl. Data Safety) an
-  Google. **Klären vorher:** In den erweiterten Einstellungen ist der
-  Formfaktor „Google Play Games auf dem PC" aktiviert — für eine Touch-App im
-  Hochformat vermutlich ungewollt.
+  Google. Formfaktor **„Google Play Games on PC" am 2026-10-05
+  deaktiviert** (war ungewollt an; Testen und veröffentlichen → Erweiterte
+  Einstellungen → Formfaktoren). **Android XR** steht dort weiter auf „Aktiv"
+  — ungeklärt, ob gewollt.
 
 - **Namensmoderation live** (2026-10-05): Migration 0018 eingespielt
   (korrigierte Fassung), Web mit neuer Datenschutzerklärung (Stand 3. Oktober)
