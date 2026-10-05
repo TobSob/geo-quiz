@@ -26,7 +26,7 @@
   Track „Alpha" aktiv, Release `1.0-15-2026-10-03`. Store-Screenshots danach
   auf 8/8 umgestellt (Training raus, Bestenliste rein; Reihenfolge Menü, Cup,
   Flaggen, Umrisse, Städte-Pin, Landmark-Pin, Bestenliste, Spielerkarte) —
-  diese eine Änderung muss noch zur Prüfung eingereicht werden.
+  ebenfalls eingereicht.
 
 - **Screenshot globale Bestenliste** (2026-10-05): `09-bestenliste.png`,
   1080×2400, mit **Demo-Daten** aus `frontend/scripts/store-screenshot-leaderboard.mjs`
