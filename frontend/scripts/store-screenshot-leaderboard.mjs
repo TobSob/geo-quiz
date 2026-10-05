@@ -47,7 +47,7 @@ const avatarOf = Object.fromEntries(cupRows.map((r) => [r.display_name, r.avatar
 
 function rpc(name, body) {
   switch (name) {
-    case 'get_leaderboard_cups': return cupRows.map(({ avatar, ...r }) => r)
+    case 'get_leaderboard_cups': return cupRows.map(({ avatar: _avatar, ...r }) => r)
     case 'get_leaderboard_scores': return []
     case 'get_leaderboard_first_played': return new Date(now - 90 * day).toISOString()
     case 'get_profile_avatars': return (body.p_names ?? []).map((n) => ({ display_name: n, avatar_id: avatarOf[n] ?? null }))
