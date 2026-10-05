@@ -547,16 +547,24 @@ export async function deleteOwnAccount(): Promise<AuthActionResult> {
   return { ok: true, message: 'Konto und alle zugehörigen Daten wurden gelöscht.' }
 }
 
-export async function updateDisplayName(name: string): Promise<boolean> {
-  if (!supabase) return false
+export async function updateDisplayName(name: string): Promise<AuthActionResult> {
+  const failed = { ok: false, message: 'Name konnte nicht gespeichert werden — bitte erneut versuchen.' }
+  if (!supabase) return failed
   const trimmed = name.trim().slice(0, 24)
-  if (trimmed.length < 2) return false
+  if (trimmed.length < 2) return { ok: false, message: 'Der Name braucht mindestens 2 Zeichen.' }
   const { data: sessionData } = await supabase.auth.getSession()
   const userId = sessionData.session?.user.id
-  if (!userId) return false
+  if (!userId) return failed
   const { error } = await supabase
     .from('profiles')
     .update({ display_name: trimmed })
     .eq('id', userId)
-  return !error
+  if (error) {
+    // Wortfilter-Trigger aus Migration 0018 (DESIGN-MODERATION.md).
+    if (/name_not_allowed/.test(error.message)) {
+      return { ok: false, message: 'Dieser Name ist nicht erlaubt — bitte wähle einen anderen.' }
+    }
+    return failed
+  }
+  return { ok: true, message: '' }
 }

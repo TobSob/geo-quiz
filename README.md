@@ -146,7 +146,7 @@ Detaillierter Plan zum Abhaken: **[ROADMAP.md](ROADMAP.md)** · Stand & Testprot
 - 📚 **[Projekt-Wiki](docs/wiki/README.md)** — der geprüfte Ist-Stand in kurzen Seiten: Architektur, Engine, Backend, Auth & Mailversand, Karte, Release, externe Dienste, offene Punkte. Einstiegspunkt für Agenten ist [CLAUDE.md](CLAUDE.md)
 - ▶️ **[Betrieb & Werkzeuge](docs/RUNNING.md)** — Dev-Server (auch am Handy im WLAN), Produktions-Build lokal ansehen, Tests, APK bauen und aufspielen, Daten-Pipeline, Stolpersteine
 - 🛠️ **[Developer-Doku](docs/DEVELOPMENT.md)** — der komplette Stack erklärt: Architekturprinzipien, Quiz-Engine, Delta-Sync, Supabase-Schema & Sicherheitsmodell, Design-System, Erweiterungs-Kochbuch
-- 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md) · [Handy-Performance](DESIGN-PERF-MOBILE.md) · [Play-Store-Reife](DESIGN-PLAYSTORE.md)
+- 🎨 **Design-Dokumente** (Regelwerke mit Begründungen und Umsetzungs-Log): [Arcade-Scoring](DESIGN-ARCADE.md) · [Gamification](DESIGN-GAMIFICATION.md) · [Freundesgruppen](DESIGN-SOCIAL.md) · [Avatare & Spielerkarten](DESIGN-AVATARS.md) · [Handy-Performance](DESIGN-PERF-MOBILE.md) · [Play-Store-Reife](DESIGN-PLAYSTORE.md) · [Namensmoderation](DESIGN-MODERATION.md)
 - 📋 [Architekturplan](docs/PLAN.md) — die ursprüngliche Planung (Tech-Entscheidungen, Datenmodell, Phasen)
 - ☁️ [Backend-Setup](supabase/README.md) — Migrations anwenden, Dashboard-Einstellungen
 

@@ -1,6 +1,6 @@
 # Offene Punkte
 
-> **Stand:** 2026-09-12 · **Verifiziert:** Code-Prüfung, Live-Abfragen,
+> **Stand:** 2026-10-05 (0018 live) · 2026-10-03 (Moderation, Migrationen, K12) · vorher 2026-09-12 · **Verifiziert:** Code-Prüfung, Live-Abfragen,
 > Dashboard-Durchgang am 2026-09-12, Grep über das **ausgelieferte** Web-Bundle,
 > `npm run test`. Diese Seite hat bei Widerspruch **Vorrang** vor
 > Status-Spalten in ROADMAP.md und STATUS.md.
@@ -11,7 +11,7 @@
 |---|---|---|
 | 1 | **Mail landet bei Outlook im Junk** | Registrierung **funktioniert** Ende zu Ende (2026-09-14 mit echter Mail bewiesen, Links über `geoquiz.tobsob.dev`). Offen ist nur die Zustellung: SPF/DKIM/DMARC `pass`, trotzdem `SCL 5`. Hauptursache Domain-Alter, das geht nur mit Zeit weg. Bis dahin Tester vorwarnen („Junk prüfen, dann *Kein Junk*, sonst ist der Link gesperrt") oder Google-Login empfehlen. Kein harter Blocker mehr |
 | 2 | **Play Console: App anlegen + App Signing** (K11) | Ohne Play App Signing ist ein Keystore-Verlust das Ende der App |
-| 3 | **Data Safety + IARC + Zielgruppe** (K12) | Antworten liegen fertig in [../STORE-LISTING.md](../STORE-LISTING.md) §6/§7 |
+| 3 | **Data-Safety-Nachtrag** (K12 ist seit 2026-09-14 eingetragen; 0018 ist live, also jetzt fällig) | Mit 0018 kommt bei *Nutzer-IDs* der Zweck „Sicherheit und Compliance" dazu, siehe [../STORE-LISTING.md](../STORE-LISTING.md) §6 |
 | 4 | **Store-Eintrag befüllen** (K13) | Texte, Icon, Feature-Grafik, Screenshots liegen bereit |
 | 5 | **Closed Testing** (K14) | Neue Privatkonten: zuletzt 12 Tester, 14 Tage durchgehend. Die eigentliche Wartezeit — nicht abkürzbar |
 
@@ -19,11 +19,23 @@
 
 | Punkt | Begründung |
 |---|---|
-| **Moderation für Spielernamen** (Play-Richtlinie „Von Nutzern erstellte Inhalte") | Name ist frei wählbar und in Bestenlisten öffentlich; STORE-LISTING §7 beantwortet UGC deshalb mit **Ja**. Play verlangt dafür eine Melde- und Entfernungsmöglichkeit. Vorhanden ist nur `check (char_length(display_name) between 2 and 24)` (0001), **kein** Wortfilter, **kein** Melden-Knopf, **keine** Admin-Entfernung (Grep 2026-09-14). Bei reinen Namen prüft Google oft milder, eine Ablehnung ist trotzdem möglich. Vor dem Einreichen zur Prüfung klären. **Zusammenhang mit der Altersfreigabe (2026-09-14):** Die IARC-Frage „Kommunikation per Text" probeweise mit Ja beantwortet → **USK 16** mangels Melden/Blockieren/Moderation. Beantwortet ist sie jetzt mit Nein (kein Chat, siehe STORE-LISTING §7). Kommt je ein echter Chat dazu, braucht es vorher genau diese Schutzfunktionen, sonst USK 16 |
-| **Migrationen 0013/0014 live?** | STATUS.md nennt sie als ausstehend, 0017 ist aber nachweislich live. Widersprüchlich — im Dashboard nachsehen und hier eintragen |
+| **Bestandsnamen prüfen** | 0018 ist live und gegen die echte DB geprüft (siehe Erledigt). Offen nur: die zwei Prüfabfragen am Ende von `0018_name_moderation.sql` einmal im SQL-Editor laufen lassen — der Filter greift nur bei neuen/geänderten Namen |
 | **2 fehlende Screenshots** | Globale Bestenliste + Pokalregal, beide brauchen eine Anmeldung im Emulator. Kein Blocker (Play verlangt 2, es gibt 7), aber die Bestenliste ist das Verkaufsargument |
 
 ## Erledigt seit dem letzten Stand
+
+- **Namensmoderation live** (2026-10-05): Migration 0018 eingespielt
+  (korrigierte Fassung), Web mit neuer Datenschutzerklärung (Stand 3. Oktober)
+  ausgeliefert, Build 15 (`versionCode 15`) gebaut am 2026-10-03. Live-Prüfung
+  siehe [backend-supabase.md](backend-supabase.md). Den Melden-Knopf mit zwei
+  registrierten Konten hat noch niemand durchgeklickt.
+
+- **Migrationen 0013/0014 sind live** (2026-10-03 geklärt): vom Nutzer am
+  2026-07-18 eingespielt (ROADMAP I6), heute per Anon-Abfrage bestätigt —
+  Details in [backend-supabase.md](backend-supabase.md). STATUS.md war
+  veraltet und ist nachgezogen.
+- **Data Safety + IARC + Zielgruppe** (K12) am 2026-09-14 in der Console
+  eingetragen: USK 0 / PEGI 3 ([../STORE-LISTING.md](../STORE-LISTING.md) §8).
 
 - **Dauerhaft schwarze Karte bei Städte-Pin auf Android** (2026-09-23,
   Nachtrag in [../../DESIGN-MAP-FIXES.md](../../DESIGN-MAP-FIXES.md)):

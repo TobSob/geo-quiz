@@ -226,6 +226,12 @@ Absturz-/Diagnosedaten, Werbe- oder Marketingdaten.
 Begründung für „Avatar" und „Abzeichen": fallen unter App-Aktivität
 (Spielinteraktionen), keine eigene Kategorie nötig.
 
+**Nachtrag 2026-10-03 (Namensmoderation, Migration 0018) — in der Console
+noch nachtragen:** Meldungen speichern Nutzer-IDs von Melder und Gemeldetem.
+Keine neue Datenkategorie, aber die Zeile **Nutzer-IDs** braucht zusätzlich den
+Zweck **„Betrugsprävention, Sicherheit und Compliance"** (so auch DSE §3,
+„berechtigtes Interesse").
+
 ## 7. Altersfreigabe (IARC) + Zielgruppe (K12)
 
 - Gewalt, Sexualität, Schimpfwörter, Drogen, Glücksspiel, Angst: **jeweils nein**
@@ -239,8 +245,11 @@ Begründung für „Avatar" und „Abzeichen": fallen unter App-Aktivität
   sonst USK-freien Werten (PEGI 3, ESRB Jedes Alter, ClassInd 0). Die App hat
   keinen Chat; „Chats" wäre selbst eine Falschdarstellung. Freie Spieler- und
   Gruppennamen sind nutzergenerierte Inhalte, aber keine Kommunikation im Sinne
-  der Frage. Die Googles UGC-Richtlinie gilt davon unabhängig → Moderation für
-  Namen steht in [wiki/offene-punkte.md](wiki/offene-punkte.md).
+  der Frage. Googles UGC-Richtlinie gilt davon unabhängig → **Namensmoderation
+  gebaut 2026-10-03** ([DESIGN-MODERATION.md](../DESIGN-MODERATION.md)):
+  Wortfilter, „Namen melden" auf der Spielerkarte, Entfernen durch den
+  Betreiber, Regel-Zeile unterm Namensfeld. Die IARC-Antwort bleibt Nein —
+  Melden ändert nichts daran, dass es keine Kommunikation gibt.
 - Standortweitergabe an andere Nutzer: nein
 - Käufe: nein · Werbung: nein
 - **Zielgruppe: 13+ / „nicht primär an Kinder gerichtet"**. Mit Konten, frei

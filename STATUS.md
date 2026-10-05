@@ -1,7 +1,7 @@
 # geo-quiz — Projekt-Status
 
 > Zentrale Fortschrittsübersicht. Wird bei jedem Meilenstein aktualisiert.
-> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-08-03
+> Detailplan: [docs/PLAN.md](docs/PLAN.md) · aktueller Abhak-Plan: [ROADMAP.md](ROADMAP.md) · Stand: 2026-10-03
 >
 > **Geprüfter Ist-Stand statt Historie: [docs/wiki/](docs/wiki/README.md).** Bei
 > Widerspruch zwischen den Status-Spalten hier und
@@ -24,13 +24,13 @@
 | E | Arcade-Umbau: zeitbasierte Modi + neues Scoring ([DESIGN-ARCADE.md](DESIGN-ARCADE.md)) | ✅ Fertig inkl. 3 Playtest-Balancing-Runden (2026-07-14/15) |
 | F | Freundesgruppen ([DESIGN-SOCIAL.md](DESIGN-SOCIAL.md)) | ✅ Fertig (Zwei-Account-E2E 2026-07-12) |
 | G | Gamification: Abzeichen, Pokale Top 3, XP/Level ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | ✅ Fertig (Live-DB 0007–0009, E2E 2026-07-14) |
-| H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | 🔄 Client fertig (22 Avatare, Karte für jeden Spieler, Bestenlisten-Avatare, Cup-Punkte-Aufklappen) — **0010–0012 live, 0013 (Reihenfolge-Fix) noch auf Live-DB** |
-| I | Pokal-Ausbau: Perioden-Navigation, Pixel-Pokale, Pokalregal ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | 🔄 Client + Migration 0014 fertig (Tests 109/109) — **`apply_pending.sql` (0013+0014) noch auf Live-DB, dann Account-E2E** |
+| H | Avatare & Spielerkarten ([DESIGN-AVATARS.md](DESIGN-AVATARS.md)) | ✅ Client fertig (22 Avatare, Karte für jeden Spieler, Bestenlisten-Avatare, Cup-Punkte-Aufklappen), 0010–0013 live (0013 vom Nutzer eingespielt 2026-07-18, ROADMAP I6) |
+| I | Pokal-Ausbau: Perioden-Navigation, Pixel-Pokale, Pokalregal ([DESIGN-GAMIFICATION.md](DESIGN-GAMIFICATION.md)) | ✅ Client + Migration 0014 live (eingespielt 2026-07-18, am 2026-10-03 per Live-Abfrage bestätigt: `profile_featured_items` + `set_featured_items` existieren). Account-E2E des Regals steht weiter aus |
 | J | Social Login Google/GitHub ([DESIGN-AUTH.md](DESIGN-AUTH.md)) | ✅ Code fertig (linkIdentity/signInWithOAuth, Buttons in beiden Auth-Panels); **Google und GitHub sind serverseitig aktiv** — am 2026-08-30 über `/auth/v1/settings` bestätigt. Redirect-Test auf der Live-Domain durch einen Menschen weiter offen |
 | B | Capacitor Android-Packaging | 🔄 Läuft (Toolchain + Setup fertig; Feedback-Runde 1 umgesetzt: [DESIGN-MOBILE-POLISH.md](DESIGN-MOBILE-POLISH.md); Geräte-Bestätigung offen) |
 | C | Polish (Sounds ✅, Handy-Performance ✅ [DESIGN-PERF-MOBILE.md](DESIGN-PERF-MOBILE.md); Code-Splitting/PWA/Haptics offen) | 🔄 |
 | D | Anti-Cheat (Stufe 1 ✅: Session-Guard 0007; Stufe 2 server-autoritativ offen) | 🔄 |
-| K | Play-Store-Reife ([DESIGN-PLAYSTORE.md](DESIGN-PLAYSTORE.md)) | 🔄 Technisch fertig: Konto-Löschung (0017 **live + E2E bestätigt**), Rechtstexte live, `versionCode`-Automatik, Backup-Regeln, Feature-Grafik, Bildnachweise. Listing-Material liegt bereit: Texte in [docs/STORE-LISTING.md](docs/STORE-LISTING.md), 7 Telefon-Screenshots in `frontend/assets/store-screenshots/` (Bestenliste + Pokalregal brauchen eine Anmeldung im Emulator). **Offen sind nur noch Play-Console-Schritte:** App anlegen + App Signing, Data Safety, Altersfreigabe, Listing, Closed Testing |
+| K | Play-Store-Reife ([DESIGN-PLAYSTORE.md](DESIGN-PLAYSTORE.md)) | 🔄 Technisch fertig: Konto-Löschung (0017 **live + E2E bestätigt**), Rechtstexte live, `versionCode`-Automatik, Backup-Regeln, Feature-Grafik, Bildnachweise. Listing-Material liegt bereit: Texte in [docs/STORE-LISTING.md](docs/STORE-LISTING.md), 7 Telefon-Screenshots in `frontend/assets/store-screenshots/` (Bestenliste + Pokalregal brauchen eine Anmeldung im Emulator). Data Safety + Altersfreigabe in der Console eingetragen (2026-09-14). **Namensmoderation gebaut** ([DESIGN-MODERATION.md](DESIGN-MODERATION.md), Migration 0018 **live + geprüft 2026-10-05**, Build 15). Offen: Data-Safety-Nachtrag, dann Console: App Signing, Listing, Closed Testing |
 
 **Training seit R3 (2026-07-15):** eigenständig ohne Arcade — Setup-Screen mit
 Kategorien-Filter und Länge (Endlos/10/25), ohne Zeitdruck, adaptiver Sampler

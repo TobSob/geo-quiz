@@ -372,56 +372,78 @@ function NameEditor() {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const save = async () => {
     setSaving(true)
-    const ok = await updateDisplayName(draft)
+    setError(null)
+    const result = await updateDisplayName(draft)
     setSaving(false)
-    if (ok) {
+    if (result.ok) {
       setDisplayName(draft.trim().slice(0, 24))
       setEditing(false)
+    } else {
+      setError(result.message)
     }
   }
 
   return (
-    <div className="row" style={{ flexWrap: 'wrap' }}>
-      {editing ? (
-        <>
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value.toUpperCase())}
-            maxLength={24}
-            style={{ ...inputStyle, fontFamily: 'var(--font-display)', fontSize: 12, width: 240 }}
-          />
-          <button
-            type="button"
-            className="pixel-btn pixel-btn--primary"
-            disabled={saving || draft.trim().length < 2}
-            onClick={save}
-          >
-            OK
-          </button>
-          <button type="button" className="pixel-btn" onClick={() => setEditing(false)}>
-            X
-          </button>
-        </>
-      ) : (
-        <>
-          <span className="display glow-cyan" style={{ fontSize: 14 }}>
-            {displayName}
-          </span>
-          <button
-            type="button"
-            className="pixel-btn"
-            style={{ fontSize: 9, padding: '8px 10px' }}
-            onClick={() => {
-              setDraft(displayName ?? '')
-              setEditing(true)
-            }}
-          >
-            Ändern
-          </button>
-        </>
+    <div className="stack" style={{ gap: 8 }}>
+      <div className="row" style={{ flexWrap: 'wrap' }}>
+        {editing ? (
+          <>
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.toUpperCase())}
+              maxLength={24}
+              style={{ ...inputStyle, fontFamily: 'var(--font-display)', fontSize: 12, width: 240 }}
+            />
+            <button
+              type="button"
+              className="pixel-btn pixel-btn--primary"
+              disabled={saving || draft.trim().length < 2}
+              onClick={save}
+            >
+              OK
+            </button>
+            <button
+              type="button"
+              className="pixel-btn"
+              onClick={() => {
+                setEditing(false)
+                setError(null)
+              }}
+            >
+              X
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="display glow-cyan" style={{ fontSize: 14 }}>
+              {displayName}
+            </span>
+            <button
+              type="button"
+              className="pixel-btn"
+              style={{ fontSize: 9, padding: '8px 10px' }}
+              onClick={() => {
+                setDraft(displayName ?? '')
+                setEditing(true)
+              }}
+            >
+              Ändern
+            </button>
+          </>
+        )}
+      </div>
+      {error && <p className="glow-yellow" style={{ margin: 0 }}>{error}</p>}
+      {editing && (
+        // Play-Richtlinie UGC: Regeln für Nutzer sichtbar (DESIGN-MODERATION.md).
+        <p className="dim" style={{ margin: 0, fontSize: 16, maxWidth: 420 }}>
+          Dein Name steht in den Bestenlisten. Keine Beleidigungen, kein Hass,
+          nichts Sexuelles oder Extremistisches — gemeldete Namen werden
+          zurückgesetzt.
+        </p>
       )}
     </div>
   )

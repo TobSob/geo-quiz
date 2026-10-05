@@ -4,6 +4,7 @@ import { useUserStore } from '../state/userStore'
 import { useGamificationStore } from '../state/gamificationStore'
 import { useProgressStore } from '../state/progressStore'
 import { fetchPlayerCard, type FeaturedItem } from '../api/gamificationApi'
+import { REPORT_REASONS, reportDisplayName, type ReportReason } from '../api/moderationApi'
 import { TrophyShelf } from './TrophyShelf'
 import { levelProgress } from '../features/gamification/levels'
 import {
@@ -275,16 +276,77 @@ function OtherPlayerCardBody({
   ]
 
   return (
-    <PlayerCardView
-      avatarId={card.avatarId ?? fallbackAvatarId ?? DEFAULT_AVATAR_ID}
-      displayName={card.displayName}
-      xp={card.xp}
-      badgeTiers={badgeTiers}
-      bestRows={bestRows}
-      badgesEmptyText="Noch keine Abzeichen."
-      bestsEmptyText="Noch keine Rekorde."
-      featured={card.featured}
-    />
+    <>
+      <PlayerCardView
+        avatarId={card.avatarId ?? fallbackAvatarId ?? DEFAULT_AVATAR_ID}
+        displayName={card.displayName}
+        xp={card.xp}
+        badgeTiers={badgeTiers}
+        bestRows={bestRows}
+        badgesEmptyText="Noch keine Abzeichen."
+        bestsEmptyText="Noch keine Rekorde."
+        featured={card.featured}
+      />
+      <ReportNameControl displayName={card.displayName} />
+    </>
+  )
+}
+
+/**
+ * „Namen melden" unter einer fremden Karte (Play-Richtlinie UGC,
+ * DESIGN-MODERATION.md). Bewusst unauffällig: kleiner Text-Knopf, erst nach
+ * dem Tippen die Gründe. Erscheint nur, wenn die Karte geladen ist — und die
+ * lädt `get_player_card` ausschließlich für registrierte Konten, also genau
+ * die, die `report_display_name` auch annimmt.
+ */
+function ReportNameControl({ displayName }: { displayName: string }) {
+  const [state, setState] = useState<'idle' | 'choosing' | 'sending' | 'done'>('idle')
+  const [message, setMessage] = useState<string | null>(null)
+
+  const send = async (reason: ReportReason) => {
+    setState('sending')
+    const result = await reportDisplayName(displayName, reason)
+    setMessage(result.message)
+    setState(result.ok ? 'done' : 'choosing')
+  }
+
+  if (state === 'done') {
+    return <p className="dim center" style={{ margin: 0, fontSize: 16 }}>{message}</p>
+  }
+
+  if (state === 'idle') {
+    return (
+      <button
+        type="button"
+        className="report-name-btn"
+        onClick={() => setState('choosing')}
+      >
+        ⚑ Namen melden
+      </button>
+    )
+  }
+
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <span className="dim" style={{ fontSize: 16 }}>
+        Warum ist „{displayName}" nicht in Ordnung?
+      </span>
+      <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
+        {REPORT_REASONS.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            className="pixel-btn"
+            style={{ fontSize: 9, padding: '8px 10px' }}
+            disabled={state === 'sending'}
+            onClick={() => send(r.id)}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+      {message && <p className="glow-yellow" style={{ margin: 0 }}>{message}</p>}
+    </div>
   )
 }
 

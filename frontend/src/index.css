@@ -1234,6 +1234,25 @@ html {
   max-width: 420px;
 }
 
+/* „Namen melden" — bewusst Text statt Pixel-Button, damit er nicht mit
+   „Schließen" konkurriert (DESIGN-MODERATION.md). */
+.report-name-btn {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--ink-dim);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.report-name-btn:hover,
+.report-name-btn:focus-visible {
+  color: var(--ink);
+}
+
 .leader-row-me {
   background: rgba(41, 173, 255, 0.12);
 }

@@ -22,6 +22,7 @@ function translateGroupError(message: string): string {
   const known: [RegExp, string][] = [
     [/registered account required/i, 'Freundesgruppen gibt es nur mit Account — sichere kurz deinen Account im Profil.'],
     [/invalid group name/i, 'Der Gruppenname braucht 2–24 Zeichen.'],
+    [/name_not_allowed/i, 'Dieser Gruppenname ist nicht erlaubt — bitte wähle einen anderen.'],
     [/too many groups/i, 'Du bist schon in der Maximalzahl an Gruppen (12) — verlasse erst eine.'],
     [/too many join attempts/i, 'Zu viele Beitrittsversuche — bitte eine Stunde warten.'],
     [/group not found/i, 'Keine Gruppe mit diesem Code gefunden — Tippfehler?'],
