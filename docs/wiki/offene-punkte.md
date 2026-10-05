@@ -11,7 +11,7 @@
 |---|---|---|
 | 1 | **Mail landet bei Outlook im Junk** | Registrierung **funktioniert** Ende zu Ende (2026-09-14 mit echter Mail bewiesen, Links über `geoquiz.tobsob.dev`). Offen ist nur die Zustellung: SPF/DKIM/DMARC `pass`, trotzdem `SCL 5`. Hauptursache Domain-Alter, das geht nur mit Zeit weg. Bis dahin Tester vorwarnen („Junk prüfen, dann *Kein Junk*, sonst ist der Link gesperrt") oder Google-Login empfehlen. Kein harter Blocker mehr |
 | 2 | **Play Console: App anlegen + App Signing** (K11) | Ohne Play App Signing ist ein Keystore-Verlust das Ende der App |
-| 3 | **Google-Prüfung abwarten** — am 2026-10-05 eingereicht (Closed-Test-Release Build 15 + alle App-Inhalte inkl. Data-Safety-Nachtrag) | Mit 0018 kommt bei *Nutzer-IDs* der Zweck „Sicherheit und Compliance" dazu, siehe [../STORE-LISTING.md](../STORE-LISTING.md) §6 |
+| 3 | **Tester sammeln** — Closed Test ist seit 2026-10-05 **live**. Mindestens 12 Mitglieder in `geoquiztester@googlegroups.com`, die über `https://play.google.com/apps/testing/de.tobsob.geoquizarcade` beitreten und 14 Tage dabei bleiben. Danach Produktionszugriff beantragen | Mit 0018 kommt bei *Nutzer-IDs* der Zweck „Sicherheit und Compliance" dazu, siehe [../STORE-LISTING.md](../STORE-LISTING.md) §6 |
 | 4 | **Store-Eintrag befüllen** (K13) | Texte, Icon, Feature-Grafik, Screenshots liegen bereit |
 | 5 | **Closed Testing** (K14) | Neue Privatkonten: zuletzt 12 Tester, 14 Tage durchgehend. Die eigentliche Wartezeit — nicht abkürzbar |
 
@@ -21,6 +21,12 @@
 |---|---|
 
 ## Erledigt seit dem letzten Stand
+
+- **Closed Test freigegeben** (2026-10-05, gleicher Tag wie die Einreichung):
+  Track „Alpha" aktiv, Release `1.0-15-2026-10-03`. Store-Screenshots danach
+  auf 8/8 umgestellt (Training raus, Bestenliste rein; Reihenfolge Menü, Cup,
+  Flaggen, Umrisse, Städte-Pin, Landmark-Pin, Bestenliste, Spielerkarte) —
+  diese eine Änderung muss noch zur Prüfung eingereicht werden.
 
 - **Screenshot globale Bestenliste** (2026-10-05): `09-bestenliste.png`,
   1080×2400, mit **Demo-Daten** aus `frontend/scripts/store-screenshot-leaderboard.mjs`

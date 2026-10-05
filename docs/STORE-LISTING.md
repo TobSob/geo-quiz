@@ -173,7 +173,7 @@ bestätigt: Anmeldung klappt, globale Bestenliste erscheint.
 
 ## 5. Telefon-Screenshots (K13b)
 
-**Upload-Satz, Stand 2026-10-05** — 8 Bilder (Play-Maximum), in dieser Reihenfolge hochladen:
+**Upload-Satz, Stand 2026-10-05** — 8 Bilder (Play-Maximum). In der Console steht die Bestenliste an **7. Stelle** (vor der Spielerkarte), nicht an 3. wie unten geplant — beides in Ordnung:
 
 | Datei | Motiv | Quelle |
 |---|---|---|
