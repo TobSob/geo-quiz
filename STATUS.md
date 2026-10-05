@@ -124,6 +124,14 @@ Projekt: `dpueqnhhwcdbhihiudyg` · Doku: [supabase/README.md](supabase/README.md
 - ✅ Im Browser durchgespielt: Flaggen-Runde 10/10 (Rang A, 1812 Pkt.), City-Pin Amsterdam (197 km → +34, deckt sich mit Plan-Tabelle), Umriss-Modus (Katar markiert), Cup Leg 1 → Interstitial (Zwischenstand 72/100), Bestenliste + localStorage-Persistenz bestätigt
 - 🐛 Gefixt dabei: Race-Condition Timeout-vs-Klick in `useQuizSession` (Ref-Lock), unreiner setState-Updater (StrictMode)
 
+## Native Google-Anmeldung in der App (2026-10-05)
+
+Tester-Feedback: Supabase-Adresse auf Googles Seite + zweiter Tipp. Google
+läuft in der App jetzt über den Credential Manager
+([DESIGN-GOOGLE-NATIVE.md](DESIGN-GOOGLE-NATIVE.md)). Code fertig, Tests
+185/185. **Offen:** Android-OAuth-Client in der Google Cloud Console,
+`VITE_GOOGLE_WEB_CLIENT_ID`, neues Release, Gerätetest.
+
 ## Google-Login in der Android-App (2026-09-14)
 Landete vorher im Browser. Jetzt Deep-Link + Custom Tab + PKCE, auf dem Gerät
 mit Build 13 bestätigt ([DESIGN-OAUTH-ANDROID.md](DESIGN-OAUTH-ANDROID.md)).

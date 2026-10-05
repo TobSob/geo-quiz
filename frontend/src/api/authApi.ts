@@ -11,6 +11,7 @@ import {
   NATIVE_OAUTH_REDIRECT,
   parseNativeOAuthCallback,
 } from '../features/auth/nativeOAuth'
+import { GOOGLE_WEB_CLIENT_ID, requestGoogleIdToken } from '../features/auth/nativeGoogle'
 import {
   emailLinkSuccessMessage,
   parseEmailLink,
@@ -97,6 +98,11 @@ export interface AuthActionResult {
   ok: boolean
   /** User-facing message (German), e.g. confirmation-mail hint or error. */
   message: string
+  /**
+   * Die Sitzung hat schon gewechselt (native Google-Anmeldung) — der Aufrufer
+   * baut den Kontozustand neu auf, wie nach signInWithEmail.
+   */
+  sessionChanged?: boolean
 }
 
 /**
@@ -247,6 +253,13 @@ const OAUTH_MESSAGE_KEY = 'geoquiz-oauth-message'
 export async function continueWithProvider(
   provider: OAuthProvider,
 ): Promise<AuthActionResult> {
+  if (provider === 'google') {
+    const native = await continueWithGoogleNative()
+    if (native) {
+      sessionStorage.removeItem(SIGN_IN_NEXT_KEY)
+      return native
+    }
+  }
   // App: Der letzte Verknüpfungsversuch hat ergeben, dass es schon einen
   // Spieler zu diesem Konto gibt — jetzt direkt anmelden (siehe
   // handleNativeOAuthCallback, DESIGN-OAUTH-ANDROID.md §6).
@@ -259,6 +272,42 @@ export async function continueWithProvider(
   const result = await linkProvider(provider)
   if (!result.ok) sessionStorage.removeItem(PENDING_PROVIDER_KEY)
   return result
+}
+
+/**
+ * Google in der App ohne Browser (DESIGN-GOOGLE-NATIVE.md): Kontoauswahl als
+ * System-Sheet, ID-Token direkt an Supabase. Wie im Browser-Weg zuerst
+ * verknüpfen (Gast-Fortschritt bleibt); gehört das Google-Konto schon einem
+ * Spieler, meldet dasselbe Token **sofort** dort an — kein zweiter Tipp, weil
+ * kein Custom Tab hinter die App rutschen kann (DESIGN-OAUTH-ANDROID.md §6).
+ *
+ * `null` heißt: nativ nicht möglich (Web, keine Client-ID, Console-Setup
+ * fehlt) — der Aufrufer nimmt den Custom-Tab-Weg.
+ */
+async function continueWithGoogleNative(): Promise<AuthActionResult | null> {
+  if (!supabase || !Capacitor.isNativePlatform() || !GOOGLE_WEB_CLIENT_ID) return null
+  const result = await requestGoogleIdToken()
+  if (result.kind === 'canceled') return { ok: false, message: 'Google-Anmeldung abgebrochen.' }
+  if (result.kind === 'unavailable') {
+    console.warn('[auth] native Google-Anmeldung nicht verfügbar:', result.reason)
+    return null
+  }
+
+  const credentials = { provider: 'google' as const, token: result.idToken, nonce: result.rawNonce }
+  const done: AuthActionResult = { ok: true, message: 'Angemeldet mit Google.', sessionChanged: true }
+
+  const { data: sessionData } = await supabase.auth.getSession()
+  if (sessionData.session?.user.is_anonymous) {
+    const linked = await supabase.auth.linkIdentity(credentials)
+    if (!linked.error) return done
+    if (!shouldSignInInsteadOfLinking(linked.error.code ?? null)) {
+      return { ok: false, message: translateAuthError(linked.error.message) }
+    }
+  }
+
+  const { error } = await supabase.auth.signInWithIdToken(credentials)
+  if (error) return { ok: false, message: translateAuthError(error.message) }
+  return done
 }
 
 /**

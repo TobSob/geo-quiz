@@ -161,6 +161,17 @@ Google-Konto, zeigt die App eine Meldung und meldet beim **zweiten Tipp** an —
 kein automatischer zweiter Sprung wie im Web. Details:
 [../../DESIGN-OAUTH-ANDROID.md](../../DESIGN-OAUTH-ANDROID.md).
 
+**Google in der App nativ (Code seit 2026-10-05, Gerätetest offen):** Tester
+störten sich an der `…supabase.co`-Adresse auf Googles Seite und am zweiten
+Tipp. Mit gesetzter `VITE_GOOGLE_WEB_CLIENT_ID` läuft Google jetzt über den
+Credential Manager (System-Sheet, ID-Token → `linkIdentity` bzw. bei Konflikt
+sofort `signInWithIdToken`). Jeder Fehler außer Abbruch fällt auf den
+Custom-Tab-Weg oben zurück; GitHub bleibt dort. Braucht einen
+**Android-OAuth-Client mit dem SHA-1 des Play-App-Signaturschlüssels** —
+Schritte in [../../DESIGN-GOOGLE-NATIVE.md](../../DESIGN-GOOGLE-NATIVE.md) §3.
+Im Web zeigt Google weiterhin die Supabase-Adresse (Abhilfe nur per
+kostenpflichtiger Custom Domain).
+
 ## Welche Mail die App überhaupt auslöst
 
 Genau **eine**: die Bestätigung beim Gast→Konto-Upgrade. Weil das technisch

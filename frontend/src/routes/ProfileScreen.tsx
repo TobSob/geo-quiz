@@ -671,6 +671,13 @@ function OAuthButtons() {
     if (!result.ok) {
       setBusy(false)
       setMessage(result.message)
+    } else if (result.sessionChanged) {
+      // Native Google-Anmeldung: kein Rücksprung, der Zustand muss hier neu
+      // aufgebaut werden (DESIGN-GOOGLE-NATIVE.md).
+      const auth = await ensureSession()
+      await applyAuthSession(auth)
+      setBusy(false)
+      setMessage(result.message)
     } else if (Capacitor.isNativePlatform()) {
       setBusy(false)
     }

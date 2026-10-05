@@ -27,6 +27,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Lokale Plugins müssen VOR super.onCreate() registriert sein — dort
+        // baut Capacitor die Bridge.
+        registerPlugin(GoogleSignInPlugin.class);
         super.onCreate(savedInstanceState);
         hideSystemBars();
         observeInsets();
