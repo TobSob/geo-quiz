@@ -227,7 +227,9 @@ Begründung für „Avatar" und „Abzeichen": fallen unter App-Aktivität
 (Spielinteraktionen), keine eigene Kategorie nötig.
 
 **Nachtrag 2026-10-03 (Namensmoderation, Migration 0018) — in der Console
-noch nachtragen:** Meldungen speichern Nutzer-IDs von Melder und Gemeldetem.
+gespeichert am 2026-10-05** (Weg: Überprüfen und optimieren → Richtlinie und
+Programme → App-Inhalte → Tab *Abgeschlossen* → Datensicherheit; danach unter
+*Veröffentlichungen – Übersicht* zur Überprüfung einreichen): Meldungen speichern Nutzer-IDs von Melder und Gemeldetem.
 Keine neue Datenkategorie, aber die Zeile **Nutzer-IDs** braucht zusätzlich den
 Zweck **„Betrugsprävention, Sicherheit und Compliance"** (so auch DSE §3,
 „berechtigtes Interesse").

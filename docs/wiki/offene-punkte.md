@@ -11,7 +11,7 @@
 |---|---|---|
 | 1 | **Mail landet bei Outlook im Junk** | Registrierung **funktioniert** Ende zu Ende (2026-09-14 mit echter Mail bewiesen, Links über `geoquiz.tobsob.dev`). Offen ist nur die Zustellung: SPF/DKIM/DMARC `pass`, trotzdem `SCL 5`. Hauptursache Domain-Alter, das geht nur mit Zeit weg. Bis dahin Tester vorwarnen („Junk prüfen, dann *Kein Junk*, sonst ist der Link gesperrt") oder Google-Login empfehlen. Kein harter Blocker mehr |
 | 2 | **Play Console: App anlegen + App Signing** (K11) | Ohne Play App Signing ist ein Keystore-Verlust das Ende der App |
-| 3 | **Data-Safety-Nachtrag** (K12 ist seit 2026-09-14 eingetragen; 0018 ist live, also jetzt fällig) | Mit 0018 kommt bei *Nutzer-IDs* der Zweck „Sicherheit und Compliance" dazu, siehe [../STORE-LISTING.md](../STORE-LISTING.md) §6 |
+| 3 | **Data-Safety-Nachtrag zur Prüfung einreichen** (am 2026-10-05 in der Console gespeichert; fehlt nur das Absenden unter *Veröffentlichungen – Übersicht*) | Mit 0018 kommt bei *Nutzer-IDs* der Zweck „Sicherheit und Compliance" dazu, siehe [../STORE-LISTING.md](../STORE-LISTING.md) §6 |
 | 4 | **Store-Eintrag befüllen** (K13) | Texte, Icon, Feature-Grafik, Screenshots liegen bereit |
 | 5 | **Closed Testing** (K14) | Neue Privatkonten: zuletzt 12 Tester, 14 Tage durchgehend. Die eigentliche Wartezeit — nicht abkürzbar |
 
