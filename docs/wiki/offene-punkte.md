@@ -19,10 +19,13 @@
 
 | Punkt | Begründung |
 |---|---|
-| **Bestandsnamen prüfen** | 0018 ist live und gegen die echte DB geprüft (siehe Erledigt). Offen nur: die zwei Prüfabfragen am Ende von `0018_name_moderation.sql` einmal im SQL-Editor laufen lassen — der Filter greift nur bei neuen/geänderten Namen |
 | **2 fehlende Screenshots** | Globale Bestenliste + Pokalregal, beide brauchen eine Anmeldung im Emulator. Kein Blocker (Play verlangt 2, es gibt 7), aber die Bestenliste ist das Verkaufsargument |
 
 ## Erledigt seit dem letzten Stand
+
+- **Bestandsnamen geprüft** (2026-10-05): beide Prüfabfragen aus 0018 im
+  SQL-Editor einzeln ausgeführt — **0 Treffer** bei `profiles.display_name`
+  und `friend_groups.name`. Nichts zurückzusetzen.
 
 - **Erste Einreichung bei Google** (2026-10-05): geschlossener Test „Alpha"
   mit Build 15 (`1.0-15-2026-10-03`), vorher den Build-14-Entwurf ersetzt.
