@@ -151,6 +151,26 @@ niemand zu Ende liest, verkauft nichts.
 | Feature-Grafik 1024×500 | `frontend/assets/feature-graphic.png` |
 | Telefon-Screenshots | `frontend/assets/store-screenshots/` (siehe unten) |
 
+### Anmeldedaten für die Prüfer (App-Inhalte → Anmeldedaten)
+
+Stand 2026-10-05, in der Console gespeichert. Prüfkonto
+`geoquizsupport+review@gmail.com`, Passwort **nur in der Console** (und im
+Passwortmanager), nie im Repo. Google verlangt die Anleitung **auf Englisch**
+(max. 500 Zeichen) — eingetragen:
+
+```
+The app is in German. All game modes work without signing in.
+To sign in: tap the avatar (top right) → section "Anmelden" → enter e-mail and password → "Anmelden".
+After signing in, the global leaderboard ("Bestenliste"), trophy shelf and friend groups are available.
+Reporting a player name (user-generated content): open the leaderboard, tap another player's name → player card → "⚑ Namen melden".
+Please do not delete this account ("Konto löschen"); it is used for every review.
+```
+
+Die deutschen Bezeichnungen sind gegen den Code geprüft (`ProfileScreen.tsx`,
+`HomeScreen.tsx`, `PlayerCard.tsx`). Ändert sich ein Knopftext, hier und in der
+Console nachziehen. **Offen:** dass das Konto sich wirklich anmelden lässt, hat
+noch niemand nachgewiesen (Login durch den Menschen).
+
 ## 5. Telefon-Screenshots (K13b)
 
 **Upload-Satz, Stand 2026-09-14** — 7 Bilder, in dieser Reihenfolge hochladen:
