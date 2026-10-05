@@ -27,6 +27,12 @@
   auf 8/8 umgestellt (Training raus, Bestenliste rein; Reihenfolge Menü, Cup,
   Flaggen, Umrisse, Städte-Pin, Landmark-Pin, Bestenliste, Spielerkarte) —
   ebenfalls eingereicht.
+- **Google Group für Tester geöffnet** (2026-10-05): „Wer kann die Gruppe
+  sehen?" stand auf *Gruppenmitglieder* — Eingeladene sahen nur „Inhalte
+  nicht verfügbar" und kamen nie an den Beitreten-Knopf. Jetzt *Alle im Web*,
+  Beitritt *Jeder im Web kann beitreten*; Mitgliederliste und Unterhaltungen
+  bleiben privat (Manager bzw. Mitglieder). Erstes Mitglied außer dem
+  Entwickler drin.
 
 - **Screenshot globale Bestenliste** (2026-10-05): `09-bestenliste.png`,
   1080×2400, mit **Demo-Daten** aus `frontend/scripts/store-screenshot-leaderboard.mjs`
