@@ -1,6 +1,6 @@
 # Offene Punkte
 
-> **Stand:** 2026-10-05 (0018 live) · 2026-10-03 (Moderation, Migrationen, K12) · vorher 2026-09-12 · **Verifiziert:** Code-Prüfung, Live-Abfragen,
+> **Stand:** 2026-10-05 (0018 live, Einreichung) · 2026-10-03 (Moderation, Migrationen, K12) · vorher 2026-09-12 · **Verifiziert:** Code-Prüfung, Live-Abfragen,
 > Dashboard-Durchgang am 2026-09-12, Grep über das **ausgelieferte** Web-Bundle,
 > `npm run test`. Diese Seite hat bei Widerspruch **Vorrang** vor
 > Status-Spalten in ROADMAP.md und STATUS.md.
@@ -11,7 +11,7 @@
 |---|---|---|
 | 1 | **Mail landet bei Outlook im Junk** | Registrierung **funktioniert** Ende zu Ende (2026-09-14 mit echter Mail bewiesen, Links über `geoquiz.tobsob.dev`). Offen ist nur die Zustellung: SPF/DKIM/DMARC `pass`, trotzdem `SCL 5`. Hauptursache Domain-Alter, das geht nur mit Zeit weg. Bis dahin Tester vorwarnen („Junk prüfen, dann *Kein Junk*, sonst ist der Link gesperrt") oder Google-Login empfehlen. Kein harter Blocker mehr |
 | 2 | **Play Console: App anlegen + App Signing** (K11) | Ohne Play App Signing ist ein Keystore-Verlust das Ende der App |
-| 3 | **Data-Safety-Nachtrag zur Prüfung einreichen** (am 2026-10-05 in der Console gespeichert; fehlt nur das Absenden unter *Veröffentlichungen – Übersicht*) | Mit 0018 kommt bei *Nutzer-IDs* der Zweck „Sicherheit und Compliance" dazu, siehe [../STORE-LISTING.md](../STORE-LISTING.md) §6 |
+| 3 | **Google-Prüfung abwarten** — am 2026-10-05 eingereicht (Closed-Test-Release Build 15 + alle App-Inhalte inkl. Data-Safety-Nachtrag) | Mit 0018 kommt bei *Nutzer-IDs* der Zweck „Sicherheit und Compliance" dazu, siehe [../STORE-LISTING.md](../STORE-LISTING.md) §6 |
 | 4 | **Store-Eintrag befüllen** (K13) | Texte, Icon, Feature-Grafik, Screenshots liegen bereit |
 | 5 | **Closed Testing** (K14) | Neue Privatkonten: zuletzt 12 Tester, 14 Tage durchgehend. Die eigentliche Wartezeit — nicht abkürzbar |
 
@@ -23,6 +23,13 @@
 | **2 fehlende Screenshots** | Globale Bestenliste + Pokalregal, beide brauchen eine Anmeldung im Emulator. Kein Blocker (Play verlangt 2, es gibt 7), aber die Bestenliste ist das Verkaufsargument |
 
 ## Erledigt seit dem letzten Stand
+
+- **Erste Einreichung bei Google** (2026-10-05): geschlossener Test „Alpha"
+  mit Build 15 (`1.0-15-2026-10-03`), vorher den Build-14-Entwurf ersetzt.
+  Prüfer-Anleitung auf Englisch (Google verlangt das), Login mit dem
+  Prüfkonto durch den Menschen bestätigt. Einzige Release-Warnung: fehlende
+  Deobfuscation-Datei — irrelevant, R8 ist aus. Status in der Console:
+  „Änderungen, die überprüft werden".
 
 - **Play Console, Einrichtung 11/11** (2026-10-05): App-Kategorie *Quiz*, Tags
   *Quiz, Arcade, Casual, Denkspiele*, Kontakt-E-Mail + Website eingetragen
