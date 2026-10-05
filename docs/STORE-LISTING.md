@@ -168,8 +168,8 @@ Please do not delete this account ("Konto löschen"); it is used for every revie
 
 Die deutschen Bezeichnungen sind gegen den Code geprüft (`ProfileScreen.tsx`,
 `HomeScreen.tsx`, `PlayerCard.tsx`). Ändert sich ein Knopftext, hier und in der
-Console nachziehen. **Offen:** dass das Konto sich wirklich anmelden lässt, hat
-noch niemand nachgewiesen (Login durch den Menschen).
+Console nachziehen. Login mit dem Prüfkonto am 2026-10-05 durch den Menschen
+bestätigt: Anmeldung klappt, globale Bestenliste erscheint.
 
 ## 5. Telefon-Screenshots (K13b)
 
