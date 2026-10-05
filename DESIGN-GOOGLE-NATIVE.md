@@ -93,4 +93,4 @@ Paketnamen plus Signatur.
 | Datum | Stand |
 |---|---|
 | 2026-10-05 | Code + Plugin + Tests (185/185), `compileDebugJavaWithJavac` grün. Console-Schritte §3 und Gerätetest offen |
-| 2026-10-05 | Android-Client `GEOQUIZ ARCADE Android (Play)` im Cloud-Projekt `901692925361` (gehört dem GeoQuiz-Konto, **nicht** tob.sobek) mit Play-App-Signatur-SHA-1 `30:C8:8B:C4:…:C1:53` angelegt. Upload-Key ist `E2:BC:5B:31:…:EA:69` (aus dem AAB gelesen) — der gehört nicht hinein. Build 16 gebaut, Client-ID im Bundle, Plugin in der APK. Build 16 im Alpha-Track veröffentlicht (2026-10-05). Gerätetest offen |
+| 2026-10-05 | Android-Client `GEOQUIZ ARCADE Android (Play)` im Cloud-Projekt `901692925361` (gehört dem GeoQuiz-Konto, **nicht** tob.sobek) mit Play-App-Signatur-SHA-1 `30:C8:8B:C4:…:C1:53` angelegt. Upload-Key ist `E2:BC:5B:31:…:EA:69` (aus dem AAB gelesen) — der gehört nicht hinein. Build 16 gebaut, Client-ID im Bundle, Plugin in der APK. Build 16 im Alpha-Track eingereicht (2026-10-05, in Prüfung). Gerätetest offen |
