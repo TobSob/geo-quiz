@@ -141,10 +141,10 @@ niemand zu Ende liest, verkauft nichts.
 | App-Name | GEOQUIZ ARCADE |
 | Standardsprache | Deutsch (Deutschland) |
 | App oder Spiel | **Spiel** |
-| Kategorie | Quizspiele (Trivia) |
-| Tags | Quiz, Bildung, Gelegenheitsspiel |
+| Kategorie | **Quiz** (in der Console eingetragen 2026-10-05) |
+| Tags | **Quiz, Arcade, Casual, Denkspiele** (eingetragen 2026-10-05). Bewusst **nicht** „Lernen" (rückt in Richtung Families-Policy, siehe §3) und nicht „Logo-Quiz" (meint Markenlogos). Google vergleicht mit Apps gleicher Tags — wenige, passende statt fünf |
 | Kontakt-E-Mail | `geoquizsupport@gmail.com` |
-| Website | `https://geoquiz.tobsob.dev` |
+| Website | `https://geoquiz.tobsob.dev` (eingetragen 2026-10-05; Telefonnummer bewusst leer, wäre öffentlich) |
 | Datenschutzerklärung | `https://geoquiz.tobsob.dev/datenschutz/` |
 | Konto-Löschung (URL) | `https://geoquiz.tobsob.dev/konto-loeschen/` |
 | Icon 512×512 | `frontend/assets/icon-only.png` |

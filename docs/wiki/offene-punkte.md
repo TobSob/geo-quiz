@@ -24,6 +24,17 @@
 
 ## Erledigt seit dem letzten Stand
 
+- **Play Console, Einrichtung 11/11** (2026-10-05): App-Kategorie *Quiz*, Tags
+  *Quiz, Arcade, Casual, Denkspiele*, Kontakt-E-Mail + Website eingetragen
+  (Werte in [../STORE-LISTING.md](../STORE-LISTING.md) §4). Damit ist der Block
+  „Dein Spiel fertig einrichten" im Dashboard weg. Geschlossener Test: Länder
+  (DE/AT/CH), Tester (Google Group `geoquiztester@googlegroups.com`) und ein
+  Release-Entwurf sind angelegt; offen sind *Release-Vorschau bestätigen* und
+  *zur Überprüfung senden* — erst damit geht alles (inkl. Data Safety) an
+  Google. **Klären vorher:** In den erweiterten Einstellungen ist der
+  Formfaktor „Google Play Games auf dem PC" aktiviert — für eine Touch-App im
+  Hochformat vermutlich ungewollt.
+
 - **Namensmoderation live** (2026-10-05): Migration 0018 eingespielt
   (korrigierte Fassung), Web mit neuer Datenschutzerklärung (Stand 3. Oktober)
   ausgeliefert, Build 15 (`versionCode 15`) gebaut am 2026-10-03. Live-Prüfung
