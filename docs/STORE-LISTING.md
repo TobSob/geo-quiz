@@ -182,7 +182,7 @@ bestätigt: Anmeldung klappt, globale Bestenliste erscheint.
 | `03-umrisse.png` | Guinea-Bissau markiert, Nachbarn sichtbar | AVD, 2026-08-05 |
 | `04-staedte-pin.png` | Nuuk aufgelöst: „VOLLTREFFER! 54 km daneben +100" | **S24 Ultra, Build 9, 2026-09-14** (1080×2340) |
 | `05-geo-cup.png` | Cup-Intro mit allen 6 Disziplinen | AVD, 2026-08-05 |
-| `09-bestenliste.png` | Globale Cup-Bestenliste, eigene Zeile auf Platz 4 hervorgehoben | **Demo-Daten**, Edge headless, 2026-10-05 (1080×2400) — `frontend/scripts/store-screenshot-leaderboard.mjs` |
+| `09-bestenliste.png` | Globale Cup-Bestenliste, eigene Zeile auf Platz 4 hervorgehoben, Gruppen-Umschalter (Demo-Gruppen FAMILIE/BÜRO) sichtbar | **Demo-Daten**, Edge headless, 2026-10-05 (1080×2400) — `frontend/scripts/store-screenshot-leaderboard.mjs` |
 | `07-landmark-pin.png` | Roter Platz mit Foto: „VOLLTREFFER! 66 km daneben +105" | **S24 Ultra, Build 9, 2026-09-14** |
 | `08-spielerkarte-pokalregal.png` | Eigene Spielerkarte: Level 18, Pokalregal voll, Bestpunkte | **S24 Ultra, Build 13, 2026-09-14** |
 

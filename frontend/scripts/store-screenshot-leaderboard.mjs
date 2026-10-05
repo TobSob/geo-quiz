@@ -52,14 +52,21 @@ function rpc(name, body) {
     case 'get_leaderboard_first_played': return new Date(now - 90 * day).toISOString()
     case 'get_profile_avatars': return (body.p_names ?? []).map((n) => ({ display_name: n, avatar_id: avatarOf[n] ?? null }))
     case 'get_leaderboard_levels': return []
-    case 'list_my_groups': return []
+    // Zwei Demo-Gruppen: macht die Umschaltzeile „🌍 Global / 👥 …" sichtbar,
+    // den einzigen Hinweis auf Freundesgruppen in diesem Bild.
+    case 'list_my_groups': return [
+      { group_id: 1, name: 'FAMILIE', code: 'DEMO01', member_count: 5, is_owner: true },
+      { group_id: 2, name: 'BÜRO', code: 'DEMO02', member_count: 9, is_owner: false },
+    ]
     case 'get_gamification': return { stats: { xp: 9800, rounds_played: 212, solo_best_score: 4310, cup_count: 38, cup_best_score: 10115, questions_answered: 5400, questions_correct: 4120, total_points: 410000, best_streak: 31, volltreffer_count: 140, trophy_count: 4, play_days: 41 }, badges: [], trophies: [], featured: [] }
     default: return null
   }
 }
 
 const browser = await chromium.launch({ channel: 'msedge', headless: true })
-const ctx = await browser.newContext({ viewport: { width: 414, height: 920 }, deviceScaleFactor: 1080 / 414, locale: 'de-DE', isMobile: true, hasTouch: true })
+const ctx = await browser.newContext({ viewport: { width: 414, height: 920 }, deviceScaleFactor: 1080 / 414, locale: 'de-DE', isMobile: true, hasTouch: true,
+  // Wordmark sonst mitten in der GEOQUIZ↔ARCADE-Blende erwischt; die App respektiert das (Wordmark.tsx).
+  reducedMotion: 'reduce' })
 await ctx.addInitScript(([key, val]) => {
   localStorage.setItem(key, val)
 }, [`CapacitorStorage.sb-${REF}-auth-token`, JSON.stringify(session)])
